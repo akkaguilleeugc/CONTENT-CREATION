@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0B0F14" />
+    <meta name="description" content="Creator OS — the personal operating system for planning, producing, publishing and analysing content." />
+    <link rel="icon" type="image/png" href="/brand/kroopy-symbol.png" />
+    <link rel="preload" href="/fonts/Coolvetica-Regular.otf" as="font" type="font/otf" crossorigin />
+    <title>Creator OS · KROOPY</title>
+    <script>
+      // Apply the saved theme before first paint so the app never flashes the wrong theme.
+      (function () {
+        try {
+          var t = localStorage.getItem('creator-os:theme') || 'dark';
+          if (t === 'system') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

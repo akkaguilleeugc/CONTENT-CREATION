@@ -1,0 +1,160 @@
+/* ── Brand fonts (files supplied by the brand owner, served as-is) ── */
+@font-face {
+  font-family: 'Coolvetica';
+  src: url('/fonts/Coolvetica-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: '212 Baby Girl';
+  src: url('/fonts/212-Baby-Girl.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Brand palette — primary */
+  --ink: #0b0f14;
+  --navy: #0b1a5c;
+  --royal: #2f5bff;
+  --lime: #d4f53c;
+  --white: #ffffff;
+  /* Brand palette — secondary (campaigns & highlights) */
+  --ice: #eff8ff;
+  --neon-lime: #bbef1f;
+  --dark: #0d0303;
+  --pink: #ff0055;
+
+  --font-display: 'Coolvetica', 'Inter Variable', system-ui, sans-serif;
+  --font-accent: '212 Baby Girl', 'Coolvetica', system-ui, sans-serif;
+  --font-ui: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  --r-xs: 6px;
+  --r-sm: 9px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-2xl: 28px;
+  --r-pill: 999px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+
+  --sidebar-w: 256px;
+  --sidebar-w-collapsed: 76px;
+  --topbar-h: 60px;
+  --bottomnav-h: 68px;
+  --gutter: clamp(16px, 3vw, 36px);
+}
+
+/* ── Dark (default) ── */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: var(--ink);
+  --bg-deep: #070a0e;
+  --bg-sidebar: #090d12;
+  --surface: #11171f;
+  --surface-2: #161d27;
+  --surface-3: #1c2431;
+  --surface-hover: rgba(255, 255, 255, 0.04);
+  --surface-active: rgba(255, 255, 255, 0.07);
+  --glass: rgba(17, 23, 31, 0.74);
+  --glass-strong: rgba(14, 19, 26, 0.9);
+  --input-bg: rgba(255, 255, 255, 0.03);
+
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.2);
+
+  --text: #ffffff;
+  --text-2: rgba(229, 237, 248, 0.68);
+  --text-3: rgba(229, 237, 248, 0.45);
+  --text-4: rgba(229, 237, 248, 0.26);
+
+  --accent: var(--royal);
+  --accent-hover: #4a70ff;
+  --accent-soft: rgba(47, 91, 255, 0.15);
+  --accent-softer: rgba(47, 91, 255, 0.08);
+  --accent-text: #8aa4ff;
+  --accent-glow: rgba(47, 91, 255, 0.55);
+
+  --positive: var(--lime);
+  --positive-soft: rgba(212, 245, 60, 0.12);
+  --positive-text: var(--lime);
+  --positive-glow: rgba(212, 245, 60, 0.45);
+  --on-positive: var(--ink);
+
+  --danger: #ff5470;
+  --danger-soft: rgba(255, 84, 112, 0.13);
+  --warning: #ffc857;
+
+  --track: rgba(255, 255, 255, 0.07);
+  --scrim: rgba(3, 5, 8, 0.62);
+  --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 10px 30px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 40px 100px -24px rgba(0, 0, 0, 0.85), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  --logo-plate: var(--lime);
+
+  --app-bg:
+    radial-gradient(1100px 620px at 92% -12%, rgba(47, 91, 255, 0.1), transparent 62%),
+    radial-gradient(900px 600px at -8% 112%, rgba(11, 26, 92, 0.42), transparent 62%), var(--bg);
+}
+
+/* ── Light ── */
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: var(--ice);
+  --bg-deep: #e3eef9;
+  --bg-sidebar: #f8fbff;
+  --surface: #ffffff;
+  --surface-2: #f4f8fd;
+  --surface-3: #e9f1fa;
+  --surface-hover: rgba(11, 26, 92, 0.04);
+  --surface-active: rgba(11, 26, 92, 0.07);
+  --glass: rgba(255, 255, 255, 0.78);
+  --glass-strong: rgba(255, 255, 255, 0.94);
+  --input-bg: #ffffff;
+
+  --border: rgba(11, 15, 20, 0.08);
+  --border-strong: rgba(11, 15, 20, 0.13);
+  --border-hover: rgba(11, 15, 20, 0.24);
+
+  --text: var(--ink);
+  --text-2: rgba(11, 15, 20, 0.68);
+  --text-3: rgba(11, 15, 20, 0.48);
+  --text-4: rgba(11, 15, 20, 0.28);
+
+  --accent-hover: #1f4af0;
+  --accent-soft: rgba(47, 91, 255, 0.1);
+  --accent-softer: rgba(47, 91, 255, 0.05);
+  --accent-text: var(--royal);
+  --accent-glow: rgba(47, 91, 255, 0.35);
+
+  --positive-soft: rgba(212, 245, 60, 0.32);
+  --positive-text: #4d6000;
+  --positive-glow: rgba(160, 200, 0, 0.35);
+
+  --danger: #e0244a;
+  --danger-soft: rgba(224, 36, 74, 0.09);
+  --warning: #b57800;
+
+  --track: rgba(11, 26, 92, 0.08);
+  --scrim: rgba(11, 15, 20, 0.32);
+  --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-sm: 0 1px 2px rgba(11, 26, 92, 0.08);
+  --shadow-md: 0 10px 30px -14px rgba(11, 26, 92, 0.22), 0 2px 6px rgba(11, 26, 92, 0.06);
+  --shadow-lg: 0 40px 100px -28px rgba(11, 26, 92, 0.35), 0 12px 32px -14px rgba(11, 26, 92, 0.15);
+
+  --app-bg:
+    radial-gradient(1100px 620px at 92% -12%, rgba(47, 91, 255, 0.09), transparent 62%),
+    radial-gradient(900px 600px at -8% 112%, rgba(212, 245, 60, 0.16), transparent 62%), var(--bg);
+}

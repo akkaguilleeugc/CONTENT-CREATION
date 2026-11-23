@@ -1,0 +1,8 @@
+node_modules
+dist
+*.local
+.DS_Store
+.vite
+motion/frames
+motion/.cache
+*.tsbuildinfo
