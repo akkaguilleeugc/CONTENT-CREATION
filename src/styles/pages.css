@@ -3433,3 +3433,23 @@ code {
   border: 1px dashed var(--border-strong);
   flex-wrap: wrap;
 }
+.week-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.week-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.week-stats .display {
+  font-size: 26px;
+}
+.week-stats span:last-child {
+  font-size: 11.5px;
+  color: var(--text-3);
+}

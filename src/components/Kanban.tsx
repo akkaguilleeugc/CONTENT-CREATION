@@ -24,7 +24,8 @@ export interface KanbanColumn {
   footer?: ReactNode;
 }
 
-const collision: CollisionDetection = (args) => {
+/** Prefer the droppable under the pointer; fall back to overlap. */
+export const collision: CollisionDetection = (args) => {
   const hits = pointerWithin(args);
   return hits.length ? hits : rectIntersection(args);
 };
@@ -101,7 +102,7 @@ export function KanbanBoard<T extends { id: string }>({
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={collision} onDragStart={(e) => setActiveId(String(e.active.id))} onDragEnd={end} onDragCancel={() => setActiveId(null)}>
+    <DndContext sensors={sensors} collisionDetection={collision} autoScroll={{ threshold: { x: 0.12, y: 0.06 } }} onDragStart={(e) => setActiveId(String(e.active.id))} onDragEnd={end} onDragCancel={() => setActiveId(null)}>
       <div className="board">
         {columns.map((col) => {
           const colItems = items.filter((i) => columnOf(i) === col.id);

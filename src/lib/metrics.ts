@@ -134,6 +134,8 @@ export function weekly(db: DB, weekStartsOn: 0 | 1, now = new Date()) {
     goalsMet: goalsMet.length,
     goalsTotal: active.length,
     minutes: perDay.reduce((a, d) => a + d.minutes, 0),
+    habitCheckins: perDay.reduce((a, d) => a + d.habits, 0),
+    ideasCaptured: db.ideas.filter((i) => inRange(i.createdAt, start, end)).length,
   };
 }
 

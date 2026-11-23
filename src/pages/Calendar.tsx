@@ -13,7 +13,7 @@ import {
 import { CalendarDays, CheckSquare, ChevronLeft, ChevronRight, Clapperboard, Filter, Plus, Scissors, Send, Video } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useBoardSensors } from '@/components/Kanban';
+import { collision, useBoardSensors } from '@/components/Kanban';
 import { EmptyState, Popover, usePopover } from '@/components/overlay';
 import { Button, ChipToggle, PageHeader, Segmented } from '@/components/ui';
 import { useIsMobile, useNow, usePlatforms } from '@/lib/hooks';
@@ -200,7 +200,7 @@ export default function CalendarPage() {
         />
       </div>
 
-      <DndContext sensors={sensors} onDragStart={(e) => setDragKey(String(e.active.id))} onDragEnd={onDragEnd} onDragCancel={() => setDragKey(null)}>
+      <DndContext sensors={sensors} collisionDetection={collision} autoScroll={{ threshold: { x: 0, y: 0.06 } }} onDragStart={(e) => setDragKey(String(e.active.id))} onDragEnd={onDragEnd} onDragCancel={() => setDragKey(null)}>
         {view === 'month' && (
           <>
             <MonthGrid

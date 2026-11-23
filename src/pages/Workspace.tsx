@@ -32,7 +32,7 @@ import { AssetThumb, Dropzone, uploadFiles } from '@/features/assets';
 import { FORMATS, PRIORITIES, SHOT_TYPES, STAGES, stageIndex } from '@/lib/constants';
 import { newTask } from '@/lib/factories';
 import { projectProgress, sumRecords } from '@/lib/metrics';
-import { useStore } from '@/lib/store';
+import { flushPendingSave, useStore } from '@/lib/store';
 import { useShallow } from 'zustand/react/shallow';
 import type { ChecklistItem, ContentProject, Priority, Shot, Stage } from '@/lib/types';
 import { confirmDialog, openModal, toast } from '@/lib/ui';
@@ -61,7 +61,23 @@ function useProjectDraft(id: string) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(flush, immediate ? 0 : 600);
   };
-  useEffect(() => () => flush(), [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // Commit unsaved typing if the tab is hidden, closed or reloaded.
+    const onHide = () => {
+      flush();
+      flushPendingSave();
+    };
+    const onVis = () => document.visibilityState === 'hidden' && onHide();
+    window.addEventListener('pagehide', onHide);
+    window.addEventListener('beforeunload', onHide);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.removeEventListener('pagehide', onHide);
+      window.removeEventListener('beforeunload', onHide);
+      document.removeEventListener('visibilitychange', onVis);
+      flush();
+    };
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
   const view = project ? ({ ...project, ...pending } as ContentProject) : undefined;
   return { view, patch, flush, dirty: Object.keys(pending).length > 0 };
 }

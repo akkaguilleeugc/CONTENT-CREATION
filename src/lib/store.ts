@@ -395,6 +395,14 @@ export function snapshot(s: Store = useStore.getState()): DB {
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let applyingRemote = false;
 
+/** Write any pending change immediately (used when the page is being hidden or closed). */
+export function flushPendingSave() {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    void flush();
+  }
+}
+
 async function flush() {
   saveTimer = null;
   const s = useStore.getState();

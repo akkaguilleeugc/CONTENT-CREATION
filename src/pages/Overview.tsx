@@ -358,7 +358,7 @@ function WeeklyPanel({ week }: { week: ReturnType<typeof weekly> }) {
         </div>
         <div className="row between" style={{ margin: '18px 0 8px' }}>
           <span className="eyebrow">Tasks completed per day</span>
-          <span className="subtle tnum" style={{ fontSize: 12 }}>{fmtMinutes(week.minutes)} logged creating</span>
+          <span className="subtle tnum" style={{ fontSize: 12 }}>{week.tasksDone} this week</span>
         </div>
         <BarChart
           height={120}
@@ -366,6 +366,20 @@ function WeeklyPanel({ week }: { week: ReturnType<typeof weekly> }) {
           data={week.days.map((d) => ({ label: format(new Date(`${d.date}T00:00`), 'EEEEE'), value: d.tasks }))}
           format={(n) => String(n)}
         />
+        <div className="week-stats">
+          <div>
+            <span className="display">{fmtMinutes(week.minutes)}</span>
+            <span>creating</span>
+          </div>
+          <div>
+            <span className="display"><AnimatedNumber value={week.habitCheckins} /></span>
+            <span>habit check-ins</span>
+          </div>
+          <div>
+            <span className="display"><AnimatedNumber value={week.ideasCaptured} /></span>
+            <span>ideas captured</span>
+          </div>
+        </div>
       </div>
     </section>
   );
