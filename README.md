@@ -63,6 +63,34 @@ La UI solo habla con dos interfaces (`DataAdapter` y `FileAdapter` en `src/lib/p
 
 No se simula ninguna API. `analytics_records.source` y `content_publications.external_id` ya existen para cuando se configuren las APIs oficiales (TikTok Display API, Instagram Graph API, YouTube Data + Analytics API), que requieren OAuth y un servidor (Supabase Edge Functions) para custodiar los tokens.
 
+## Landing page — `/landing/`
+
+`public/landing/index.html` reproduce la especificación de la landing de una sola pantalla (tokens, breakpoints desde 390 px hasta 2560 px, bloqueo de scroll en escritorio, menú móvil a pantalla completa, coreografía de entrada con *fallback* JS y `prefers-reduced-motion`) adaptada a la identidad KROOPY:
+
+- Fondo Ink, CTA sólido Lime, *glows* Royal, el punto Hot Pink en el titular.
+- H1 en Coolvetica, palabras de acento en 212 Baby Girl (sustituye a Instrument Serif), interfaz en Inter auto-alojada (`inter.woff2`).
+- Logo KROOPY original sobre placa lima; favicon con el símbolo.
+- Vídeo de fondo del hero: la URL de CloudFront indicada, al 100 % de opacidad y sin overlay (con un degradado de marca como respaldo mientras carga).
+- Producto: **ViralGrow by KROOPY**. Las cifras del pie describen el producto real (pipeline de 9 etapas, etc.) en lugar de estadísticas inventadas.
+
+En desarrollo: `npm run dev` → http://localhost:5173/landing/
+
+## Vídeo de 15 s — `motion/`
+
+| Archivo | Qué es |
+|---|---|
+| `motion/out/viralgrow-15s.mp4` | Render final 1920×1080 · 60 fps · H.264 + AAC (−14 LUFS) |
+| `motion/viralgrow-15s.html` | Composición: línea de tiempo determinista `render(t)`; ábrela en el navegador para verla en bucle |
+| `motion/soundtrack.py` | Banda sonora sintetizada (120 BPM), sincronizada con cada corte |
+| `motion/render.cjs` | Renderiza fotograma a fotograma con Playwright y codifica con ffmpeg |
+
+```bash
+python3 motion/soundtrack.py motion/out/soundtrack.wav
+node motion/render.cjs
+```
+
+Guion: 0–2 s palabras cinéticas (Ideas · Scripts · Shoots · Stats) → 2–4 s del caos al sistema (las 9 etapas encajan sobre el degradado de marca) → 4–7 s el producto en 3D (KPIs, tarjeta que avanza por el pipeline, anillo de progreso) → 7–10 s seis cortes a ritmo (Plan · Script · Shoot · Track · Measure · Grow) → 10–12,5 s *drop*: curva de crecimiento exponencial con partículas → 12,5–15 s cierre con la landing y el sello del logo.
+
 ## Atajos
 
 `⌘/Ctrl K` paleta · `N` crear · `/` buscar · `I` idea · `V` vídeo · `T` tarea · `E` evento · `U` subir · `G` + `O/I/S/C/T/R/A/B/L` navegar · `Esc` cerrar.

@@ -6,3 +6,5 @@ dist
 motion/frames
 motion/.cache
 *.tsbuildinfo
+motion/out/*.wav
+motion/out/*.silent.mp4
