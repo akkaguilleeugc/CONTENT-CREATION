@@ -25,6 +25,7 @@ import type { Idea, IdeaStatus } from '@/lib/types';
 import { confirmDialog, openModal, toast } from '@/lib/ui';
 import { cn, fmtDate, matches } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type View = 'grid' | 'list' | 'kanban';
 type Sort = 'newest' | 'oldest' | 'priority' | 'title' | 'updated';
 
@@ -99,42 +100,42 @@ export default function Ideas() {
   const store = useStore.getState();
 
   const menuFor = (i: Idea): MenuEntry[] => [
-    { label: 'Edit', icon: <Pencil />, onSelect: () => openModal({ kind: 'idea', id: i.id }) },
-    { label: i.favorite ? 'Remove favourite' : 'Mark favourite', icon: <Star />, onSelect: () => store.update('ideas', i.id, { favorite: !i.favorite }) },
+    { label: $t("Edit"), icon: <Pencil />, onSelect: () => openModal({ kind: 'idea', id: i.id }) },
+    { label: i.favorite ? $t("Remove favourite") : $t("Mark favourite"), icon: <Star />, onSelect: () => store.update('ideas', i.id, { favorite: !i.favorite }) },
     {
-      label: i.projectId ? 'Open video project' : 'Convert to content',
+      label: i.projectId ? $t("Open video project") : $t("Convert to content"),
       icon: <ArrowRightCircle />,
       onSelect: () => {
         const p = i.projectId ? store.projects.find((x) => x.id === i.projectId) ?? store.convertIdea(i.id) : store.convertIdea(i.id);
         if (p) {
-          if (!i.projectId) toast('Converted to a video project', { description: i.title });
+          if (!i.projectId) toast($t("Converted to a video project"), { description: i.title });
           navigate(`/studio/${p.id}`);
         }
       },
     },
     {
-      label: 'Duplicate',
+      label: $t("Duplicate"),
       icon: <Copy />,
       onSelect: () => {
         store.duplicateIdea(i.id);
-        toast('Idea duplicated');
+        toast($t("Idea duplicated"));
       },
     },
     {
-      label: i.status === 'archived' ? 'Restore to inbox' : 'Archive',
+      label: i.status === 'archived' ? $t("Restore to inbox") : $t("Archive"),
       icon: i.status === 'archived' ? <ArchiveRestore /> : <Archive />,
       onSelect: () => store.update('ideas', i.id, { status: i.status === 'archived' ? 'inbox' : 'archived' }),
     },
     {
-      label: 'Delete',
+      label: $t("Delete"),
       icon: <Trash2 />,
       danger: true,
       separator: true,
       onSelect: async () => {
-        if (await confirmDialog({ title: `Delete “${i.title}”?` })) {
+        if (await confirmDialog({ title: $t('Delete “{name}”?', { name: i.title }) })) {
           store.remove('ideas', i.id);
-          toast('Idea deleted', {
-            action: { label: 'Undo', run: () => useStore.getState().insert('ideas', i) },
+          toast($t("Idea deleted"), {
+            action: { label: $t("Undo"), run: () => useStore.getState().insert('ideas', i) },
           });
         }
       },
@@ -145,7 +146,7 @@ export default function Ideas() {
     <Menu
       items={menuFor(i)}
       trigger={(p) => (
-        <Button {...p} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={`Actions for ${i.title}`} onPointerDown={(e) => e.stopPropagation()} />
+        <Button {...p} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t('Actions for {name}', { name: i.title })} onPointerDown={(e) => e.stopPropagation()} />
       )}
     />
   );
@@ -158,7 +159,7 @@ export default function Ideas() {
         store.update('ideas', i.id, { favorite: !i.favorite });
       }}
       onPointerDown={(e) => e.stopPropagation()}
-      aria-label={i.favorite ? 'Remove favourite' : 'Mark favourite'}
+      aria-label={i.favorite ? $t("Remove favourite") : $t("Mark favourite")}
       aria-pressed={i.favorite}
     >
       <Star />
@@ -195,62 +196,62 @@ export default function Ideas() {
   return (
     <div className={cn('page', view === 'kanban' && 'page--wide')}>
       <PageHeader
-        title="My Ideas"
+        title={$t("My Ideas")}
         sub={
           ideas.length ? (
             <>
-              {ideas.length} ideas in your second brain · {ready} ready to produce.
+              {ideas.length} {$t("ideas in your second brain ·")} {ready} {$t("ready to produce.")}
             </>
           ) : (
-            'Your second brain for content. Capture everything — sort it later.'
+            $t("Your second brain for content. Capture everything — sort it later.")
           )
         }
         actions={
           <>
             <Segmented
-              label="View"
+              label={$t("View")}
               value={view}
               onChange={setView}
               options={[
-                { value: 'grid', icon: <LayoutGrid />, tip: 'Grid' },
-                { value: 'list', icon: <List />, tip: 'List' },
-                { value: 'kanban', icon: <Columns3 />, tip: 'Kanban' },
+                { value: 'grid', icon: <LayoutGrid />, tip: $t("Grid") },
+                { value: 'list', icon: <List />, tip: $t("List") },
+                { value: 'kanban', icon: <Columns3 />, tip: $t("Kanban") },
               ]}
             />
             <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'idea' })} kbd="I">
-              New idea
+              {$t("New idea")}
             </Button>
           </>
         }
       />
 
       <div className="toolbar">
-        <SearchInput value={q} onChange={setQ} placeholder="Search ideas, tags, references…" />
-        <Select sm value={category} onChange={(e) => setCategory(e.target.value)} options={categories.map((c) => ({ value: c, label: c }))} placeholder="All categories" aria-label="Category" style={{ width: 'auto' }} />
-        <Select sm value={platform} onChange={(e) => setPlatform(e.target.value)} options={platforms.list.map((p) => ({ value: p.id, label: p.name }))} placeholder="All platforms" aria-label="Platform" style={{ width: 'auto' }} />
+        <SearchInput value={q} onChange={setQ} placeholder={$t("Search ideas, tags, references…")} />
+        <Select sm value={category} onChange={(e) => setCategory(e.target.value)} options={categories.map((c) => ({ value: c, label: c }))} placeholder={$t("All categories")} aria-label={$t("Category")} style={{ width: 'auto' }} />
+        <Select sm value={platform} onChange={(e) => setPlatform(e.target.value)} options={platforms.list.map((p) => ({ value: p.id, label: p.name }))} placeholder={$t("All platforms")} aria-label={$t("Platform")} style={{ width: 'auto' }} />
         {view !== 'kanban' && (
-          <Select sm value={status} onChange={(e) => setStatus(e.target.value)} options={IDEA_STATUSES.map((s) => ({ value: s.id, label: s.label }))} placeholder="Active statuses" aria-label="Status" style={{ width: 'auto' }} />
+          <Select sm value={status} onChange={(e) => setStatus(e.target.value)} options={IDEA_STATUSES.map((s) => ({ value: s.id, label: s.label }))} placeholder={$t("Active statuses")} aria-label={$t("Status")} style={{ width: 'auto' }} />
         )}
         <Select
           sm
           value={sort}
           onChange={(e) => setSort(e.target.value as Sort)}
           options={[
-            { value: 'newest', label: 'Newest first' },
-            { value: 'oldest', label: 'Oldest first' },
-            { value: 'priority', label: 'Priority' },
-            { value: 'updated', label: 'Recently edited' },
-            { value: 'title', label: 'Title A–Z' },
+            { value: 'newest', label: $t("Newest first") },
+            { value: 'oldest', label: $t("Oldest first") },
+            { value: 'priority', label: $t("Priority") },
+            { value: 'updated', label: $t("Recently edited") },
+            { value: 'title', label: $t("Title A–Z") },
           ]}
-          aria-label="Sort"
+          aria-label={$t("Sort")}
           style={{ width: 'auto' }}
         />
         <button className={cn('chip', favOnly && 'chip--on')} onClick={() => setFavOnly(!favOnly)} aria-pressed={favOnly}>
-          <Star /> Favourites
+          <Star /> {$t("Favourites")}
         </button>
         {view !== 'kanban' && !status && (
           <button className={cn('chip', showArchived && 'chip--on')} onClick={() => setShowArchived(!showArchived)} aria-pressed={showArchived}>
-            <Archive /> Archived
+            <Archive /> {$t("Archived")}
           </button>
         )}
       </div>
@@ -259,11 +260,11 @@ export default function Ideas() {
         <div className="panel">
           <EmptyState
             icon={<Lightbulb />}
-            title="Your idea bank is empty"
-            text="Every great video starts as a messy thought. Capture one now — press I from anywhere."
+            title={$t("Your idea bank is empty")}
+            text={$t("Every great video starts as a messy thought. Capture one now — press I from anywhere.")}
             actions={
               <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'idea' })}>
-                Capture first idea
+                {$t("Capture first idea")}
               </Button>
             }
           />
@@ -272,8 +273,8 @@ export default function Ideas() {
         <div className="panel">
           <EmptyState
             icon={<Lightbulb />}
-            title="No ideas match"
-            text={filtering ? 'Try a different search or clear the filters.' : 'All your ideas are archived.'}
+            title={$t("No ideas match")}
+            text={filtering ? $t("Try a different search or clear the filters.") : $t("All your ideas are archived.")}
             actions={
               <Button
                 onClick={() => {
@@ -285,7 +286,7 @@ export default function Ideas() {
                   setShowArchived(true);
                 }}
               >
-                Clear filters
+                {$t("Clear filters")}
               </Button>
             }
           />
@@ -299,7 +300,7 @@ export default function Ideas() {
           ))}
           <button className="idea idea--new" onClick={() => openModal({ kind: 'idea' })}>
             <Plus />
-            New idea
+            {$t("New idea")}
           </button>
         </div>
       ) : view === 'list' ? (
@@ -308,13 +309,13 @@ export default function Ideas() {
             <thead>
               <tr>
                 <th style={{ width: 32 }} />
-                <th>Idea</th>
-                <th className="hide-mobile">Category</th>
-                <th className="hide-mobile">Platforms</th>
-                <th className="hide-mobile">Format</th>
-                <th>Priority</th>
-                <th className="hide-mobile">Status</th>
-                <th className="hide-mobile">Created</th>
+                <th>{$t("Idea")}</th>
+                <th className="hide-mobile">{$t("Category")}</th>
+                <th className="hide-mobile">{$t("Platforms")}</th>
+                <th className="hide-mobile">{$t("Format")}</th>
+                <th>{$t("Priority")}</th>
+                <th className="hide-mobile">{$t("Status")}</th>
+                <th className="hide-mobile">{$t("Created")}</th>
                 <th style={{ width: 44 }} />
               </tr>
             </thead>
@@ -356,11 +357,11 @@ export default function Ideas() {
           onMove={(i, to) => {
             if (to === 'converted' && !i.projectId) {
               const p = store.convertIdea(i.id);
-              if (p) toast('Converted to a video project', { description: 'Find it in Content Studio.', action: { label: 'Open', run: () => navigate(`/studio/${p.id}`) } });
+              if (p) toast($t("Converted to a video project"), { description: $t("Find it in Content Studio."), action: { label: $t("Open"), run: () => navigate(`/studio/${p.id}`) } });
               return;
             }
             store.update('ideas', i.id, { status: to as IdeaStatus });
-            toast(`Moved to ${IDEA_STATUSES.find((s) => s.id === to)?.label}`, { description: i.title });
+            toast($t('Moved to {where}', { where: IDEA_STATUSES.find((s) => s.id === to)?.label ?? '' }), { description: i.title });
           }}
           renderCard={(i) => card(i, true)}
         />

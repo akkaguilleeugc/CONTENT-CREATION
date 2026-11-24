@@ -8,6 +8,7 @@ import {
 } from 'date-fns';
 import type { DateStr, TimeStr } from './types';
 
+import { $t } from '@/lib/i18n';
 export { clsx as cn } from 'clsx';
 
 export const uid = (): string =>
@@ -43,11 +44,11 @@ export const daysFromToday = (s?: DateStr): number | null => {
 export function relativeDay(s?: DateStr): string {
   const diff = daysFromToday(s);
   if (diff === null) return '';
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Tomorrow';
-  if (diff === -1) return 'Yesterday';
+  if (diff === 0) return $t('Today');
+  if (diff === 1) return $t('Tomorrow');
+  if (diff === -1) return $t('Yesterday');
   if (diff > 1 && diff < 7) return format(parseDate(s)!, 'EEEE');
-  if (diff < -1 && diff > -7) return `${-diff} days ago`;
+  if (diff < -1 && diff > -7) return $t('{n} days ago', { n: -diff });
   const d = parseDate(s)!;
   return format(d, d.getFullYear() === new Date().getFullYear() ? 'd MMM' : 'd MMM yyyy');
 }
@@ -65,10 +66,10 @@ export const rangeDays = (start: Date, count: number) =>
 
 export function greeting(d = new Date()): string {
   const h = d.getHours();
-  if (h < 5) return 'Late night';
-  if (h < 12) return 'Good morning';
-  if (h < 19) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 5) return $t('Late night');
+  if (h < 12) return $t('Good morning');
+  if (h < 19) return $t('Good afternoon');
+  return $t('Good evening');
 }
 
 /* ── Numbers ── */
@@ -109,7 +110,7 @@ export function fmtMinutes(min: number): string {
 }
 
 /* ── Strings ── */
-export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? $t(one) : $t(many)}`;
 export const initials = (name: string) =>
   name
     .split(/\s+/)

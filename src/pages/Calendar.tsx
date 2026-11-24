@@ -18,11 +18,13 @@ import { collision, useBoardSensors } from '@/components/Kanban';
 import { EmptyState, Popover, usePopover } from '@/components/overlay';
 import { Button, ChipToggle, PageHeader, Segmented } from '@/components/ui';
 import { useIsMobile, useNow, usePlatforms } from '@/lib/hooks';
+import { EVENT_TYPES, STAGES } from '@/lib/constants';
 import { useStore } from '@/lib/store';
 import type { DateStr } from '@/lib/types';
 import { openModal, toast } from '@/lib/ui';
 import { cn, parseDate, toDateStr, todayStr, weekStart } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type View = 'month' | 'week' | 'day' | 'agenda';
 type Kind = 'publish' | 'recording' | 'editing' | 'task' | 'event';
 
@@ -40,11 +42,11 @@ interface CalItem {
 }
 
 const KINDS: { id: Kind; label: string; icon: typeof Send }[] = [
-  { id: 'publish', label: 'Publications', icon: Send },
-  { id: 'recording', label: 'Recording', icon: Video },
-  { id: 'editing', label: 'Editing', icon: Scissors },
-  { id: 'task', label: 'Tasks', icon: CheckSquare },
-  { id: 'event', label: 'Events', icon: CalendarDays },
+  { id: 'publish', label: $t("Publications"), icon: Send },
+  { id: 'recording', label: $t("Recording"), icon: Video },
+  { id: 'editing', label: $t("Editing"), icon: Scissors },
+  { id: 'task', label: $t("Tasks"), icon: CheckSquare },
+  { id: 'event', label: $t("Events"), icon: CalendarDays },
 ];
 const KIND_ICON = Object.fromEntries(KINDS.map((k) => [k.id, k.icon])) as Record<Kind, typeof Send>;
 const HOUR = 52;
@@ -64,15 +66,15 @@ function useItems(range: [Date, Date], kinds: Kind[], platformFilter: string[]) 
       if (!platOk(p.platformIds)) continue;
       const color = platforms.get(p.platformIds[0] ?? '')?.color ?? 'var(--royal)';
       if (kinds.includes('publish') && within(p.publishDate))
-        out.push({ key: `pub-${p.id}`, kind: 'publish', date: p.publishDate!, time: p.publishTime, title: p.title || 'Untitled video', refId: p.id, color, done: p.stage === 'published', sub: p.stage === 'published' ? 'Published' : p.stage === 'scheduled' ? 'Scheduled' : p.stage });
-      if (kinds.includes('recording') && within(p.recordDate)) out.push({ key: `rec-${p.id}`, kind: 'recording', date: p.recordDate!, title: p.title || 'Untitled video', refId: p.id, color: 'var(--pink)', sub: 'Recording day' });
-      if (kinds.includes('editing') && within(p.editDate)) out.push({ key: `edit-${p.id}`, kind: 'editing', date: p.editDate!, title: p.title || 'Untitled video', refId: p.id, color: 'var(--royal)', sub: 'Editing day' });
+        out.push({ key: `pub-${p.id}`, kind: 'publish', date: p.publishDate!, time: p.publishTime, title: p.title || $t("Untitled video"), refId: p.id, color, done: p.stage === 'published', sub: p.stage === 'published' ? $t("Published") : p.stage === 'scheduled' ? $t("Scheduled") : (STAGES.find((x) => x.id === p.stage)?.label ?? p.stage) });
+      if (kinds.includes('recording') && within(p.recordDate)) out.push({ key: `rec-${p.id}`, kind: 'recording', date: p.recordDate!, title: p.title || $t("Untitled video"), refId: p.id, color: 'var(--pink)', sub: $t("Recording day") });
+      if (kinds.includes('editing') && within(p.editDate)) out.push({ key: `edit-${p.id}`, kind: 'editing', date: p.editDate!, title: p.title || $t("Untitled video"), refId: p.id, color: 'var(--royal)', sub: $t("Editing day") });
     }
     if (!platformFilter.length) {
       if (kinds.includes('task'))
         for (const t of s.tasks) if (within(t.dueDate)) out.push({ key: `task-${t.id}`, kind: 'task', date: t.dueDate!, time: t.dueTime, title: t.title, refId: t.id, color: 'var(--text-3)', done: t.status === 'done' });
       if (kinds.includes('event'))
-        for (const e of s.events) if (within(e.date)) out.push({ key: `ev-${e.id}`, kind: 'event', date: e.date, time: e.startTime, end: e.endTime, title: e.title, refId: e.id, color: e.type === 'recording' ? 'var(--pink)' : e.type === 'editing' ? 'var(--royal)' : 'var(--lime)', sub: e.type });
+        for (const e of s.events) if (within(e.date)) out.push({ key: `ev-${e.id}`, kind: 'event', date: e.date, time: e.startTime, end: e.endTime, title: e.title, refId: e.id, color: e.type === 'recording' ? 'var(--pink)' : e.type === 'editing' ? 'var(--royal)' : 'var(--lime)', sub: EVENT_TYPES.find((x) => x.id === e.type)?.label ?? e.type });
     }
     return out.sort((x, y) => (x.time ?? '99').localeCompare(y.time ?? '99'));
   }, [s.projects, s.tasks, s.events, range, kinds, platformFilter, platforms]);
@@ -113,7 +115,7 @@ export default function CalendarPage() {
     else setCursor((c) => addDays(c, dir * 30));
   };
   const title =
-    view === 'month' ? format(cursor, 'MMMM yyyy') : view === 'week' ? `${format(range[0], 'd MMM')} – ${format(range[1], 'd MMM yyyy')}` : view === 'day' ? format(cursor, 'EEEE, d MMMM') : `From ${format(cursor, 'd MMMM')}`;
+    view === 'month' ? format(cursor, 'MMMM yyyy') : view === 'week' ? `${format(range[0], 'd MMM')} – ${format(range[1], 'd MMM yyyy')}` : view === 'day' ? format(cursor, 'EEEE, d MMMM') : $t('From {date}', { date: format(cursor, 'd MMMM') });
 
   const openItem = (i: CalItem) => {
     if (i.kind === 'task') openModal({ kind: 'task', id: i.refId });
@@ -138,7 +140,7 @@ export default function CalendarPage() {
       }
       store.update('events', i.refId, patch);
     }
-    toast('Rescheduled', { description: `${i.title} → ${label}` });
+    toast($t("Rescheduled"), { description: `${i.title} → ${label}` });
   };
 
   const onDragEnd = (e: DragEndEvent) => {
@@ -156,12 +158,12 @@ export default function CalendarPage() {
   return (
     <div className="page page--wide cal-page">
       <PageHeader
-        title="Calendar"
-        sub="Publications, recording and editing days, tasks and personal events — drag to reschedule."
+        title={$t("Calendar")}
+        sub={$t("Publications, recording and editing days, tasks and personal events — drag to reschedule.")}
         actions={
           <>
             <Button icon={<Filter />} onClick={() => setShowFilters((v) => !v)} aria-pressed={showFilters} variant={showFilters || kinds.length < 5 || plats.length ? 'primary' : 'default'}>
-              Filters{kinds.length < 5 || plats.length ? ' ·' : ''}
+              {$t("Filters")}{kinds.length < 5 || plats.length ? ' ·' : ''}
             </Button>
             <NewMenu date={view === 'day' ? toDateStr(cursor) : selected} />
           </>
@@ -170,33 +172,33 @@ export default function CalendarPage() {
       {showFilters && (
         <div className="cal-filters panel">
           <div className="col" style={{ gap: 6 }}>
-            <span className="eyebrow">Activity</span>
+            <span className="eyebrow">{$t("Activity")}</span>
             <ChipToggle sm options={KINDS.map((k) => ({ value: k.id, label: k.label, icon: <k.icon /> }))} value={kinds} onChange={(v) => setKinds(v as Kind[])} />
           </div>
           <div className="col" style={{ gap: 6 }}>
-            <span className="eyebrow">Platforms {plats.length ? '· tasks & events hidden' : ''}</span>
+            <span className="eyebrow">{$t("Platforms")} {plats.length ? $t("· tasks & events hidden") : ''}</span>
             <ChipToggle sm options={platforms.list.map((p) => ({ value: p.id, label: p.name, color: p.color }))} value={plats} onChange={setPlats} />
           </div>
         </div>
       )}
       <div className="cal-bar">
         <div className="row">
-          <Button size="sm" iconOnly icon={<ChevronLeft />} onClick={() => step(-1)} aria-label="Previous" />
-          <Button size="sm" iconOnly icon={<ChevronRight />} onClick={() => step(1)} aria-label="Next" />
+          <Button size="sm" iconOnly icon={<ChevronLeft />} onClick={() => step(-1)} aria-label={$t("Previous")} />
+          <Button size="sm" iconOnly icon={<ChevronRight />} onClick={() => step(1)} aria-label={$t("Next")} />
           <Button size="sm" onClick={() => (setCursor(new Date()), setSelected(todayStr()))}>
-            Today
+            {$t("Today")}
           </Button>
           <h2 className="cal-bar__title">{title}</h2>
         </div>
         <Segmented
-          label="Calendar view"
+          label={$t("Calendar view")}
           value={view}
           onChange={setView}
           options={[
-            { value: 'month', label: 'Month' },
-            { value: 'week', label: 'Week' },
-            { value: 'day', label: 'Day' },
-            { value: 'agenda', label: 'Agenda' },
+            { value: 'month', label: $t("Month") },
+            { value: 'week', label: $t("Week") },
+            { value: 'day', label: $t("Day") },
+            { value: 'agenda', label: $t("Agenda") },
           ]}
         />
       </div>
@@ -241,10 +243,10 @@ function NewMenu({ date }: { date: DateStr }) {
   return (
     <>
       <Button variant="primary" icon={<Plus />} onClick={(e) => pop.toggle(e.currentTarget)}>
-        New
+        {$t("New")}
       </Button>
       <Popover anchor={pop.anchor} onClose={pop.close} align="end" width={230}>
-        <div className="menu__label">On {label}</div>
+        <div className="menu__label">{$t("On")} {label}</div>
         <CreateItems date={date} onDone={pop.close} />
       </Popover>
     </>
@@ -253,9 +255,9 @@ function NewMenu({ date }: { date: DateStr }) {
 
 function CreateItems({ date, time, onDone }: { date: DateStr; time?: string; onDone: () => void }) {
   const items: { label: string; icon: ReactNode; run: () => void }[] = [
-    { label: 'Video to publish', icon: <Clapperboard />, run: () => openModal({ kind: 'project', defaults: { publishDate: date, publishTime: time } }) },
-    { label: 'Event', icon: <CalendarDays />, run: () => openModal({ kind: 'event', defaults: { date, startTime: time } }) },
-    { label: 'Task', icon: <CheckSquare />, run: () => openModal({ kind: 'task', defaults: { dueDate: date, dueTime: time } }) },
+    { label: $t("Video to publish"), icon: <Clapperboard />, run: () => openModal({ kind: 'project', defaults: { publishDate: date, publishTime: time } }) },
+    { label: $t("Event"), icon: <CalendarDays />, run: () => openModal({ kind: 'event', defaults: { date, startTime: time } }) },
+    { label: $t("Task"), icon: <CheckSquare />, run: () => openModal({ kind: 'task', defaults: { dueDate: date, dueTime: time } }) },
   ];
   return (
     <>
@@ -327,7 +329,7 @@ function DayCell({ date, inMonth, items, selected, compact, onSelect, onOpenDay,
             if (compact) onSelect();
             else onOpenDay();
           }}
-          aria-label={`Open ${format(date, 'd MMMM')}`}
+          aria-label={$t('Open {date}', { date: format(date, 'd MMMM') })}
         >
           {format(date, 'd')}
         </button>
@@ -338,7 +340,7 @@ function DayCell({ date, inMonth, items, selected, compact, onSelect, onOpenDay,
               e.stopPropagation();
               pop.toggle(e.currentTarget);
             }}
-            aria-label={`Add on ${format(date, 'd MMMM')}`}
+            aria-label={$t('Add on {date}', { date: format(date, 'd MMMM') })}
           >
             <Plus size={13} />
           </button>
@@ -369,7 +371,7 @@ function DayCell({ date, inMonth, items, selected, compact, onSelect, onOpenDay,
         </div>
       )}
       <Popover anchor={pop.anchor} onClose={pop.close} width={220}>
-        <div className="menu__label">Add on {format(date, 'd MMM')}</div>
+        <div className="menu__label">{$t("Add on")} {format(date, 'd MMM')}</div>
         <CreateItems date={ds} onDone={pop.close} />
       </Popover>
     </div>
@@ -404,7 +406,7 @@ function DayList({ date, items, onOpen }: { date: string; items: CalItem[]; onOp
         <NewMenu date={date} />
       </div>
       <div className="panel__body">
-        {items.length === 0 ? <p className="subtle" style={{ fontSize: 13 }}>Nothing planned.</p> : <AgendaRows items={items} onOpen={onOpen} />}
+        {items.length === 0 ? <p className="subtle" style={{ fontSize: 13 }}>{$t("Nothing planned.")}</p> : <AgendaRows items={items} onOpen={onOpen} />}
       </div>
     </div>
   );
@@ -428,7 +430,7 @@ function AgendaRows({ items, onOpen }: { items: CalItem[]; onOpen: (i: CalItem) 
               </span>
             </button>
             <span className="agenda__time mono">
-              {i.time ?? 'All day'}
+              {i.time ?? $t("All day")}
               {i.end ? `–${i.end}` : ''}
             </span>
           </li>
@@ -443,7 +445,7 @@ function Agenda({ byDate, onOpen }: { byDate: Map<string, CalItem[]>; onOpen: (i
   if (!days.length)
     return (
       <div className="panel">
-        <EmptyState icon={<CalendarDays />} title="Nothing in the next 45 days" text="Schedule a publication, a recording day or an event." actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'event' })}>New event</Button>} />
+        <EmptyState icon={<CalendarDays />} title={$t("Nothing in the next 45 days")} text={$t("Schedule a publication, a recording day or an event.")} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'event' })}>{$t("New event")}</Button>} />
       </div>
     );
   return (
@@ -512,7 +514,7 @@ function TimeGrid({ days, byDate, onOpen }: { days: Date[]; byDate: Map<string, 
         ))}
       </div>
       <div className="cal-time__allday">
-        <div className="eyebrow" style={{ fontSize: 9 }}>All day</div>
+        <div className="eyebrow" style={{ fontSize: 9 }}>{$t("All day")}</div>
         {days.map((d) => {
           const ds = toDateStr(d);
           return <AllDay key={ds} date={ds} items={(byDate.get(ds) ?? []).filter((i) => !i.time)} onOpen={onOpen} />;

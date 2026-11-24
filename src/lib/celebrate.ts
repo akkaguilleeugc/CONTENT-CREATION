@@ -5,7 +5,7 @@
    only something the person did in the last moment does. */
 import { goalValue } from './metrics';
 import { haptic } from './pwa';
-import { useStore, type Store } from './store';
+import { isExternalApply, useStore, type Store } from './store';
 
 export type Achievement = 'task' | 'subtask' | 'habit' | 'checklist' | 'idea' | 'published' | 'goal';
 
@@ -118,7 +118,7 @@ export function startAchievements() {
   let lists = checklistsDone(useStore.getState());
   const unsub = useStore.subscribe((s, prev) => {
     if (s.rev === prev.rev) return;
-    const byUser = performance.now() - lastInput < 1200;
+    const byUser = !isExternalApply() && performance.now() - lastInput < 1200;
     const fired: Achievement[] = [];
 
     if (s.tasks !== prev.tasks) {

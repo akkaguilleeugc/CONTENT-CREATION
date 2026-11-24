@@ -27,11 +27,12 @@ import type { Asset, BrandColor, BrandFont } from '@/lib/types';
 import { confirmDialog, openModal, toast } from '@/lib/ui';
 import { cn, contrastRatio, copyText, hexToRgb, isHex, readableOn } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type Tab = 'guidelines' | 'colors' | 'type' | 'references' | 'assets';
 
 async function copyHex(hex: string) {
   const ok = await copyText(hex);
-  toast(ok ? `${hex} copied` : 'Could not copy', { tone: ok ? 'success' : 'error' });
+  toast(ok ? $t('{hex} copied', { hex }) : $t("Could not copy"), { tone: ok ? 'success' : 'error' });
 }
 
 function useOrderedColors() {
@@ -63,11 +64,11 @@ export default function BrandKit() {
   return (
     <div className="page">
       <PageHeader
-        title="Brand Kit"
-        sub={brand.name ? <>The single source of truth for <b>{brand.name}</b> — logos, colours, type, rules and references.</> : 'Your brand’s single source of truth. Fill it with your own logos, colours, fonts, rules and references.'}
+        title={$t("Brand Kit")}
+        sub={brand.name ? <>{$t("The single source of truth for")} <b>{brand.name}</b> {$t("— logos, colours, type, rules and references.")}</> : $t("Your brand’s single source of truth. Fill it with your own logos, colours, fonts, rules and references.")}
         actions={
           <Button icon={<Pencil />} onClick={() => openModal({ kind: 'brand' })}>
-            {brand.name ? 'Edit brand' : 'Set up brand'}
+            {brand.name ? $t("Edit brand") : $t("Set up brand")}
           </Button>
         }
       />
@@ -75,11 +76,11 @@ export default function BrandKit() {
         value={tab}
         onChange={(t) => setParams({ tab: t })}
         tabs={[
-          { value: 'guidelines', label: 'Guidelines' },
-          { value: 'colors', label: 'Colours', count: colors },
-          { value: 'type', label: 'Typography', count: fonts },
-          { value: 'references', label: 'References', count: refs },
-          { value: 'assets', label: 'Brand assets', count: brandAssets },
+          { value: 'guidelines', label: $t("Guidelines") },
+          { value: 'colors', label: $t("Colours"), count: colors },
+          { value: 'type', label: $t("Typography"), count: fonts },
+          { value: 'references', label: $t("References"), count: refs },
+          { value: 'assets', label: $t("Brand assets"), count: brandAssets },
         ]}
       />
       <div style={{ marginTop: 20 }} key={tab} className="page-enter">
@@ -109,7 +110,7 @@ function useLogoUpload(slot: 'logoAssetId' | 'symbolAssetId') {
         const [a] = await uploadFiles([f], { type: 'logo', brand: true, tags: [slot === 'logoAssetId' ? 'logo' : 'symbol'] });
         if (a) {
           useStore.getState().setBrand({ [slot]: a.id });
-          toast(slot === 'logoAssetId' ? 'Logo uploaded' : 'Symbol uploaded');
+          toast(slot === 'logoAssetId' ? $t("Logo uploaded") : $t("Symbol uploaded"));
         }
       }}
     />
@@ -128,10 +129,10 @@ function Guidelines({ goTo }: { goTo: (t: Tab) => void }) {
   const symUp = useLogoUpload('symbolAssetId');
 
   const steps = [
-    { done: !!brand.name, label: 'Name & story', hint: 'Name, tagline, description and voice', action: () => openModal({ kind: 'brand' }), cta: 'Add details' },
-    { done: !!logo, label: 'Logo', hint: 'Upload your primary logo', action: logoUp.open, cta: 'Upload logo' },
-    { done: colors.length > 0, label: 'Colours', hint: 'Create a palette with your HEX codes', action: () => (useStore.getState().palettes.length ? openModal({ kind: 'color' }) : openModal({ kind: 'palette' })), cta: 'Add colours' },
-    { done: fonts.all.length > 0, label: 'Fonts', hint: 'Upload your typefaces', action: () => openModal({ kind: 'font' }), cta: 'Add font' },
+    { done: !!brand.name, label: $t("Name & story"), hint: $t("Name, tagline, description and voice"), action: () => openModal({ kind: 'brand' }), cta: $t("Add details") },
+    { done: !!logo, label: $t("Logo"), hint: $t("Upload your primary logo"), action: logoUp.open, cta: $t("Upload logo") },
+    { done: colors.length > 0, label: $t("Colours"), hint: $t("Create a palette with your HEX codes"), action: () => (useStore.getState().palettes.length ? openModal({ kind: 'color' }) : openModal({ kind: 'palette' })), cta: $t("Add colours") },
+    { done: fonts.all.length > 0, label: $t("Fonts"), hint: $t("Upload your typefaces"), action: () => openModal({ kind: 'font' }), cta: $t("Add font") },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const heroBg = colors[0]?.hex;
@@ -145,8 +146,8 @@ function Guidelines({ goTo }: { goTo: (t: Tab) => void }) {
           <div className="setup__head">
             <span className="setup__badge"><Sparkles size={15} /> {doneCount}/{steps.length}</span>
             <div>
-              <h3 className="panel__title">Set up your brand</h3>
-              <p className="subtle" style={{ fontSize: 13 }}>Nothing here is pre-filled — every guideline below is generated from what you add.</p>
+              <h3 className="panel__title">{$t("Set up your brand")}</h3>
+              <p className="subtle" style={{ fontSize: 13 }}>{$t("Nothing here is pre-filled — every guideline below is generated from what you add.")}</p>
             </div>
           </div>
           <div className="setup__steps">
@@ -172,7 +173,7 @@ function Guidelines({ goTo }: { goTo: (t: Tab) => void }) {
         <section className="my-hero" style={heroBg ? { ['--hero' as string]: heroBg, color: readableOn(heroBg) } : undefined}>
           <div className="my-hero__copy">
             {brand.voice.length > 0 && <span className="eyebrow" style={{ color: 'inherit', opacity: 0.65 }}>{brand.voice.join(' · ')}</span>}
-            <h2 className="my-hero__name" style={{ fontFamily: fonts.display ? fontStack(fonts.display) : undefined }}>{brand.name || 'Your brand'}</h2>
+            <h2 className="my-hero__name" style={{ fontFamily: fonts.display ? fontStack(fonts.display) : undefined }}>{brand.name || $t("Your brand")}</h2>
             {brand.tagline && <p className="my-hero__tagline" style={{ fontFamily: fonts.accent ? fontStack(fonts.accent) : undefined }}>{brand.tagline}</p>}
             {brand.description && <p className="my-hero__desc" style={{ fontFamily: fonts.text ? fontStack(fonts.text) : undefined }}>{brand.description}</p>}
           </div>
@@ -186,25 +187,25 @@ function Guidelines({ goTo }: { goTo: (t: Tab) => void }) {
 
       <section>
         <div className="row between" style={{ marginBottom: 14 }}>
-          <h3 className="section-title" style={{ margin: 0 }}>Logo</h3>
+          <h3 className="section-title" style={{ margin: 0 }}>{$t("Logo")}</h3>
           <Button size="sm" variant="ghost" icon={<Upload />} onClick={() => openModal({ kind: 'upload', defaults: { type: 'logo', brand: true } })}>
-            Upload variant
+            {$t("Upload variant")}
           </Button>
         </div>
         <div className="logo-grid">
-          <LogoSlot title="Primary logo" note="Your main mark — used wherever there is room." asset={logo} bg={brand.logoBackground} onUpload={logoUp.open} onClear={() => useStore.getState().setBrand({ logoAssetId: undefined })} />
-          <LogoSlot title="Symbol" note="Compact mark for avatars, icons and small spaces." asset={symbol} bg={brand.logoBackground} onUpload={symUp.open} onClear={() => useStore.getState().setBrand({ symbolAssetId: undefined })} />
+          <LogoSlot title={$t("Primary logo")} note={$t("Your main mark — used wherever there is room.")} asset={logo} bg={brand.logoBackground} onUpload={logoUp.open} onClear={() => useStore.getState().setBrand({ logoAssetId: undefined })} />
+          <LogoSlot title={$t("Symbol")} note={$t("Compact mark for avatars, icons and small spaces.")} asset={symbol} bg={brand.logoBackground} onUpload={symUp.open} onClear={() => useStore.getState().setBrand({ symbolAssetId: undefined })} />
         </div>
         <LogoVariants exclude={[brand.logoAssetId, brand.symbolAssetId]} />
         {logo && colors.length > 0 && (
           <>
-            <div className="eyebrow" style={{ margin: '18px 0 10px' }}>Your logo on your colours</div>
+            <div className="eyebrow" style={{ margin: '18px 0 10px' }}>{$t("Your logo on your colours")}</div>
             <div className="surface-grid">
               {colors.slice(0, 5).map((c) => (
                 <div key={c.id} className="surface" style={{ background: c.hex, color: readableOn(c.hex) }}>
                   <LogoImg asset={logo} />
                   <span style={{ color: 'inherit', opacity: 0.7 }}>
-                    {c.name} · {contrastRatio(c.hex, readableOn(c.hex)) >= 4.5 ? 'text OK' : 'check legibility'}
+                    {c.name} · {contrastRatio(c.hex, readableOn(c.hex)) >= 4.5 ? $t("text OK") : $t("check legibility")}
                   </span>
                 </div>
               ))}
@@ -215,11 +216,11 @@ function Guidelines({ goTo }: { goTo: (t: Tab) => void }) {
 
       <section>
         <div className="row between" style={{ marginBottom: 14 }}>
-          <h3 className="section-title" style={{ margin: 0 }}>Palette</h3>
-          <Button size="sm" variant="ghost" onClick={() => goTo('colors')}>Manage colours</Button>
+          <h3 className="section-title" style={{ margin: 0 }}>{$t("Palette")}</h3>
+          <Button size="sm" variant="ghost" onClick={() => goTo('colors')}>{$t("Manage colours")}</Button>
         </div>
         {colors.length === 0 ? (
-          <div className="panel"><EmptyState compact icon={<PaletteIcon />} title="No colours yet" text="Add your brand colours with their HEX codes — the palette, gradient and contrast checks build themselves." actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: useStore.getState().palettes.length ? 'color' : 'palette' })}>Add colours</Button>} /></div>
+          <div className="panel"><EmptyState compact icon={<PaletteIcon />} title={$t("No colours yet")} text={$t("Add your brand colours with their HEX codes — the palette, gradient and contrast checks build themselves.")} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: useStore.getState().palettes.length ? 'color' : 'palette' })}>{$t("Add colours")}</Button>} /></div>
         ) : (
           <>
             <div className="pill-stack">
@@ -244,17 +245,17 @@ function Guidelines({ goTo }: { goTo: (t: Tab) => void }) {
 
       <section>
         <div className="row between" style={{ marginBottom: 14 }}>
-          <h3 className="section-title" style={{ margin: 0 }}>Type hierarchy</h3>
-          <Button size="sm" variant="ghost" onClick={() => goTo('type')}>Manage fonts</Button>
+          <h3 className="section-title" style={{ margin: 0 }}>{$t("Type hierarchy")}</h3>
+          <Button size="sm" variant="ghost" onClick={() => goTo('type')}>{$t("Manage fonts")}</Button>
         </div>
         {fonts.all.length === 0 ? (
-          <div className="panel"><EmptyState compact icon={<Type />} title="No fonts yet" text="Upload your typefaces (.otf, .ttf, .woff) and give each a role — display, text or accent." actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'font' })}>Add font</Button>} /></div>
+          <div className="panel"><EmptyState compact icon={<Type />} title={$t("No fonts yet")} text={$t("Upload your typefaces (.otf, .ttf, .woff) and give each a role — display, text or accent.")} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'font' })}>{$t("Add font")}</Button>} /></div>
         ) : (
           <div className="type-stack panel">
             {fonts.all.map((f) => (
               <div key={f.id}>
                 <span className="eyebrow">{FONT_ROLES.find((r) => r.id === f.role)?.label} · {f.name}</span>
-                <span style={{ fontFamily: fontStack(f), fontSize: f.role === 'display' ? 52 : f.role === 'accent' ? 38 : 17, lineHeight: 1.15 }}>{f.sample || (f.role === 'text' ? 'Clear, readable copy for everything people need to read.' : brand.name || 'Your brand')}</span>
+                <span style={{ fontFamily: fontStack(f), fontSize: f.role === 'display' ? 52 : f.role === 'accent' ? 38 : 17, lineHeight: 1.15 }}>{f.sample || (f.role === 'text' ? $t("Clear, readable copy for everything people need to read.") : brand.name || $t("Your brand"))}</span>
                 {f.usage && <span className="subtle" style={{ fontSize: 12.5 }}>{f.usage}</span>}
               </div>
             ))}
@@ -263,7 +264,7 @@ function Guidelines({ goTo }: { goTo: (t: Tab) => void }) {
       </section>
 
       <section>
-        <h3 className="section-title">Usage rules</h3>
+        <h3 className="section-title">{$t("Usage rules")}</h3>
         <div className="rules">
           <RuleList kind="do" />
           <RuleList kind="dont" />
@@ -284,7 +285,7 @@ function LogoSlot({ title, note, asset, bg, onUpload, onClear }: { title: string
       {asset ? <LogoImg asset={asset} /> : (
         <button className="logo-card__add" onClick={onUpload}>
           <Upload />
-          <span>Upload {title.toLowerCase()}</span>
+          <span>{$t("Upload")} {title.toLowerCase()}</span>
         </button>
       )}
       <div className="logo-card__caption">
@@ -294,9 +295,9 @@ function LogoSlot({ title, note, asset, bg, onUpload, onClear }: { title: string
         </div>
         {asset && (
           <div className="row" style={{ gap: 4 }}>
-            <Button size="sm" iconOnly icon={<Download />} tip="Download original" onClick={() => downloadAsset(asset)} />
-            <Button size="sm" iconOnly icon={<Upload />} tip="Replace" onClick={onUpload} />
-            <Button size="sm" iconOnly icon={<X />} tip="Unset" onClick={onClear} />
+            <Button size="sm" iconOnly icon={<Download />} tip={$t("Download original")} onClick={() => downloadAsset(asset)} />
+            <Button size="sm" iconOnly icon={<Upload />} tip={$t("Replace")} onClick={onUpload} />
+            <Button size="sm" iconOnly icon={<X />} tip={$t("Unset")} onClick={onClear} />
           </div>
         )}
       </div>
@@ -310,7 +311,7 @@ function LogoVariants({ exclude }: { exclude: (string | undefined)[] }) {
   if (!list.length) return null;
   return (
     <>
-      <div className="eyebrow" style={{ margin: '18px 0 10px' }}>Other logo files</div>
+      <div className="eyebrow" style={{ margin: '18px 0 10px' }}>{$t("Other logo files")}</div>
       <div className="asset-grid">
         {list.map((a) => (
           <div key={a.id} className="asset-card">
@@ -321,11 +322,11 @@ function LogoVariants({ exclude }: { exclude: (string | undefined)[] }) {
               <span className="truncate grow" style={{ fontWeight: 600, fontSize: 13 }}>{a.name}</span>
               <Menu
                 items={[
-                  { label: 'Set as primary logo', icon: <Check />, onSelect: () => useStore.getState().setBrand({ logoAssetId: a.id }) },
-                  { label: 'Set as symbol', icon: <Check />, onSelect: () => useStore.getState().setBrand({ symbolAssetId: a.id }) },
-                  { label: 'Download', icon: <Download />, onSelect: () => downloadAsset(a) },
+                  { label: $t("Set as primary logo"), icon: <Check />, onSelect: () => useStore.getState().setBrand({ logoAssetId: a.id }) },
+                  { label: $t("Set as symbol"), icon: <Check />, onSelect: () => useStore.getState().setBrand({ symbolAssetId: a.id }) },
+                  { label: $t("Download"), icon: <Download />, onSelect: () => downloadAsset(a) },
                 ]}
-                trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label="Logo actions" />}
+                trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t("Logo actions")} />}
               />
             </div>
           </div>
@@ -347,19 +348,19 @@ function RuleList({ kind }: { kind: 'do' | 'dont' }) {
   };
   return (
     <div className={cn('rule', kind === 'do' ? 'rule--do' : 'rule--dont')}>
-      <h4>{kind === 'do' ? <Check size={15} /> : <X size={15} />} {kind === 'do' ? 'Do' : 'Don’t'}</h4>
+      <h4>{kind === 'do' ? <Check size={15} /> : <X size={15} />} {kind === 'do' ? $t("Do") : $t("Don’t")}</h4>
       <ul>
         {list.map((r, i) => (
           <li key={i} className="row between">
             <span>{r}</span>
-            <button className="rule__x" onClick={() => setList(list.filter((_, j) => j !== i))} aria-label="Remove rule"><X size={13} /></button>
+            <button className="rule__x" onClick={() => setList(list.filter((_, j) => j !== i))} aria-label={$t("Remove rule")}><X size={13} /></button>
           </li>
         ))}
-        {!list.length && <li className="subtle">No rules yet.</li>}
+        {!list.length && <li className="subtle">{$t("No rules yet.")}</li>}
       </ul>
       <form className="row mt-8" onSubmit={(e) => (e.preventDefault(), add())}>
-        <Input sm value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={kind === 'do' ? 'Add something to always do…' : 'Add something to avoid…'} aria-label={kind === 'do' ? 'New do rule' : 'New don’t rule'} />
-        <Button size="sm" type="submit" icon={<Plus />}>Add</Button>
+        <Input sm value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={kind === 'do' ? $t("Add something to always do…") : $t("Add something to avoid…")} aria-label={kind === 'do' ? $t("New do rule") : $t("New don’t rule")} />
+        <Button size="sm" type="submit" icon={<Plus />}>{$t("Add")}</Button>
       </form>
     </div>
   );
@@ -373,7 +374,7 @@ function Swatch({ c }: { c: BrandColor }) {
   return (
     <div className="swatch">
       <button className="swatch__color" style={{ background: c.hex, color: readableOn(c.hex) }} onClick={() => copyHex(c.hex)} aria-label={`Copy ${c.hex}`}>
-        <span className="swatch__copy"><Copy size={13} /> Copy</span>
+        <span className="swatch__copy"><Copy size={13} /> {$t("Copy")}</span>
         <span className="display" style={{ fontSize: 22 }}>{c.name}</span>
       </button>
       <div className="swatch__info">
@@ -381,30 +382,30 @@ function Swatch({ c }: { c: BrandColor }) {
           <span className="mono" style={{ fontSize: 12.5 }}>{c.hex}</span>
           <Menu
             items={[
-              { label: 'Copy HEX', icon: <Copy />, onSelect: () => copyHex(c.hex) },
-              { label: 'Copy RGB', icon: <Copy />, onSelect: () => copyText(`rgb(${hexToRgb(c.hex)})`).then(() => toast('RGB copied')) },
-              { label: 'Edit', icon: <Pencil />, onSelect: () => openModal({ kind: 'color', id: c.id }) },
+              { label: $t("Copy HEX"), icon: <Copy />, onSelect: () => copyHex(c.hex) },
+              { label: $t("Copy RGB"), icon: <Copy />, onSelect: () => copyText(`rgb(${hexToRgb(c.hex)})`).then(() => toast($t("RGB copied"))) },
+              { label: $t("Edit"), icon: <Pencil />, onSelect: () => openModal({ kind: 'color', id: c.id }) },
               {
-                label: 'Delete',
+                label: $t("Delete"),
                 icon: <Trash2 />,
                 danger: true,
                 separator: true,
                 onSelect: async () => {
-                  if (await confirmDialog({ title: `Delete ${c.name}?` })) {
+                  if (await confirmDialog({ title: $t('Delete {name}?', { name: c.name }) })) {
                     store.remove('colors', c.id);
-                    toast('Colour removed');
+                    toast($t("Colour removed"));
                   }
                 },
               },
             ]}
-            trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label="Colour actions" />}
+            trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t("Colour actions")} />}
           />
         </div>
-        <span className="subtle mono" style={{ fontSize: 11 }}>RGB {hexToRgb(c.hex)}</span>
+        <span className="subtle mono" style={{ fontSize: 11 }}>{$t("RGB")} {hexToRgb(c.hex)}</span>
         {c.role && <span className="subtle" style={{ fontSize: 12 }}>{c.role}</span>}
         <div className="row" style={{ gap: 4, marginTop: 4 }}>
-          <span className={cn('badge', onWhite >= 4.5 ? 'badge--positive' : '')} title="Contrast as text on white">White {onWhite.toFixed(1)}</span>
-          <span className={cn('badge', onBlack >= 4.5 ? 'badge--positive' : '')} title="Contrast as text on black">Black {onBlack.toFixed(1)}</span>
+          <span className={cn('badge', onWhite >= 4.5 ? 'badge--positive' : '')} title={$t("Contrast as text on white")}>{$t("White")} {onWhite.toFixed(1)}</span>
+          <span className={cn('badge', onBlack >= 4.5 ? 'badge--positive' : '')} title={$t("Contrast as text on black")}>{$t("Black")} {onBlack.toFixed(1)}</span>
         </div>
       </div>
     </div>
@@ -421,19 +422,19 @@ function Colors() {
       <div className="panel">
         <EmptyState
           icon={<PaletteIcon />}
-          title="Create your first palette"
-          text="Group your colours into palettes (e.g. Primary, Secondary, Campaign) and add each one with its HEX code."
-          actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'palette' })}>New palette</Button>}
+          title={$t("Create your first palette")}
+          text={$t("Group your colours into palettes (e.g. Primary, Secondary, Campaign) and add each one with its HEX code.")}
+          actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'palette' })}>{$t("New palette")}</Button>}
         />
       </div>
     );
   return (
     <div className="col gap-24">
       <div className="row between wrap">
-        <p className="subtle" style={{ fontSize: 13 }}>Click a swatch to copy its HEX. Badges show WCAG contrast as text on white and on black.</p>
+        <p className="subtle" style={{ fontSize: 13 }}>{$t("Click a swatch to copy its HEX. Badges show WCAG contrast as text on white and on black.")}</p>
         <div className="row">
-          <Button icon={<PaletteIcon />} onClick={() => openModal({ kind: 'palette' })}>New palette</Button>
-          <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'color' })}>Add colour</Button>
+          <Button icon={<PaletteIcon />} onClick={() => openModal({ kind: 'palette' })}>{$t("New palette")}</Button>
+          <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'color' })}>{$t("Add colour")}</Button>
         </div>
       </div>
       {palettes.map((p) => {
@@ -446,25 +447,25 @@ function Colors() {
                 {p.description && <p className="subtle" style={{ fontSize: 12.5 }}>{p.description}</p>}
               </div>
               <div className="row" style={{ gap: 4 }}>
-                <Button size="sm" variant="ghost" icon={<Plus />} onClick={() => openModal({ kind: 'color', paletteId: p.id })}>Colour</Button>
-                <Button size="sm" variant="ghost" iconOnly icon={<Pencil />} tip="Edit palette" onClick={() => openModal({ kind: 'palette', id: p.id })} />
+                <Button size="sm" variant="ghost" icon={<Plus />} onClick={() => openModal({ kind: 'color', paletteId: p.id })}>{$t("Colour")}</Button>
+                <Button size="sm" variant="ghost" iconOnly icon={<Pencil />} tip={$t("Edit palette")} onClick={() => openModal({ kind: 'palette', id: p.id })} />
               </div>
             </div>
             {list.length ? (
               <div className="swatch-grid">{list.map((c) => <Swatch key={c.id} c={c} />)}</div>
             ) : (
-              <div className="panel"><EmptyState compact icon={<PaletteIcon />} title="Empty palette" actions={<Button size="sm" icon={<Plus />} onClick={() => openModal({ kind: 'color', paletteId: p.id })}>Add colour</Button>} /></div>
+              <div className="panel"><EmptyState compact icon={<PaletteIcon />} title={$t("Empty palette")} actions={<Button size="sm" icon={<Plus />} onClick={() => openModal({ kind: 'color', paletteId: p.id })}>{$t("Add colour")}</Button>} /></div>
             )}
           </section>
         );
       })}
       <section>
         <div className="row between" style={{ marginBottom: 12 }}>
-          <h3 className="section-title" style={{ margin: 0 }}>Combinations</h3>
-          <Button size="sm" icon={<Plus />} onClick={() => openModal({ kind: 'combo' })} disabled={!colors.length}>New combination</Button>
+          <h3 className="section-title" style={{ margin: 0 }}>{$t("Combinations")}</h3>
+          <Button size="sm" icon={<Plus />} onClick={() => openModal({ kind: 'combo' })} disabled={!colors.length}>{$t("New combination")}</Button>
         </div>
         {combos.length === 0 ? (
-          <p className="subtle" style={{ fontSize: 13 }}>Save approved background / text / accent pairings and check their contrast.</p>
+          <p className="subtle" style={{ fontSize: 13 }}>{$t("Save approved background / text / accent pairings and check their contrast.")}</p>
         ) : (
           <div className="combo-grid">
             {combos.map((c) => {
@@ -472,7 +473,7 @@ function Colors() {
               return (
                 <button key={c.id} className="combo" onClick={() => openModal({ kind: 'combo', id: c.id })}>
                   <div className="combo__preview" style={{ background: c.background, color: c.foreground }}>
-                    <span className="display" style={{ fontSize: 34 }}>Aa<span style={{ color: c.accent ?? c.foreground }}>.</span></span>
+                    <span className="display" style={{ fontSize: 34 }}>{$t("Aa")}<span style={{ color: c.accent ?? c.foreground }}>.</span></span>
                     {c.accent && <span className="combo__accent" style={{ background: c.accent }} />}
                   </div>
                   <div className="combo__info">
@@ -501,30 +502,30 @@ function Typography() {
       <div className="panel">
         <EmptyState
           icon={<Type />}
-          title="Add your brand fonts"
-          text="Upload .otf, .ttf, .woff or .woff2 files (or use a font installed on this device). Each gets a role and usage notes, and every preview renders in the real typeface."
-          actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'font' })}>Add font</Button>}
+          title={$t("Add your brand fonts")}
+          text={$t("Upload .otf, .ttf, .woff or .woff2 files (or use a font installed on this device). Each gets a role and usage notes, and every preview renders in the real typeface.")}
+          actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'font' })}>{$t("Add font")}</Button>}
         />
       </div>
     );
   const scale: { name: string; size: number; f?: BrandFont }[] = [
-    { name: 'Display', size: 64, f: all.find((x) => x.role === 'display') },
-    { name: 'Heading', size: 40, f: all.find((x) => x.role === 'display') },
-    { name: 'Subheading', size: 24, f: all.find((x) => x.role === 'display') ?? all.find((x) => x.role === 'text') },
-    { name: 'Accent', size: 30, f: all.find((x) => x.role === 'accent') },
-    { name: 'Body', size: 16, f: all.find((x) => x.role === 'text') },
-    { name: 'Caption', size: 12, f: all.find((x) => x.role === 'text') },
+    { name: $t("Display"), size: 64, f: all.find((x) => x.role === 'display') },
+    { name: $t("Heading"), size: 40, f: all.find((x) => x.role === 'display') },
+    { name: $t("Subheading"), size: 24, f: all.find((x) => x.role === 'display') ?? all.find((x) => x.role === 'text') },
+    { name: $t("Accent"), size: 30, f: all.find((x) => x.role === 'accent') },
+    { name: $t("Body"), size: 16, f: all.find((x) => x.role === 'text') },
+    { name: $t("Caption"), size: 12, f: all.find((x) => x.role === 'text') },
   ].filter((r) => r.f);
   return (
     <div className="col gap-24">
       <div className="toolbar" style={{ margin: 0 }}>
-        <Input sm value={text} onChange={(e) => setText(e.target.value)} placeholder="Type to preview all your fonts…" style={{ maxWidth: 420 }} aria-label="Preview text" />
+        <Input sm value={text} onChange={(e) => setText(e.target.value)} placeholder={$t("Type to preview all your fonts…")} style={{ maxWidth: 420 }} aria-label={$t("Preview text")} />
         <label className="row subtle" style={{ fontSize: 12.5 }}>
-          Size
-          <input type="range" min={18} max={110} value={size} onChange={(e) => setSize(Number(e.target.value))} aria-label="Preview size" style={{ accentColor: 'var(--royal)' }} />
+          {$t("Size")}
+          <input type="range" min={18} max={110} value={size} onChange={(e) => setSize(Number(e.target.value))} aria-label={$t("Preview size")} style={{ accentColor: 'var(--royal)' }} />
           <span className="tnum" style={{ width: 34 }}>{size}px</span>
         </label>
-        <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'font' })} style={{ marginLeft: 'auto' }}>Add font</Button>
+        <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'font' })} style={{ marginLeft: 'auto' }}>{$t("Add font")}</Button>
       </div>
       <div className="font-grid">
         {all.map((f) => (
@@ -533,13 +534,13 @@ function Typography() {
       </div>
       {scale.length > 0 && (
         <section className="panel">
-          <div className="panel__head"><h3 className="panel__title">Type scale</h3></div>
+          <div className="panel__head"><h3 className="panel__title">{$t("Type scale")}</h3></div>
           <div className="panel__body">
             <div className="scale">
               {scale.map((s) => (
                 <div key={s.name} className="scale__row">
-                  <span className="scale__meta"><b>{s.name}</b><span className="subtle">{s.size}px · {s.f!.name}</span></span>
-                  <span className="truncate" style={{ fontFamily: fontStack(s.f), fontSize: s.size, lineHeight: 1.15 }}>{text || s.f!.sample || brandName || 'Content that moves'}</span>
+                  <span className="scale__meta"><b>{s.name}</b><span className="subtle">{s.size}{$t("px ·")} {s.f!.name}</span></span>
+                  <span className="truncate" style={{ fontFamily: fontStack(s.f), fontSize: s.size, lineHeight: 1.15 }}>{text || s.f!.sample || brandName || $t("Content that moves")}</span>
                 </div>
               ))}
             </div>
@@ -557,15 +558,15 @@ function FontCard({ f, text, size }: { f: BrandFont; text: string; size: number 
       <div className="row between">
         <span className="badge badge--accent"><Type /> {FONT_ROLES.find((r) => r.id === f.role)?.label}</span>
         <div className="row" style={{ gap: 2 }}>
-          {asset && <Button size="sm" variant="ghost" iconOnly icon={<Download />} tip="Download file" onClick={() => downloadAsset(asset)} />}
-          <Button size="sm" variant="ghost" iconOnly icon={<Pencil />} tip="Edit" onClick={() => openModal({ kind: 'font', id: f.id })} />
+          {asset && <Button size="sm" variant="ghost" iconOnly icon={<Download />} tip={$t("Download file")} onClick={() => downloadAsset(asset)} />}
+          <Button size="sm" variant="ghost" iconOnly icon={<Pencil />} tip={$t("Edit")} onClick={() => openModal({ kind: 'font', id: f.id })} />
         </div>
       </div>
-      <div className="font-card__aa" style={{ fontFamily: fontStack(f) }}>Aa</div>
+      <div className="font-card__aa" style={{ fontFamily: fontStack(f) }}>{$t("Aa")}</div>
       <h3 className="font-card__name">{f.name}</h3>
       <span className="subtle" style={{ fontSize: 12 }}>{asset ? `${asset.name} · uploaded file` : `Installed font · ${f.family}`}</span>
       <div className="font-card__sample" style={{ fontFamily: fontStack(f), fontSize: size }}>{text || f.sample || f.name}</div>
-      <div className="font-card__glyphs" style={{ fontFamily: fontStack(f) }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />abcdefghijklmnopqrstuvwxyz<br />0123456789 áéíóú ñ ¿? ¡! @#&</div>
+      <div className="font-card__glyphs" style={{ fontFamily: fontStack(f) }}>{$t("ABCDEFGHIJKLMNOPQRSTUVWXYZ")}<br />abcdefghijklmnopqrstuvwxyz<br />0123456789 áéíóú ñ ¿? ¡! @#&</div>
       {f.usage && <p className="subtle" style={{ fontSize: 12.5 }}>{f.usage}</p>}
     </article>
   );
@@ -586,11 +587,11 @@ function References() {
     <div className="col gap-16">
       <div className="row between wrap">
         <ChipToggle sm options={REFERENCE_KINDS.map((k) => ({ value: k.id, label: k.label }))} value={kinds} onChange={setKinds} />
-        <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'reference' })}>Add reference</Button>
+        <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'reference' })}>{$t("Add reference")}</Button>
       </div>
       {refs.length === 0 ? (
         <div className="panel">
-          <EmptyState icon={<ImageIcon />} title="Build your moodboard" text="Save design references, photography, screenshots and campaign ideas for your brand — with links, notes and tags." actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'reference' })}>Add reference</Button>} />
+          <EmptyState icon={<ImageIcon />} title={$t("Build your moodboard")} text={$t("Save design references, photography, screenshots and campaign ideas for your brand — with links, notes and tags.")} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'reference' })}>{$t("Add reference")}</Button>} />
         </div>
       ) : (
         <div className="ref-grid">
@@ -637,16 +638,16 @@ function BrandAssets() {
       <Dropzone
         onFiles={async (files) => {
           const c = await uploadFiles(files, { brand: true, type: 'graphic' });
-          if (c.length) toast(`${c.length} brand asset${c.length > 1 ? 's' : ''} added`);
+          if (c.length) toast(c.length > 1 ? $t('{n} brand assets added', { n: c.length }) : $t('1 brand asset added'));
         }}
       >
         <Upload />
-        <div className="dropzone__title">Add your brand assets</div>
-        <div className="dropzone__sub">Logos, covers, templates, graphic elements, fonts, video and social resources</div>
+        <div className="dropzone__title">{$t("Add your brand assets")}</div>
+        <div className="dropzone__sub">{$t("Logos, covers, templates, graphic elements, fonts, video and social resources")}</div>
       </Dropzone>
       {present.length > 1 && <ChipToggle sm options={present.map((t) => ({ value: t.id, label: t.label }))} value={types} onChange={setTypes} />}
       {list.length === 0 ? (
-        <p className="subtle" style={{ fontSize: 13 }}>Nothing here yet. Everything you upload here — or mark as “In Brand Kit” in the Asset Library — appears in this tab.</p>
+        <p className="subtle" style={{ fontSize: 13 }}>{$t("Nothing here yet. Everything you upload here — or mark as “In Brand Kit” in the Asset Library — appears in this tab.")}</p>
       ) : (
         <div className="asset-grid">
           {list.map((a) => (

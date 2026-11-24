@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { toast } from './ui';
 
+import { $t } from '@/lib/i18n';
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -59,7 +60,7 @@ export function initPWA() {
   });
   window.addEventListener('appinstalled', () => {
     usePWA.setState({ installed: true, installEvent: null });
-    toast('KROOPY installed', { description: 'Open it from your home screen.' });
+    toast($t("KROOPY installed"), { description: $t("Open it from your home screen.") });
   });
   window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
     usePWA.setState({ standalone: e.matches });
@@ -81,7 +82,7 @@ export function initPWA() {
       usePWA.setState({ registration: reg });
       const offerUpdate = () => {
         usePWA.setState({ updateReady: true });
-        toast('A new version of KROOPY is ready', { tone: 'info', description: 'Update now — your data stays on this device.', action: { label: 'Update', run: applyUpdate } });
+        toast($t("A new version of KROOPY is ready"), { tone: 'info', description: $t("Update now — your data stays on this device."), action: { label: $t("Update"), run: applyUpdate } });
       };
       if (reg.waiting && navigator.serviceWorker.controller) offerUpdate();
       reg.addEventListener('updatefound', () => {

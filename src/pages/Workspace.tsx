@@ -38,6 +38,7 @@ import type { ChecklistItem, ContentProject, Priority, Shot, Stage } from '@/lib
 import { confirmDialog, openModal, toast } from '@/lib/ui';
 import { cn, compact, copyText, fmtDate, fmtMinutes, relativeDay, todayStr, uid, wordCount } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type Tab = 'overview' | 'concept' | 'script' | 'shots' | 'production' | 'editing' | 'publish' | 'files';
 
 /** Local draft over the stored project with debounced autosave. */
@@ -92,7 +93,7 @@ export default function Workspace() {
   if (!p)
     return (
       <div className="page">
-        <EmptyState icon={<Clapperboard />} title="Video not found" text="It may have been deleted." actions={<Button onClick={() => navigate('/studio')}>Back to Content Studio</Button>} />
+        <EmptyState icon={<Clapperboard />} title={$t("Video not found")} text={$t("It may have been deleted.")} actions={<Button onClick={() => navigate('/studio')}>{$t("Back to Content Studio")}</Button>} />
       </div>
     );
 
@@ -101,37 +102,37 @@ export default function Workspace() {
   const setStage = (s: Stage) => {
     flush();
     store.setStage(p.id, s);
-    if (s === 'published') toast('Marked as published', { description: 'Log its statistics in Analytics when numbers come in.', action: { label: 'Log stats', run: () => openModal({ kind: 'stats', defaults: { projectId: p.id } }) } });
+    if (s === 'published') toast($t("Marked as published"), { description: $t("Log its statistics in Analytics when numbers come in."), action: { label: $t("Log stats"), run: () => openModal({ kind: 'stats', defaults: { projectId: p.id } }) } });
   };
   const prog = projectProgress(p);
   const shotsDone = p.shots.filter((s) => s.status !== 'pending').length;
 
   const tabs: { value: Tab; label: string; icon: ReactNode; count?: string }[] = [
-    { value: 'overview', label: 'Overview', icon: <Clapperboard /> },
-    { value: 'concept', label: 'Concept', icon: <Lightbulb /> },
-    { value: 'script', label: 'Script', icon: <FileText /> },
-    { value: 'shots', label: 'Shot list', icon: <Film />, count: p.shots.length ? `${shotsDone}/${p.shots.length}` : undefined },
-    { value: 'production', label: 'Production', icon: <ListChecks />, count: `${p.production.filter((c) => c.done).length}/${p.production.length}` },
-    { value: 'editing', label: 'Editing', icon: <Scissors />, count: `${p.editing.filter((c) => c.done).length}/${p.editing.length}` },
-    { value: 'publish', label: 'Publishing', icon: <Send /> },
-    { value: 'files', label: 'Files', icon: <ImageIcon />, count: p.assetIds.length ? String(p.assetIds.length) : undefined },
+    { value: 'overview', label: $t("Overview"), icon: <Clapperboard /> },
+    { value: 'concept', label: $t("Concept"), icon: <Lightbulb /> },
+    { value: 'script', label: $t("Script"), icon: <FileText /> },
+    { value: 'shots', label: $t("Shot list"), icon: <Film />, count: p.shots.length ? `${shotsDone}/${p.shots.length}` : undefined },
+    { value: 'production', label: $t("Production"), icon: <ListChecks />, count: `${p.production.filter((c) => c.done).length}/${p.production.length}` },
+    { value: 'editing', label: $t("Editing"), icon: <Scissors />, count: `${p.editing.filter((c) => c.done).length}/${p.editing.length}` },
+    { value: 'publish', label: $t("Publishing"), icon: <Send /> },
+    { value: 'files', label: $t("Files"), icon: <ImageIcon />, count: p.assetIds.length ? String(p.assetIds.length) : undefined },
   ];
 
   return (
     <div className="page ws">
       <div className="ws__top">
         <Link to="/studio" className="ws__back">
-          <ArrowLeft size={15} /> Content Studio
+          <ArrowLeft size={15} /> {$t("Content Studio")}
         </Link>
         <span className={cn('ws__save', (dirty || saveState === 'saving') && 'ws__save--busy')}>
           <span className={cn('save-dot', (dirty || saveState === 'saving') && 'save-dot--saving')} />
-          {dirty || saveState === 'saving' ? 'Saving…' : 'All changes saved'}
+          {dirty || saveState === 'saving' ? $t("Saving…") : $t("All changes saved")}
         </span>
       </div>
 
       <header className="ws__head">
         <div className="grow">
-          <input className="ws__title" value={p.title} onChange={(e) => patch({ title: e.target.value })} placeholder="Untitled video" aria-label="Video title" onBlur={flush} />
+          <input className="ws__title" value={p.title} onChange={(e) => patch({ title: e.target.value })} placeholder={$t("Untitled video")} aria-label={$t("Video title")} onBlur={flush} />
           <div className="ws__meta">
             <PriorityTag p={p.priority} />
             <span className="subtle">·</span>
@@ -152,41 +153,41 @@ export default function Workspace() {
         <div className="row">
           <Menu
             items={[
-              { label: 'Log statistics', icon: <BarChart3 />, onSelect: () => openModal({ kind: 'stats', defaults: { projectId: p.id } }) },
-              { label: 'Log time', icon: <Timer />, onSelect: () => openModal({ kind: 'timelog', defaults: { projectId: p.id } }) },
+              { label: $t("Log statistics"), icon: <BarChart3 />, onSelect: () => openModal({ kind: 'stats', defaults: { projectId: p.id } }) },
+              { label: $t("Log time"), icon: <Timer />, onSelect: () => openModal({ kind: 'timelog', defaults: { projectId: p.id } }) },
               {
-                label: 'Duplicate',
+                label: $t("Duplicate"),
                 icon: <Copy />,
                 onSelect: () => {
                   flush();
                   const c = store.duplicateProject(p.id);
                   if (c) {
-                    toast('Video duplicated');
+                    toast($t("Video duplicated"));
                     navigate(`/studio/${c.id}`);
                   }
                 },
               },
               {
-                label: 'Delete video',
+                label: $t("Delete video"),
                 icon: <Trash2 />,
                 danger: true,
                 separator: true,
                 onSelect: async () => {
-                  if (await confirmDialog({ title: `Delete “${p.title || 'Untitled'}”?`, description: 'Script, shots and checklists are deleted. Linked tasks, events and files are kept.' })) {
+                  if (await confirmDialog({ title: $t('Delete “{name}”?', { name: p.title || $t('Untitled') }), description: $t("Script, shots and checklists are deleted. Linked tasks, events and files are kept.") })) {
                     store.deleteProject(p.id);
-                    toast('Video deleted');
+                    toast($t("Video deleted"));
                     navigate('/studio');
                   }
                 },
               },
             ]}
-            trigger={(t) => <Button {...t} iconOnly icon={<MoreHorizontal />} aria-label="More actions" />}
+            trigger={(t) => <Button {...t} iconOnly icon={<MoreHorizontal />} aria-label={$t("More actions")} />}
           />
         </div>
       </header>
 
-      <div className="stepper" role="group" aria-label="Production stage">
-        <Button variant="ghost" size="sm" iconOnly icon={<ChevronLeft />} disabled={idx === 0} onClick={() => setStage(STAGES[idx - 1]!.id)} aria-label="Previous stage" />
+      <div className="stepper" role="group" aria-label={$t("Production stage")}>
+        <Button variant="ghost" size="sm" iconOnly icon={<ChevronLeft />} disabled={idx === 0} onClick={() => setStage(STAGES[idx - 1]!.id)} aria-label={$t("Previous stage")} />
         <div className="stepper__track">
           {STAGES.map((s, i) => (
             <button key={s.id} className={cn('stepper__step', i < idx && 'stepper__step--done', i === idx && 'stepper__step--on')} onClick={() => setStage(s.id)} aria-current={i === idx ? 'step' : undefined} aria-label={s.label}>
@@ -196,7 +197,7 @@ export default function Workspace() {
           ))}
         </div>
         <Button variant={idx === STAGES.length - 2 ? 'lime' : 'primary'} size="sm" disabled={idx === STAGES.length - 1} onClick={() => setStage(STAGES[idx + 1]!.id)} icon={<ChevronRight />}>
-          <span className="hide-mobile">{idx < STAGES.length - 1 ? STAGES[idx + 1]!.label : 'Done'}</span>
+          <span className="hide-mobile">{idx < STAGES.length - 1 ? STAGES[idx + 1]!.label : $t("Done")}</span>
         </Button>
       </div>
 
@@ -208,8 +209,8 @@ export default function Workspace() {
             {tab === 'concept' && <ConceptTab p={p} patch={patch} />}
             {tab === 'script' && <ScriptTab p={p} patch={patch} />}
             {tab === 'shots' && <ShotsTab p={p} patch={patch} />}
-            {tab === 'production' && <ChecklistTab title="Production checklist" items={p.production} onChange={(production) => patch({ production }, true)} template={store.settings.productionTemplate} />}
-            {tab === 'editing' && <ChecklistTab title="Editing checklist" items={p.editing} onChange={(editing) => patch({ editing }, true)} template={store.settings.editingTemplate} />}
+            {tab === 'production' && <ChecklistTab title={$t("Production checklist")} items={p.production} onChange={(production) => patch({ production }, true)} template={store.settings.productionTemplate} />}
+            {tab === 'editing' && <ChecklistTab title={$t("Editing checklist")} items={p.editing} onChange={(editing) => patch({ editing }, true)} template={store.settings.editingTemplate} />}
             {tab === 'publish' && <PublishTab p={p} patch={patch} onPublish={() => setStage('published')} />}
             {tab === 'files' && <FilesTab p={p} />}
           </div>
@@ -228,35 +229,35 @@ function OverviewTab({ p, patch }: TabProps) {
   const [mins, setMins] = useState(p.duration ? String(Math.round(p.duration / 6) / 10) : '');
   return (
     <div className="form">
-      <Field label="Description">
-        <Textarea autoGrow value={p.description} onChange={(e) => patch({ description: e.target.value })} placeholder="What is this video about?" />
+      <Field label={$t("Description")}>
+        <Textarea autoGrow value={p.description} onChange={(e) => patch({ description: e.target.value })} placeholder={$t("What is this video about?")} />
       </Field>
       <div className="form-grid">
-        <Field label="Platforms" className="span-2">
+        <Field label={$t("Platforms")} className="span-2">
           <ChipToggle options={platforms.map((x) => ({ value: x.id, label: x.name, color: x.color }))} value={p.platformIds} onChange={(platformIds) => patch({ platformIds }, true)} />
         </Field>
-        <Field label="Format">
+        <Field label={$t("Format")}>
           <Select value={p.format} onChange={(e) => patch({ format: e.target.value as ContentProject['format'] }, true)} options={FORMATS.map((f) => ({ value: f.id, label: f.label }))} />
         </Field>
-        <Field label="Category">
+        <Field label={$t("Category")}>
           <Select value={p.category} onChange={(e) => patch({ category: e.target.value }, true)} options={Array.from(new Set([...categories, p.category])).map((c) => ({ value: c, label: c }))} />
         </Field>
-        <Field label="Goal of the video" className="span-2">
-          <Input value={p.goal} onChange={(e) => patch({ goal: e.target.value })} placeholder="Grow followers, drive saves, sell, entertain…" />
+        <Field label={$t("Goal of the video")} className="span-2">
+          <Input value={p.goal} onChange={(e) => patch({ goal: e.target.value })} placeholder={$t("Grow followers, drive saves, sell, entertain…")} />
         </Field>
-        <Field label="Publish date">
+        <Field label={$t("Publish date")}>
           <Input type="date" value={p.publishDate ?? ''} onChange={(e) => patch({ publishDate: e.target.value || undefined }, true)} />
         </Field>
-        <Field label="Publish time">
+        <Field label={$t("Publish time")}>
           <Input type="time" value={p.publishTime ?? ''} onChange={(e) => patch({ publishTime: e.target.value || undefined }, true)} />
         </Field>
-        <Field label="Recording day" hint="Shows on the calendar.">
+        <Field label={$t("Recording day")} hint={$t("Shows on the calendar.")}>
           <Input type="date" value={p.recordDate ?? ''} onChange={(e) => patch({ recordDate: e.target.value || undefined }, true)} />
         </Field>
-        <Field label="Editing day">
+        <Field label={$t("Editing day")}>
           <Input type="date" value={p.editDate ?? ''} onChange={(e) => patch({ editDate: e.target.value || undefined }, true)} />
         </Field>
-        <Field label="Estimated duration (minutes)">
+        <Field label={$t("Estimated duration (minutes)")}>
           <Input
             type="number"
             min={0}
@@ -268,10 +269,10 @@ function OverviewTab({ p, patch }: TabProps) {
             }}
           />
         </Field>
-        <Field label="Priority">
-          <Segmented label="Priority" value={p.priority} onChange={(v) => patch({ priority: v as Priority }, true)} options={PRIORITIES.slice().reverse().map((x) => ({ value: x.id, label: x.label }))} />
+        <Field label={$t("Priority")}>
+          <Segmented label={$t("Priority")} value={p.priority} onChange={(v) => patch({ priority: v as Priority }, true)} options={PRIORITIES.slice().reverse().map((x) => ({ value: x.id, label: x.label }))} />
         </Field>
-        <Field label="Tags" className="span-2">
+        <Field label={$t("Tags")} className="span-2">
           <TagInput value={p.tags} onChange={(tags) => patch({ tags }, true)} />
         </Field>
       </div>
@@ -283,18 +284,18 @@ function ConceptTab({ p, patch }: TabProps) {
   const idea = useStore((s) => (p.ideaId ? s.ideas.find((i) => i.id === p.ideaId) : undefined));
   const set = (k: keyof ContentProject['concept'], v: string) => patch({ concept: { ...p.concept, [k]: v } });
   const fields: { k: keyof ContentProject['concept']; label: string; ph: string }[] = [
-    { k: 'originalIdea', label: 'Original idea', ph: 'The spark — what made you want to make this?' },
-    { k: 'objective', label: 'Objective', ph: 'What should this video achieve?' },
-    { k: 'audience', label: 'Audience', ph: 'Who is it for? What do they already know?' },
-    { k: 'message', label: 'Main message', ph: 'If they remember one thing, it’s…' },
-    { k: 'references', label: 'References', ph: 'Videos, creators, links…' },
-    { k: 'inspiration', label: 'Inspiration', ph: 'Mood, music, visual style…' },
+    { k: 'originalIdea', label: $t("Original idea"), ph: 'The spark — what made you want to make this?' },
+    { k: 'objective', label: $t("Objective"), ph: 'What should this video achieve?' },
+    { k: 'audience', label: $t("Audience"), ph: 'Who is it for? What do they already know?' },
+    { k: 'message', label: $t("Main message"), ph: 'If they remember one thing, it’s…' },
+    { k: 'references', label: $t("References"), ph: 'Videos, creators, links…' },
+    { k: 'inspiration', label: $t("Inspiration"), ph: 'Mood, music, visual style…' },
   ];
   return (
     <div className="form">
       {idea && (
         <button className="source-idea" onClick={() => openModal({ kind: 'idea', id: idea.id })}>
-          <Lightbulb size={15} /> Born from the idea <b>“{idea.title}”</b>
+          <Lightbulb size={15} /> {$t("Born from the idea")} <b>“{idea.title}”</b>
         </button>
       )}
       <div className="form-grid">
@@ -310,12 +311,12 @@ function ConceptTab({ p, patch }: TabProps) {
 
 function ScriptTab({ p, patch }: TabProps) {
   const sections: { k: keyof ContentProject['script']; label: string; ph: string; hint?: string }[] = [
-    { k: 'hook', label: 'Hook', ph: 'The first 2 seconds. Make them stop scrolling.', hint: '0–3 s' },
-    { k: 'intro', label: 'Introduction', ph: 'Set up the promise of the video.' },
-    { k: 'body', label: 'Development', ph: 'The meat — story, steps, arguments.' },
-    { k: 'keyPoints', label: 'Key points', ph: 'Bullet the beats you can’t forget.' },
-    { k: 'cta', label: 'Call to action', ph: 'Follow, save, comment, link in bio…' },
-    { k: 'closing', label: 'Closing', ph: 'Land it. Loop it back to the hook?' },
+    { k: 'hook', label: $t("Hook"), ph: 'The first 2 seconds. Make them stop scrolling.', hint: '0–3 s' },
+    { k: 'intro', label: $t("Introduction"), ph: 'Set up the promise of the video.' },
+    { k: 'body', label: $t("Development"), ph: 'The meat — story, steps, arguments.' },
+    { k: 'keyPoints', label: $t("Key points"), ph: 'Bullet the beats you can’t forget.' },
+    { k: 'cta', label: $t("Call to action"), ph: 'Follow, save, comment, link in bio…' },
+    { k: 'closing', label: $t("Closing"), ph: 'Land it. Loop it back to the hook?' },
   ];
   const full = sections.map((s) => p.script[s.k]).filter(Boolean).join('\n\n');
   const words = wordCount(full);
@@ -325,15 +326,15 @@ function ScriptTab({ p, patch }: TabProps) {
       <div className="script__bar">
         <span className="badge">{words} words</span>
         <span className="badge badge--accent">≈ {secs >= 60 ? `${Math.floor(secs / 60)}m ${secs % 60}s` : `${secs}s`} spoken</span>
-        <span className="subtle hide-mobile" style={{ fontSize: 12 }}>Autosaves as you type</span>
+        <span className="subtle hide-mobile" style={{ fontSize: 12 }}>{$t("Autosaves as you type")}</span>
         <Button
           size="sm"
           icon={<Copy />}
           style={{ marginLeft: 'auto' }}
           disabled={!full}
-          onClick={async () => toast((await copyText(full)) ? 'Script copied' : 'Could not copy', { tone: full ? 'success' : 'error' })}
+          onClick={async () => toast((await copyText(full)) ? $t("Script copied") : $t("Could not copy"), { tone: full ? 'success' : 'error' })}
         >
-          Copy script
+          {$t("Copy script")}
         </Button>
       </div>
       {sections.map((s, i) => (
@@ -367,45 +368,45 @@ function ShotsTab({ p, patch }: TabProps) {
       <div className="row between">
         <div className="row gap-12 grow" style={{ maxWidth: 360 }}>
           <span className="grow">
-            <ProgressBar value={p.shots.length ? (done / p.shots.length) * 100 : 0} label="Shots recorded" />
+            <ProgressBar value={p.shots.length ? (done / p.shots.length) * 100 : 0} label={$t("Shots recorded")} />
           </span>
           <span className="tnum subtle" style={{ fontSize: 12 }}>{done}/{p.shots.length} shot</span>
         </div>
         <Button size="sm" variant="primary" icon={<Plus />} onClick={add}>
-          Add shot
+          {$t("Add shot")}
         </Button>
       </div>
       {p.shots.length === 0 ? (
-        <EmptyState compact icon={<Film />} title="No shots planned" text="List every plane you need so recording day is calm and fast." actions={<Button icon={<Plus />} onClick={add}>Add first shot</Button>} />
+        <EmptyState compact icon={<Film />} title={$t("No shots planned")} text={$t("List every plane you need so recording day is calm and fast.")} actions={<Button icon={<Plus />} onClick={add}>{$t("Add first shot")}</Button>} />
       ) : (
         <div className="shots">
           {p.shots.map((s, i) => (
             <div key={s.id} className={cn('shot', s.status === 'shot' && 'shot--done', s.status === 'skipped' && 'shot--skipped')}>
               <div className="shot__num display">{i + 1}</div>
               <div className="shot__body">
-                <Input sm value={s.description} onChange={(e) => upd(s.id, { description: e.target.value })} placeholder="Describe the shot" aria-label="Shot description" className="shot__desc" />
+                <Input sm value={s.description} onChange={(e) => upd(s.id, { description: e.target.value })} placeholder={$t("Describe the shot")} aria-label={$t("Shot description")} className="shot__desc" />
                 <div className="shot__fields">
-                  <Select sm value={s.type} onChange={(e) => upd(s.id, { type: e.target.value }, true)} options={Array.from(new Set([...SHOT_TYPES, s.type])).map((t) => ({ value: t, label: t }))} aria-label="Shot type" />
-                  <Input sm value={s.location} onChange={(e) => upd(s.id, { location: e.target.value })} placeholder="Location" aria-label="Location" />
-                  <Input sm value={s.gear} onChange={(e) => upd(s.id, { gear: e.target.value })} placeholder="Gear needed" aria-label="Gear" />
+                  <Select sm value={s.type} onChange={(e) => upd(s.id, { type: e.target.value }, true)} options={Array.from(new Set([...SHOT_TYPES, s.type])).map((t) => ({ value: t, label: $t(t) }))} aria-label={$t("Shot type")} />
+                  <Input sm value={s.location} onChange={(e) => upd(s.id, { location: e.target.value })} placeholder={$t("Location")} aria-label={$t("Location")} />
+                  <Input sm value={s.gear} onChange={(e) => upd(s.id, { gear: e.target.value })} placeholder={$t("Gear needed")} aria-label={$t("Gear")} />
                 </div>
-                <Input sm value={s.notes} onChange={(e) => upd(s.id, { notes: e.target.value })} placeholder="Notes" aria-label="Notes" />
+                <Input sm value={s.notes} onChange={(e) => upd(s.id, { notes: e.target.value })} placeholder={$t("Notes")} aria-label={$t("Notes")} />
               </div>
               <div className="shot__side">
                 <Segmented
-                  label="Status"
+                  label={$t("Status")}
                   value={s.status}
                   onChange={(v) => upd(s.id, { status: v }, true)}
                   options={[
-                    { value: 'pending', label: 'To shoot' },
-                    { value: 'shot', label: 'Shot' },
-                    { value: 'skipped', label: 'Skip' },
+                    { value: 'pending', label: $t("To shoot") },
+                    { value: 'shot', label: $t("Shot") },
+                    { value: 'skipped', label: $t("Skip") },
                   ]}
                 />
                 <div className="row" style={{ gap: 2, justifyContent: 'flex-end' }}>
-                  <Button variant="ghost" size="sm" iconOnly icon={<ArrowUp />} disabled={i === 0} onClick={() => move(i, -1)} aria-label="Move up" />
-                  <Button variant="ghost" size="sm" iconOnly icon={<ArrowDown />} disabled={i === p.shots.length - 1} onClick={() => move(i, 1)} aria-label="Move down" />
-                  <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => set(p.shots.filter((x) => x.id !== s.id), true)} aria-label="Delete shot" />
+                  <Button variant="ghost" size="sm" iconOnly icon={<ArrowUp />} disabled={i === 0} onClick={() => move(i, -1)} aria-label={$t("Move up")} />
+                  <Button variant="ghost" size="sm" iconOnly icon={<ArrowDown />} disabled={i === p.shots.length - 1} onClick={() => move(i, 1)} aria-label={$t("Move down")} />
+                  <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => set(p.shots.filter((x) => x.id !== s.id), true)} aria-label={$t("Delete shot")} />
                 </div>
               </div>
             </div>
@@ -436,33 +437,33 @@ function ChecklistTab({ title, items, onChange, template }: { title: string; ite
         </div>
         <Menu
           items={[
-            { label: 'Mark all done', icon: <Check />, onSelect: () => onChange(items.map((i) => ({ ...i, done: true }))) },
-            { label: 'Uncheck all', icon: <RotateCcw />, onSelect: () => onChange(items.map((i) => ({ ...i, done: false }))) },
+            { label: $t("Mark all done"), icon: <Check />, onSelect: () => onChange(items.map((i) => ({ ...i, done: true }))) },
+            { label: $t("Uncheck all"), icon: <RotateCcw />, onSelect: () => onChange(items.map((i) => ({ ...i, done: false }))) },
             {
-              label: 'Reset to template',
+              label: $t("Reset to template"),
               icon: <ListChecks />,
               onSelect: async () => {
-                if (await confirmDialog({ title: 'Reset checklist?', description: 'Replaces this list with your default template (Settings → Checklists).', confirmLabel: 'Reset', tone: 'default' }))
+                if (await confirmDialog({ title: $t("Reset checklist?"), description: $t("Replaces this list with your default template (Settings → Checklists)."), confirmLabel: $t("Reset"), tone: 'default' }))
                   onChange(template.map((label) => ({ id: uid(), label, done: false })));
               },
             },
           ]}
-          trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label="Checklist actions" />}
+          trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t("Checklist actions")} />}
         />
       </div>
       <ul className="checklist">
         {items.map((i) => (
           <li key={i.id} className={cn('checklist__item', i.done && 'checklist__item--done')}>
             <Checkbox checked={i.done} onChange={(c) => onChange(items.map((x) => (x.id === i.id ? { ...x, done: c } : x)))} label={i.label} />
-            <input className="checklist__input" value={i.label} onChange={(e) => onChange(items.map((x) => (x.id === i.id ? { ...x, label: e.target.value } : x)))} aria-label="Checklist item" />
-            <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => onChange(items.filter((x) => x.id !== i.id))} aria-label={`Remove ${i.label}`} />
+            <input className="checklist__input" value={i.label} onChange={(e) => onChange(items.map((x) => (x.id === i.id ? { ...x, label: e.target.value } : x)))} aria-label={$t("Checklist item")} />
+            <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => onChange(items.filter((x) => x.id !== i.id))} aria-label={$t('Remove {name}', { name: i.label })} />
           </li>
         ))}
       </ul>
       <div className="row">
-        <Input sm value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Add a step and press Enter" onKeyDown={(e) => e.key === 'Enter' && add()} />
+        <Input sm value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={$t("Add a step and press Enter")} onKeyDown={(e) => e.key === 'Enter' && add()} />
         <Button size="sm" icon={<Plus />} onClick={add}>
-          Add
+          {$t("Add")}
         </Button>
       </div>
     </div>
@@ -477,7 +478,7 @@ function AssetPicker({ label, value, onChange, projectId }: { label: string; val
       <div className="picker">
         <AssetThumb asset={asset} className="picker__thumb" />
         <div className="col grow" style={{ gap: 6 }}>
-          <Select sm value={value ?? ''} onChange={(e) => onChange(e.target.value || undefined)} options={assets.map((a) => ({ value: a.id, label: a.name }))} placeholder="None" aria-label={label} />
+          <Select sm value={value ?? ''} onChange={(e) => onChange(e.target.value || undefined)} options={assets.map((a) => ({ value: a.id, label: a.name }))} placeholder={$t("None")} aria-label={label} />
           <Dropzone
             compact
             accept="image/*"
@@ -485,11 +486,11 @@ function AssetPicker({ label, value, onChange, projectId }: { label: string; val
               const [a] = await uploadFiles(files.slice(0, 1), { type: label.toLowerCase().includes('cover') ? 'cover' : 'thumbnail', projectId });
               if (a) {
                 onChange(a.id);
-                toast(`${label} uploaded`);
+                toast($t('{label} uploaded', { label }));
               }
             }}
           >
-            <span className="subtle" style={{ fontSize: 12 }}>Drop an image or click to upload</span>
+            <span className="subtle" style={{ fontSize: 12 }}>{$t("Drop an image or click to upload")}</span>
           </Dropzone>
         </div>
       </div>
@@ -508,29 +509,29 @@ function PublishTab({ p, patch, onPublish }: TabProps & { onPublish: () => void 
   const limit = Math.min(...p.platformIds.map((id) => CAPTION_LIMITS[id] ?? 2200), 2200);
   return (
     <div className="form">
-      <Field label="Caption" aside={<span className={cn('tnum', pub.caption.length > limit ? 'field__error' : 'subtle')} style={{ fontSize: 11.5 }}>{pub.caption.length}/{limit}</span>}>
-        <Textarea autoGrow value={pub.caption} onChange={(e) => set({ caption: e.target.value })} placeholder="Write the caption…" style={{ minHeight: 110 }} />
+      <Field label={$t("Caption")} aside={<span className={cn('tnum', pub.caption.length > limit ? 'field__error' : 'subtle')} style={{ fontSize: 11.5 }}>{pub.caption.length}/{limit}</span>}>
+        <Textarea autoGrow value={pub.caption} onChange={(e) => set({ caption: e.target.value })} placeholder={$t("Write the caption…")} style={{ minHeight: 110 }} />
       </Field>
-      <Field label="Hashtags" aside={<span className="subtle tnum" style={{ fontSize: 11.5 }}>{tags.length} tags</span>} hint="Separate with spaces, e.g. #creator #vlog">
+      <Field label={$t("Hashtags")} aside={<span className="subtle tnum" style={{ fontSize: 11.5 }}>{tags.length} tags</span>} hint={$t("Separate with spaces, e.g. #creator #vlog")}>
         <Input value={pub.hashtags} onChange={(e) => set({ hashtags: e.target.value })} placeholder="#creator #behindthescenes" />
       </Field>
       <div className="form-grid">
-        <AssetPicker label="Cover" value={pub.coverAssetId} onChange={(coverAssetId) => set({ coverAssetId }, true)} projectId={p.id} />
-        <AssetPicker label="Thumbnail" value={pub.thumbnailAssetId} onChange={(thumbnailAssetId) => set({ thumbnailAssetId }, true)} projectId={p.id} />
-        <Field label="Platforms" className="span-2">
+        <AssetPicker label={$t("Cover")} value={pub.coverAssetId} onChange={(coverAssetId) => set({ coverAssetId }, true)} projectId={p.id} />
+        <AssetPicker label={$t("Thumbnail")} value={pub.thumbnailAssetId} onChange={(thumbnailAssetId) => set({ thumbnailAssetId }, true)} projectId={p.id} />
+        <Field label={$t("Platforms")} className="span-2">
           <ChipToggle options={platforms.map((x) => ({ value: x.id, label: x.name, color: x.color }))} value={p.platformIds} onChange={(platformIds) => patch({ platformIds }, true)} />
         </Field>
-        <Field label="Date">
+        <Field label={$t("Date")}>
           <Input type="date" value={p.publishDate ?? ''} onChange={(e) => patch({ publishDate: e.target.value || undefined }, true)} />
         </Field>
-        <Field label="Time">
+        <Field label={$t("Time")}>
           <Input type="time" value={p.publishTime ?? ''} onChange={(e) => patch({ publishTime: e.target.value || undefined }, true)} />
         </Field>
-        <Field label="Publication link" className="span-2">
+        <Field label={$t("Publication link")} className="span-2">
           <div className="row">
             <Input value={pub.link} onChange={(e) => set({ link: e.target.value })} placeholder="https://www.tiktok.com/@you/video/…" />
             {/^https?:\/\//.test(pub.link) && (
-              <a className="btn btn--icon" href={pub.link} target="_blank" rel="noreferrer" aria-label="Open link">
+              <a className="btn btn--icon" href={pub.link} target="_blank" rel="noreferrer" aria-label={$t("Open link")}>
                 <Link2 />
               </a>
             )}
@@ -541,18 +542,18 @@ function PublishTab({ p, patch, onPublish }: TabProps & { onPublish: () => void 
         {p.stage === 'published' ? (
           <>
             <span className="badge badge--solid-lime">
-              <Check /> Published {p.publishedAt ? fmtDate(p.publishedAt, 'd MMM, HH:mm') : ''}
+              <Check /> {$t("Published")} {p.publishedAt ? fmtDate(p.publishedAt, 'd MMM, HH:mm') : ''}
             </span>
-            <span className="subtle grow" style={{ fontSize: 12.5 }}>{stats.length ? `${stats.length} stats record(s) · ${compact(sumRecords(stats).views)} views` : 'No statistics logged yet.'}</span>
+            <span className="subtle grow" style={{ fontSize: 12.5 }}>{stats.length ? `${stats.length} stats record(s) · ${compact(sumRecords(stats).views)} views` : $t("No statistics logged yet.")}</span>
             <Button icon={<BarChart3 />} onClick={() => openModal({ kind: 'stats', defaults: { projectId: p.id } })}>
-              Log statistics
+              {$t("Log statistics")}
             </Button>
           </>
         ) : (
           <>
-            <span className="subtle grow" style={{ fontSize: 12.5 }}>When it’s live, mark it as published — it will count toward your monthly stats and goals.</span>
+            <span className="subtle grow" style={{ fontSize: 12.5 }}>{$t("When it’s live, mark it as published — it will count toward your monthly stats and goals.")}</span>
             <Button variant="lime" icon={<Send />} onClick={onPublish}>
-              Mark as published
+              {$t("Mark as published")}
             </Button>
           </>
         )}
@@ -571,7 +572,7 @@ function FilesTab({ p }: { p: ContentProject }) {
       <Dropzone
         onFiles={async (files) => {
           const c = await uploadFiles(files, { projectId: p.id });
-          if (c.length) toast(`${c.length} file${c.length > 1 ? 's' : ''} attached`);
+          if (c.length) toast(c.length > 1 ? $t('{n} files attached', { n: c.length }) : $t('1 file attached'));
         }}
       />
       {others.length > 0 && (
@@ -582,17 +583,17 @@ function FilesTab({ p }: { p: ContentProject }) {
             onChange={(e) => {
               if (e.target.value) {
                 store.linkAsset(e.target.value, p.id, true);
-                toast('File linked');
+                toast($t("File linked"));
               }
             }}
             options={others.map((a) => ({ value: a.id, label: `${a.name} · ${a.type}` }))}
-            placeholder="Link a file from the Asset Library…"
-            aria-label="Link existing asset"
+            placeholder={$t("Link a file from the Asset Library…")}
+            aria-label={$t("Link existing asset")}
           />
         </div>
       )}
       {linked.length === 0 ? (
-        <EmptyState compact icon={<ImageIcon />} title="No files yet" text="References, thumbnails, raw clips, music — attach anything this video needs." />
+        <EmptyState compact icon={<ImageIcon />} title={$t("No files yet")} text={$t("References, thumbnails, raw clips, music — attach anything this video needs.")} />
       ) : (
         <div className="file-grid">
           {linked.map((a) => (
@@ -610,10 +611,10 @@ function FilesTab({ p }: { p: ContentProject }) {
                   size="sm"
                   iconOnly
                   icon={<Unlink />}
-                  tip="Unlink"
+                  tip={$t("Unlink")}
                   onClick={() => {
                     store.linkAsset(a.id, p.id, false);
-                    toast('File unlinked', { description: 'It stays in your Asset Library.' });
+                    toast($t("File unlinked"), { description: $t("It stays in your Asset Library.") });
                   }}
                 />
               </div>
@@ -647,31 +648,31 @@ function Aside({ p, prog }: { p: ContentProject; prog: number }) {
             <span className="display" style={{ fontSize: 20 }}>{prog}%</span>
           </ProgressRing>
           <div className="col" style={{ gap: 2 }}>
-            <span className="eyebrow">Stage</span>
+            <span className="eyebrow">{$t("Stage")}</span>
             <span className="display" style={{ fontSize: 22 }}>{STAGES.find((s) => s.id === p.stage)?.label}</span>
-            <span className="subtle" style={{ fontSize: 12 }}>Updated {fmtDate(p.updatedAt, 'd MMM, HH:mm')}</span>
+            <span className="subtle" style={{ fontSize: 12 }}>{$t("Updated")} {fmtDate(p.updatedAt, 'd MMM, HH:mm')}</span>
           </div>
         </div>
         <dl className="ws-dl">
-          <dt>Record</dt>
+          <dt>{$t("Record")}</dt>
           <dd>{p.recordDate ? relativeDay(p.recordDate) : '—'}</dd>
-          <dt>Edit</dt>
+          <dt>{$t("Edit")}</dt>
           <dd>{p.editDate ? relativeDay(p.editDate) : '—'}</dd>
-          <dt>Publish</dt>
+          <dt>{$t("Publish")}</dt>
           <dd>{p.publishDate ? `${relativeDay(p.publishDate)}${p.publishTime ? ` · ${p.publishTime}` : ''}` : '—'}</dd>
-          <dt>Time spent</dt>
+          <dt>{$t("Time spent")}</dt>
           <dd>
             {fmtMinutes(minutes)}{' '}
             <button className="link-btn" onClick={() => openModal({ kind: 'timelog', defaults: { projectId: p.id } })}>
-              + log
+              {$t("+ log")}
             </button>
           </dd>
         </dl>
       </div>
       <div className="panel ws-card">
         <div className="row between">
-          <span className="eyebrow">Tasks · {done.length}/{tasks.length}</span>
-          <Button variant="ghost" size="sm" iconOnly icon={<Plus />} tip="New task" onClick={() => openModal({ kind: 'task', defaults: { projectId: p.id, category: 'content' } })} />
+          <span className="eyebrow">{$t("Tasks ·")} {done.length}/{tasks.length}</span>
+          <Button variant="ghost" size="sm" iconOnly icon={<Plus />} tip={$t("New task")} onClick={() => openModal({ kind: 'task', defaults: { projectId: p.id, category: 'content' } })} />
         </div>
         <ul className="mini-tasks">
           {[...open, ...done].slice(0, 8).map((t) => (
@@ -684,15 +685,15 @@ function Aside({ p, prog }: { p: ContentProject; prog: number }) {
             </li>
           ))}
         </ul>
-        <input className="input input--sm" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Quick task for this video…" onKeyDown={(e) => e.key === 'Enter' && add()} aria-label="Quick task" />
+        <input className="input input--sm" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={$t("Quick task for this video…")} onKeyDown={(e) => e.key === 'Enter' && add()} aria-label={$t("Quick task")} />
       </div>
       <div className="panel ws-card">
         <div className="row between">
-          <span className="eyebrow">Performance</span>
-          <Button variant="ghost" size="sm" iconOnly icon={<Plus />} tip="Log statistics" onClick={() => openModal({ kind: 'stats', defaults: { projectId: p.id } })} />
+          <span className="eyebrow">{$t("Performance")}</span>
+          <Button variant="ghost" size="sm" iconOnly icon={<Plus />} tip={$t("Log statistics")} onClick={() => openModal({ kind: 'stats', defaults: { projectId: p.id } })} />
         </div>
         {stats.length === 0 ? (
-          <p className="subtle" style={{ fontSize: 12.5 }}>No statistics yet. Log them after publishing.</p>
+          <p className="subtle" style={{ fontSize: 12.5 }}>{$t("No statistics yet. Log them after publishing.")}</p>
         ) : (
           <div className="perf">
             <div><span className="display">{compact(sum.views)}</span><span>views</span></div>

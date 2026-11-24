@@ -13,6 +13,7 @@ import { confirmDialog, openModal, toast } from '@/lib/ui';
 import { cn, fmtDate, fmtMinutes, plural, toDateStr, todayStr, weekStart } from '@/lib/utils';
 import { newTimeLog } from '@/lib/factories';
 
+import { $t } from '@/lib/i18n';
 type Tab = 'habits' | 'goals' | 'productivity';
 
 export default function Trackers() {
@@ -23,15 +24,15 @@ export default function Trackers() {
   return (
     <div className="page">
       <PageHeader
-        title="Trackers"
-        sub={<>Discipline is a system. Habits, goals and the hours behind your content. <span className="accent-script">stay consistent</span></>}
+        title={$t("Trackers")}
+        sub={<>{$t("Discipline is a system. Habits, goals and the hours behind your content.")} <span className="accent-script">{$t("stay consistent")}</span></>}
         actions={
           tab === 'habits' ? (
-            <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'habit' })}>New habit</Button>
+            <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'habit' })}>{$t("New habit")}</Button>
           ) : tab === 'goals' ? (
-            <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'goal' })}>New goal</Button>
+            <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'goal' })}>{$t("New goal")}</Button>
           ) : (
-            <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'timelog' })}>Log time</Button>
+            <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'timelog' })}>{$t("Log time")}</Button>
           )
         }
       />
@@ -39,9 +40,9 @@ export default function Trackers() {
         value={tab}
         onChange={(t) => setParams({ tab: t })}
         tabs={[
-          { value: 'habits', label: 'Habits', icon: <Repeat />, count: habits.filter((h) => !h.archived).length },
-          { value: 'goals', label: 'Goals', icon: <Flag />, count: goals.filter((g) => g.status === 'active').length },
-          { value: 'productivity', label: 'Productivity', icon: <Zap /> },
+          { value: 'habits', label: $t("Habits"), icon: <Repeat />, count: habits.filter((h) => !h.archived).length },
+          { value: 'goals', label: $t("Goals"), icon: <Flag />, count: goals.filter((g) => g.status === 'active').length },
+          { value: 'productivity', label: $t("Productivity"), icon: <Zap /> },
         ]}
       />
       <div style={{ marginTop: 18 }} key={tab} className="page-enter">
@@ -55,9 +56,9 @@ export default function Trackers() {
 
 /* ═══════════════ Habits ═══════════════ */
 function freqLabel(h: Habit) {
-  if (h.frequency === 'daily') return 'Every day';
-  if (h.frequency === 'weekdays') return 'Weekdays';
-  if (h.frequency === 'weekly') return `${h.target}× per week`;
+  if (h.frequency === 'daily') return $t('Every day');
+  if (h.frequency === 'weekdays') return $t('Weekdays');
+  if (h.frequency === 'weekly') return $t('{n}× per week', { n: h.target });
   return h.days.map((d) => WEEKDAYS_SHORT[d]).join(' · ');
 }
 
@@ -78,7 +79,7 @@ function Habits() {
   if (!habits.length)
     return (
       <div className="panel">
-        <EmptyState icon={<Repeat />} title="No habits yet" text="Track the routines that make you a better creator — recording, reading, training, planning." actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'habit' })}>Create a habit</Button>} />
+        <EmptyState icon={<Repeat />} title={$t("No habits yet")} text={$t("Track the routines that make you a better creator — recording, reading, training, planning.")} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'habit' })}>{$t("Create a habit")}</Button>} />
       </div>
     );
 
@@ -89,8 +90,8 @@ function Habits() {
           <span className="tnum" style={{ fontWeight: 700 }}>{doneToday.length}/{dueToday.length}</span>
         </ProgressRing>
         <div>
-          <div className="display" style={{ fontSize: 22 }}>{doneToday.length === dueToday.length && dueToday.length ? 'All habits done today' : 'Today’s habits'}</div>
-          <div className="subtle" style={{ fontSize: 13 }}>{format(today, 'EEEE d MMMM')} · tap a day to check it in</div>
+          <div className="display" style={{ fontSize: 22 }}>{doneToday.length === dueToday.length && dueToday.length ? $t("All habits done today") : $t("Today’s habits")}</div>
+          <div className="subtle" style={{ fontSize: 13 }}>{format(today, 'EEEE d MMMM')} {$t("· tap a day to check it in")}</div>
         </div>
       </div>
       <div className="habits panel">
@@ -104,7 +105,7 @@ function Habits() {
               </span>
             ))}
           </div>
-          <span className="hide-mobile">Streak</span>
+          <span className="hide-mobile">{$t("Streak")}</span>
           <span className="hide-mobile">30 d</span>
           <span />
         </div>
@@ -115,7 +116,7 @@ function Habits() {
       {archived.length > 0 && (
         <div>
           <Button variant="ghost" size="sm" icon={<Archive />} onClick={() => setShowArchived(!showArchived)}>
-            {showArchived ? 'Hide' : 'Show'} archived ({archived.length})
+            {showArchived ? $t("Hide") : $t("Show")} {$t("archived (")}{archived.length})
           </Button>
           {showArchived && (
             <div className="habits panel mt-8">
@@ -146,7 +147,7 @@ function HabitRow({ h, week, open, onToggleOpen }: { h: Habit; week: Date[]; ope
             <span className="subtle" style={{ fontSize: 12 }}>
               {freqLabel(h)}
               {h.reminderTime ? ` · ${h.reminderTime}` : ''}
-              {h.frequency === 'weekly' ? ` · ${st.thisWeek}/${h.target} this week` : ''}
+              {h.frequency === 'weekly' ? ` · ${st.thisWeek}/${h.target} ${$t('this week')}` : ''}
             </span>
           </span>
         </button>
@@ -178,22 +179,22 @@ function HabitRow({ h, week, open, onToggleOpen }: { h: Habit; week: Date[]; ope
         </span>
         <Menu
           items={[
-            { label: 'Edit', icon: <Pencil />, onSelect: () => openModal({ kind: 'habit', id: h.id }) },
-            { label: h.archived ? 'Restore' : 'Archive', icon: <Archive />, onSelect: () => store.update('habits', h.id, { archived: !h.archived }) },
+            { label: $t("Edit"), icon: <Pencil />, onSelect: () => openModal({ kind: 'habit', id: h.id }) },
+            { label: h.archived ? $t("Restore") : $t("Archive"), icon: <Archive />, onSelect: () => store.update('habits', h.id, { archived: !h.archived }) },
             {
-              label: 'Delete',
+              label: $t("Delete"),
               icon: <Trash2 />,
               danger: true,
               separator: true,
               onSelect: async () => {
-                if (await confirmDialog({ title: `Delete “${h.name}”?`, description: 'Its full history is deleted too.' })) {
+                if (await confirmDialog({ title: $t('Delete “{name}”?', { name: h.name }), description: $t("Its full history is deleted too.") })) {
                   store.deleteHabit(h.id);
-                  toast('Habit deleted');
+                  toast($t("Habit deleted"));
                 }
               },
             },
           ]}
-          trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={`Actions for ${h.name}`} />}
+          trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t('Actions for {name}', { name: h.name })} />}
         />
       </div>
       {open && <HabitDetail h={h} stats={st} />}
@@ -211,10 +212,10 @@ function HabitDetail({ h, stats }: { h: Habit; stats: ReturnType<typeof habitSta
   return (
     <div className="habit__detail">
       <div className="habit__kpis">
-        <div><span className="display">{stats.streak}</span><span>current streak</span></div>
-        <div><span className="display">{stats.rate}%</span><span>last 30 days</span></div>
-        <div><span className="display">{stats.total}</span><span>total check-ins</span></div>
-        <div><span className="display">{stats.thisWeek}</span><span>this week</span></div>
+        <div><span className="display">{stats.streak}</span><span>{$t("current streak")}</span></div>
+        <div><span className="display">{stats.rate}%</span><span>{$t("last 30 days")}</span></div>
+        <div><span className="display">{stats.total}</span><span>{$t("total check-ins")}</span></div>
+        <div><span className="display">{stats.thisWeek}</span><span>{$t("this week")}</span></div>
       </div>
       {h.description && <p className="subtle" style={{ fontSize: 13 }}>{h.description}</p>}
       <div className="heatmap" role="grid" aria-label={`${h.name} history`}>
@@ -228,10 +229,10 @@ function HabitDetail({ h, stats }: { h: Habit; stats: ReturnType<typeof habitSta
                 <button
                   key={ds}
                   className={cn('heatmap__cell', on && 'heatmap__cell--on', future && 'heatmap__cell--future', !habitScheduledOn(h, d) && 'heatmap__cell--off')}
-                  title={`${format(d, 'EEE d MMM')}${on ? ' · done' : ''}`}
+                  title={`${format(d, 'EEE d MMM')}${on ? ` · ${$t('done')}` : ''}`}
                   disabled={future || h.archived}
                   onClick={() => store.toggleHabit(h.id, ds)}
-                  aria-label={`${format(d, 'd MMM')} ${on ? 'done' : 'not done'}`}
+                  aria-label={`${format(d, 'd MMM')} ${on ? $t('done') : $t('not done')}`}
                 />
               );
             })}
@@ -240,7 +241,7 @@ function HabitDetail({ h, stats }: { h: Habit; stats: ReturnType<typeof habitSta
       </div>
       <div className="row between subtle" style={{ fontSize: 11.5 }}>
         <span>{format(start, 'MMM yyyy')}</span>
-        <span>Created {fmtDate(h.createdAt, 'd MMM yyyy')}</span>
+        <span>{$t("Created")} {fmtDate(h.createdAt, 'd MMM yyyy')}</span>
       </div>
     </div>
   );
@@ -255,14 +256,14 @@ function Goals() {
   if (!goals.length)
     return (
       <div className="panel">
-        <EmptyState icon={<Target />} title="No goals yet" text="Set daily, weekly, monthly or yearly goals. Automatic goals track themselves from your real activity." actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'goal' })}>Set a goal</Button>} />
+        <EmptyState icon={<Target />} title={$t("No goals yet")} text={$t("Set daily, weekly, monthly or yearly goals. Automatic goals track themselves from your real activity.")} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'goal' })}>{$t("Set a goal")}</Button>} />
       </div>
     );
   const list = goals.filter((g) => (filter === 'all' ? true : filter === 'active' ? g.status === 'active' || g.status === 'paused' : g.status === 'achieved' || g.status === 'missed'));
   return (
     <div className="col gap-16">
       <div className="row">
-        <Select sm value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} options={[{ value: 'active', label: 'Active & paused' }, { value: 'done', label: 'Achieved & missed' }, { value: 'all', label: 'All goals' }]} aria-label="Filter goals" style={{ width: 'auto' }} />
+        <Select sm value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} options={[{ value: 'active', label: $t("Active & paused") }, { value: 'done', label: $t("Achieved & missed") }, { value: 'all', label: $t("All goals") }]} aria-label={$t("Filter goals")} style={{ width: 'auto' }} />
       </div>
       {GOAL_PERIODS.map((period) => {
         const group = list.filter((g) => g.period === period.id);
@@ -278,7 +279,7 @@ function Goals() {
           </section>
         );
       })}
-      {!list.length && <div className="panel"><EmptyState compact icon={<Target />} title="Nothing in this view" /></div>}
+      {!list.length && <div className="panel"><EmptyState compact icon={<Target />} title={$t("Nothing in this view")} /></div>}
     </div>
   );
 }
@@ -294,36 +295,36 @@ function GoalCard({ g, v }: { g: Goal; v: ReturnType<typeof goalValue> }) {
       <div className="row between" style={{ alignItems: 'flex-start' }}>
         <div style={{ minWidth: 0 }}>
           <div className="goal__badges">
-            {v.auto ? <span className="badge badge--accent"><Zap /> Auto</span> : <span className="badge">Manual</span>}
+            {v.auto ? <span className="badge badge--accent"><Zap /> {$t("Auto")}</span> : <span className="badge">{$t("Manual")}</span>}
             {g.status !== 'active' && <span className={cn('badge', g.status === 'achieved' ? 'badge--positive' : g.status === 'missed' ? 'badge--danger' : '')} style={{ textTransform: 'capitalize' }}>{g.status}</span>}
-            {hit && g.status === 'active' && <span className="badge badge--solid-lime">Target reached</span>}
+            {hit && g.status === 'active' && <span className="badge badge--solid-lime">{$t("Target reached")}</span>}
           </div>
           <h4 className="goal__title">{g.title}</h4>
           <p className="subtle" style={{ fontSize: 12 }}>
-            {metric.auto ? metric.label : 'Logged manually'}
+            {metric.auto ? metric.label : $t("Logged manually")}
             {platform ? ` · ${platform.name}` : ''}
           </p>
         </div>
         <Menu
           items={[
-            { label: 'Edit', icon: <Pencil />, onSelect: () => openModal({ kind: 'goal', id: g.id }) },
-            { label: 'Mark achieved', icon: <Flag />, onSelect: () => store.update('goals', g.id, { status: 'achieved' }), hidden: g.status === 'achieved' },
-            { label: 'Reactivate', icon: <Play />, onSelect: () => store.update('goals', g.id, { status: 'active' }), hidden: g.status === 'active' },
-            { label: 'Pause', icon: <Pause />, onSelect: () => store.update('goals', g.id, { status: 'paused' }), hidden: g.status !== 'active' },
+            { label: $t("Edit"), icon: <Pencil />, onSelect: () => openModal({ kind: 'goal', id: g.id }) },
+            { label: $t("Mark achieved"), icon: <Flag />, onSelect: () => store.update('goals', g.id, { status: 'achieved' }), hidden: g.status === 'achieved' },
+            { label: $t("Reactivate"), icon: <Play />, onSelect: () => store.update('goals', g.id, { status: 'active' }), hidden: g.status === 'active' },
+            { label: $t("Pause"), icon: <Pause />, onSelect: () => store.update('goals', g.id, { status: 'paused' }), hidden: g.status !== 'active' },
             {
-              label: 'Delete',
+              label: $t("Delete"),
               icon: <Trash2 />,
               danger: true,
               separator: true,
               onSelect: async () => {
-                if (await confirmDialog({ title: `Delete “${g.title}”?` })) {
+                if (await confirmDialog({ title: $t('Delete “{name}”?', { name: g.title }) })) {
                   store.deleteGoal(g.id);
-                  toast('Goal deleted');
+                  toast($t("Goal deleted"));
                 }
               },
             },
           ]}
-          trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label="Goal actions" />}
+          trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t("Goal actions")} />}
         />
       </div>
       <div className="goal__value">
@@ -333,16 +334,16 @@ function GoalCard({ g, v }: { g: Goal; v: ReturnType<typeof goalValue> }) {
         <span className="subtle">/ {g.target.toLocaleString()} {g.unit}</span>
         <span className="goal__pct tnum">{Math.round(v.pct)}%</span>
       </div>
-      <ProgressBar value={v.pct} lg label={`${g.title} progress`} />
+      <ProgressBar value={v.pct} lg label={$t('{title} progress', { title: g.title })} />
       <div className="row between" style={{ fontSize: 12 }}>
         <span className={cn('subtle', daysLeft < 0 && !hit && 'danger-text')}>
-          {daysLeft > 0 ? `${plural(daysLeft, 'day')} left` : daysLeft === 0 ? 'Due today' : `Ended ${fmtDate(g.dueDate, 'd MMM')}`}
+          {daysLeft > 0 ? $t('{days} left', { days: plural(daysLeft, 'day') }) : daysLeft === 0 ? $t("Due today") : $t('Ended {date}', { date: fmtDate(g.dueDate, 'd MMM') })}
           {' · '}
           {fmtDate(g.startDate, 'd MMM')} → {fmtDate(g.dueDate, 'd MMM')}
         </span>
         {!v.auto && (
           <Button size="sm" variant="lime" icon={<Plus />} onClick={() => openModal({ kind: 'goal-progress', goalId: g.id })}>
-            Log
+            {$t("Log")}
           </Button>
         )}
       </div>
@@ -392,9 +393,9 @@ function FocusTimer() {
     if (!timer) return;
     const minutes = Math.round(elapsed / 60);
     persist(null);
-    if (minutes < 1) return toast('Session under a minute — not logged', { tone: 'info' });
+    if (minutes < 1) return toast($t("Session under a minute — not logged"), { tone: 'info' });
     useStore.getState().insert('timeLogs', newTimeLog({ minutes, activity: timer.activity, projectId: timer.projectId || undefined, date: toDateStr(new Date(timer.start)), note: 'Focus session' }));
-    toast('Session logged', { description: `${fmtMinutes(minutes)} · ${timer.activity}` });
+    toast($t("Session logged"), { description: `${fmtMinutes(minutes)} · ${timer.activity}` });
   };
   return (
     <div className={cn('timer panel', timer && 'timer--running')}>
@@ -403,15 +404,15 @@ function FocusTimer() {
         <span>:{ss}</span>
       </div>
       <div className="timer__controls">
-        <Select sm value={activity} onChange={(e) => setActivity(e.target.value as WorkActivity)} options={WORK_ACTIVITIES.map((a) => ({ value: a.id, label: a.label }))} disabled={!!timer} aria-label="Activity" />
-        <Select sm value={projectId} onChange={(e) => setProjectId(e.target.value)} options={projects.map((p) => ({ value: p.id, label: p.title || 'Untitled' }))} placeholder="No video" disabled={!!timer} aria-label="Video" />
+        <Select sm value={activity} onChange={(e) => setActivity(e.target.value as WorkActivity)} options={WORK_ACTIVITIES.map((a) => ({ value: a.id, label: a.label }))} disabled={!!timer} aria-label={$t("Activity")} />
+        <Select sm value={projectId} onChange={(e) => setProjectId(e.target.value)} options={projects.map((p) => ({ value: p.id, label: p.title || $t("Untitled") }))} placeholder={$t("No video")} disabled={!!timer} aria-label={$t("Video")} />
         {timer ? (
           <Button variant="danger" icon={<Square />} onClick={stop}>
-            Stop & log
+            {$t("Stop & log")}
           </Button>
         ) : (
           <Button variant="lime" icon={<Play />} onClick={() => persist({ start: Date.now(), activity, projectId: projectId || undefined })}>
-            Start focus
+            {$t("Start focus")}
           </Button>
         )}
       </div>
@@ -448,11 +449,11 @@ function Productivity() {
   const recent = [...timeLogs].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 10);
 
   const kpi = [
-    { label: 'Hours this week', value: Math.round((thisWeek / 60) * 10) / 10, sub: lastWeek ? `${thisWeek >= lastWeek ? '+' : ''}${Math.round(((thisWeek - lastWeek) / 60) * 10) / 10}h vs last week` : 'No data last week', icon: Timer },
-    { label: 'Videos finished', value: finished, sub: format(now, 'MMMM'), icon: BarChart2 },
-    { label: 'Ideas developed', value: developed, sub: 'converted to videos', icon: Zap },
-    { label: 'Tasks completed', value: tasksDone, sub: format(now, 'MMMM'), icon: Target },
-    { label: 'Productive days', value: productiveDays, sub: `of ${now.getDate()} this month`, icon: Flame },
+    { label: $t("Hours this week"), value: Math.round((thisWeek / 60) * 10) / 10, sub: lastWeek ? `${thisWeek >= lastWeek ? '+' : ''}${Math.round(((thisWeek - lastWeek) / 60) * 10) / 10}h ${$t('vs last week')}` : $t("No data last week"), icon: Timer },
+    { label: $t("Videos finished"), value: finished, sub: format(now, 'MMMM'), icon: BarChart2 },
+    { label: $t("Ideas developed"), value: developed, sub: $t("converted to videos"), icon: Zap },
+    { label: $t("Tasks completed"), value: tasksDone, sub: format(now, 'MMMM'), icon: Target },
+    { label: $t("Productive days"), value: productiveDays, sub: $t('of {n} this month', { n: now.getDate() }), icon: Flame },
   ];
 
   return (
@@ -471,11 +472,11 @@ function Productivity() {
       <div className="ov-grid">
         <section className="panel">
           <div className="panel__head">
-            <h3 className="panel__title">Hours creating · last 14 days</h3>
+            <h3 className="panel__title">{$t("Hours creating · last 14 days")}</h3>
           </div>
           <div className="panel__body">
             <BarChart height={170} highlight={13} data={last14.map((d) => ({ label: format(new Date(`${d.ds}T12:00`), 'd'), value: Math.round((d.minutes / 60) * 10) / 10 }))} format={(n) => (n ? `${n}h` : '')} />
-            <div className="eyebrow" style={{ margin: '18px 0 8px' }}>Productive days · last 30</div>
+            <div className="eyebrow" style={{ margin: '18px 0 8px' }}>{$t("Productive days · last 30")}</div>
             <div className="streak-strip">
               {days30.map((d) => {
                 const score = d.tasks + d.habits + Math.floor(d.minutes / 30);
@@ -486,22 +487,22 @@ function Productivity() {
         </section>
         <section className="panel">
           <div className="panel__head">
-            <h3 className="panel__title">Where the time goes</h3>
+            <h3 className="panel__title">{$t("Where the time goes")}</h3>
             <span className="eyebrow">{format(now, 'MMMM')}</span>
           </div>
           <div className="panel__body">
-            {byActivity.length ? <RankBars data={byActivity} format={fmtMinutes} /> : <p className="subtle" style={{ fontSize: 13 }}>Log time or run a focus session to see your breakdown.</p>}
+            {byActivity.length ? <RankBars data={byActivity} format={fmtMinutes} /> : <p className="subtle" style={{ fontSize: 13 }}>{$t("Log time or run a focus session to see your breakdown.")}</p>}
           </div>
         </section>
       </div>
       <section className="panel">
         <div className="panel__head">
-          <h3 className="panel__title">Recent sessions</h3>
-          <Button size="sm" icon={<Plus />} onClick={() => openModal({ kind: 'timelog' })}>Log time</Button>
+          <h3 className="panel__title">{$t("Recent sessions")}</h3>
+          <Button size="sm" icon={<Plus />} onClick={() => openModal({ kind: 'timelog' })}>{$t("Log time")}</Button>
         </div>
         <div className="panel__body">
           {recent.length === 0 ? (
-            <EmptyState compact icon={<Timer />} title="No time logged" text="Start a focus session above or log time manually." />
+            <EmptyState compact icon={<Timer />} title={$t("No time logged")} text={$t("Start a focus session above or log time manually.")} />
           ) : (
             <ul className="agenda">
               {recent.map((l) => (

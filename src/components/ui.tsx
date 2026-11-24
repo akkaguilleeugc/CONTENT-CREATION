@@ -16,6 +16,7 @@ import { haptic } from '@/lib/pwa';
 import type { Priority } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 /* ── Button ── */
 type BtnVariant = 'default' | 'primary' | 'lime' | 'ghost' | 'danger' | 'danger-ghost';
 interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -164,7 +165,7 @@ export function SearchInput({
         onKeyDown={(e) => e.key === 'Escape' && value && (e.stopPropagation(), onChange(''))}
       />
       {value && (
-        <button className="btn btn--ghost btn--sm btn--icon input-clear" onClick={() => onChange('')} aria-label="Clear search" style={{ ['--btn-h' as string]: '24px' }}>
+        <button className="btn btn--ghost btn--sm btn--icon input-clear" onClick={() => onChange('')} aria-label={$t("Clear search")} style={{ ['--btn-h' as string]: '24px' }}>
           <X />
         </button>
       )}
@@ -331,7 +332,7 @@ export function TagInput({ value, onChange, placeholder = 'Add tag…', suggesti
           } else if (e.key === 'Backspace' && !draft && value.length) onChange(value.slice(0, -1));
         }}
         onBlur={() => draft && add(draft)}
-        aria-label="Tags"
+        aria-label={$t("Tags")}
       />
       {suggestions.length > 0 && (
         <datalist id={listId}>

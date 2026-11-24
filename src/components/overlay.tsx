@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { GlassSurface } from './Glass';
 import { Button } from './ui';
 
+import { $t } from '@/lib/i18n';
 /* Body scroll lock shared by every overlay. */
 let locks = 0;
 function useScrollLock(active: boolean) {
@@ -134,7 +135,7 @@ export function Modal({
             <h2 className="modal__title">{title}</h2>
             {description && <p className="modal__desc">{description}</p>}
           </div>
-          <Button variant="ghost" iconOnly size="sm" icon={<X />} onClick={onClose} aria-label="Close" />
+          <Button variant="ghost" iconOnly size="sm" icon={<X />} onClick={onClose} aria-label={$t("Close")} />
         </div>
         </div>
         <div className="modal__body">{children}</div>
@@ -311,7 +312,7 @@ export function Toaster() {
               {t.action.label}
             </Button>
           )}
-          <button className="btn btn--ghost btn--sm btn--icon" onClick={() => dismissToast(t.id)} aria-label="Dismiss" style={{ ['--btn-h' as string]: '24px' }}>
+          <button className="btn btn--ghost btn--sm btn--icon" onClick={() => dismissToast(t.id)} aria-label={$t("Dismiss")} style={{ ['--btn-h' as string]: '24px' }}>
             <X />
           </button>
         </GlassSurface>
@@ -334,16 +335,16 @@ export function ConfirmHost() {
       initialFocus={false}
       footer={
         <>
-          <Button onClick={() => c?.resolve(false)}>Cancel</Button>
+          <Button onClick={() => c?.resolve(false)}>{c?.cancelLabel ?? $t("Cancel")}</Button>
           <Button variant={c?.tone === 'default' ? 'primary' : 'danger'} onClick={() => c?.resolve(true)} data-autofocus autoFocus>
-            {c?.confirmLabel ?? 'Delete'}
+            {c?.confirmLabel ?? $t("Delete")}
           </Button>
         </>
       }
     >
       <div className="row gap-12" style={{ color: 'var(--text-3)', fontSize: 13 }}>
         {c?.tone !== 'default' && <AlertTriangle size={16} color="var(--danger)" />}
-        {c?.tone !== 'default' ? 'This cannot be undone.' : 'You can change this later.'}
+        {c?.tone !== 'default' ? $t("This cannot be undone.") : $t("You can change this later.")}
       </div>
     </Modal>
   );

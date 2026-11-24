@@ -40,6 +40,7 @@ interface ConfirmSpec {
   title: string;
   description?: string;
   confirmLabel?: string;
+  cancelLabel?: string;
   tone?: 'danger' | 'default';
   resolve: (ok: boolean) => void;
 }

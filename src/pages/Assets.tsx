@@ -9,6 +9,7 @@ import type { Asset } from '@/lib/types';
 import { confirmDialog, openModal, toast } from '@/lib/ui';
 import { cn, fmtBytes, fmtDate, matches, uid } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type View = 'grid' | 'list';
 type Sort = 'newest' | 'name' | 'size' | 'type';
 
@@ -52,7 +53,7 @@ export default function Assets() {
     const files = Array.from(e.dataTransfer.files);
     if (!files.length) return;
     const c = await uploadFiles(files, defaults);
-    if (c.length) toast(`${c.length} file${c.length > 1 ? 's' : ''} uploaded`);
+    if (c.length) toast(c.length > 1 ? $t('{n} files uploaded', { n: c.length }) : $t('1 file uploaded'));
   };
 
   const createFolder = () => {
@@ -62,30 +63,30 @@ export default function Assets() {
     store.insert('folders', f);
     setNewFolder(null);
     setFolder(f.id);
-    toast('Folder created', { description: name });
+    toast($t("Folder created"), { description: name });
   };
 
   const assetMenu = (a: Asset) => (
     <Menu
       items={[
-        { label: 'Open', icon: <FolderOpen />, onSelect: () => openModal({ kind: 'asset', id: a.id }) },
-        { label: 'Download', icon: <Download />, onSelect: () => downloadAsset(a) },
-        { label: 'Rename & organise', icon: <Pencil />, onSelect: () => openModal({ kind: 'asset', id: a.id }), hidden: a.system },
+        { label: $t("Open"), icon: <FolderOpen />, onSelect: () => openModal({ kind: 'asset', id: a.id }) },
+        { label: $t("Download"), icon: <Download />, onSelect: () => downloadAsset(a) },
+        { label: $t("Rename & organise"), icon: <Pencil />, onSelect: () => openModal({ kind: 'asset', id: a.id }), hidden: a.system },
         {
-          label: 'Delete',
+          label: $t("Delete"),
           icon: <Trash2 />,
           danger: true,
           separator: true,
           hidden: a.system,
           onSelect: async () => {
-            if (await confirmDialog({ title: `Delete “${a.name}”?`, description: a.projectIds.length ? `Linked to ${a.projectIds.length} video(s); links are removed.` : 'The file is removed from this device.' })) {
+            if (await confirmDialog({ title: $t('Delete “{name}”?', { name: a.name }), description: a.projectIds.length ? $t('Linked to {n} video(s); links are removed.', { n: a.projectIds.length }) : $t("The file is removed from this device.") })) {
               await store.deleteAsset(a.id);
-              toast('Asset deleted');
+              toast($t("Asset deleted"));
             }
           },
         },
       ]}
-      trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={`Actions for ${a.name}`} />}
+      trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t('Actions for {name}', { name: a.name })} />}
     />
   );
 
@@ -101,13 +102,13 @@ export default function Assets() {
   return (
     <div className="page" onDragOver={(e) => (e.preventDefault(), setDragging(true))} onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)} onDrop={onDrop}>
       <PageHeader
-        title="Asset Library"
-        sub={`${assets.length} files · ${fmtBytes(totalSize)} stored privately on this device`}
+        title={$t("Asset Library")}
+        sub={$t('{n} files · {size} stored privately on this device', { n: assets.length, size: fmtBytes(totalSize) })}
         actions={
           <>
-            <Segmented label="View" value={view} onChange={setView} options={[{ value: 'grid', icon: <LayoutGrid />, tip: 'Grid' }, { value: 'list', icon: <List />, tip: 'List' }]} />
+            <Segmented label={$t("View")} value={view} onChange={setView} options={[{ value: 'grid', icon: <LayoutGrid />, tip: $t("Grid") }, { value: 'list', icon: <List />, tip: $t("List") }]} />
             <Button variant="primary" icon={<Upload />} onClick={() => openModal({ kind: 'upload', defaults })} kbd="U">
-              Upload
+              {$t("Upload")}
             </Button>
           </>
         }
@@ -119,12 +120,12 @@ export default function Assets() {
           {sideItem('brand', 'Brand Kit', <Folder />, count((a) => a.brand))}
           {sideItem('linked', 'Linked to videos', <Link2 />, count((a) => a.projectIds.length > 0))}
           <div className="lib__label">
-            Folders
-            <Button variant="ghost" size="sm" iconOnly icon={<FolderPlus />} tip="New folder" onClick={() => setNewFolder('')} />
+            {$t("Folders")}
+            <Button variant="ghost" size="sm" iconOnly icon={<FolderPlus />} tip={$t("New folder")} onClick={() => setNewFolder('')} />
           </div>
           {newFolder !== null && (
             <form className="row" style={{ gap: 4, padding: '0 4px 6px' }} onSubmit={(e) => (e.preventDefault(), createFolder())}>
-              <input className="input input--sm" autoFocus value={newFolder} onChange={(e) => setNewFolder(e.target.value)} placeholder="Folder name" onBlur={createFolder} onKeyDown={(e) => e.key === 'Escape' && setNewFolder(null)} aria-label="Folder name" />
+              <input className="input input--sm" autoFocus value={newFolder} onChange={(e) => setNewFolder(e.target.value)} placeholder={$t("Folder name")} onBlur={createFolder} onKeyDown={(e) => e.key === 'Escape' && setNewFolder(null)} aria-label={$t("Folder name")} />
             </form>
           )}
           {folders.map((f) =>
@@ -139,25 +140,25 @@ export default function Assets() {
                   setRenaming(null);
                 }}
               >
-                <input className="input input--sm" autoFocus value={renaming.name} onChange={(e) => setRenaming({ id: f.id, name: e.target.value })} aria-label="Rename folder" />
-                <Button type="submit" size="sm" iconOnly icon={<Check />} aria-label="Save" />
-                <Button size="sm" variant="ghost" iconOnly icon={<X />} onClick={() => setRenaming(null)} aria-label="Cancel" />
+                <input className="input input--sm" autoFocus value={renaming.name} onChange={(e) => setRenaming({ id: f.id, name: e.target.value })} aria-label={$t("Rename folder")} />
+                <Button type="submit" size="sm" iconOnly icon={<Check />} aria-label={$t("Save")} />
+                <Button size="sm" variant="ghost" iconOnly icon={<X />} onClick={() => setRenaming(null)} aria-label={$t("Cancel")} />
               </form>
             ) : (
               <div key={f.id} className="folder-row">
                 {sideItem(f.id, f.name, <Folder />, count((a) => a.folderId === f.id), f.color)}
                 <Menu
                   items={[
-                    { label: 'Rename', icon: <Pencil />, onSelect: () => setRenaming({ id: f.id, name: f.name }) },
+                    { label: $t("Rename"), icon: <Pencil />, onSelect: () => setRenaming({ id: f.id, name: f.name }) },
                     {
-                      label: 'Delete folder',
+                      label: $t("Delete folder"),
                       icon: <Trash2 />,
                       danger: true,
                       onSelect: async () => {
-                        if (await confirmDialog({ title: `Delete folder “${f.name}”?`, description: 'Files inside are kept and moved to Unfiled.' })) {
+                        if (await confirmDialog({ title: $t('Delete folder “{name}”?', { name: f.name }), description: $t("Files inside are kept and moved to Unfiled.") })) {
                           store.deleteFolder(f.id);
                           if (folder === f.id) setFolder('all');
-                          toast('Folder deleted');
+                          toast($t("Folder deleted"));
                         }
                       },
                     },
@@ -167,26 +168,26 @@ export default function Assets() {
               </div>
             ),
           )}
-          {!folders.length && newFolder === null && <p className="subtle" style={{ fontSize: 12, padding: '2px 10px' }}>No folders yet.</p>}
+          {!folders.length && newFolder === null && <p className="subtle" style={{ fontSize: 12, padding: '2px 10px' }}>{$t("No folders yet.")}</p>}
         </aside>
 
         <div className="lib__main">
           <div className="toolbar">
-            <SearchInput value={q} onChange={setQ} placeholder="Search files and tags…" />
-            <Select sm value={type} onChange={(e) => setType(e.target.value)} options={ASSET_TYPES.map((t) => ({ value: t.id, label: t.label }))} placeholder="All types" aria-label="Type" style={{ width: 'auto' }} />
-            {tags.length > 0 && <Select sm value={tag} onChange={(e) => setTag(e.target.value)} options={tags.map((t) => ({ value: t, label: `#${t}` }))} placeholder="Any tag" aria-label="Tag" style={{ width: 'auto' }} />}
-            <Select sm value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: 'newest', label: 'Newest' }, { value: 'name', label: 'Name' }, { value: 'size', label: 'Size' }, { value: 'type', label: 'Type' }]} aria-label="Sort" style={{ width: 'auto' }} />
+            <SearchInput value={q} onChange={setQ} placeholder={$t("Search files and tags…")} />
+            <Select sm value={type} onChange={(e) => setType(e.target.value)} options={ASSET_TYPES.map((t) => ({ value: t.id, label: t.label }))} placeholder={$t("All types")} aria-label={$t("Type")} style={{ width: 'auto' }} />
+            {tags.length > 0 && <Select sm value={tag} onChange={(e) => setTag(e.target.value)} options={tags.map((t) => ({ value: t, label: `#${t}` }))} placeholder={$t("Any tag")} aria-label={$t("Tag")} style={{ width: 'auto' }} />}
+            <Select sm value={sort} onChange={(e) => setSort(e.target.value as Sort)} options={[{ value: 'newest', label: $t("Newest") }, { value: 'name', label: $t("Name") }, { value: 'size', label: $t("Size") }, { value: 'type', label: $t("Type") }]} aria-label={$t("Sort")} style={{ width: 'auto' }} />
           </div>
           <div className={cn('lib__drop', dragging && 'lib__drop--on')}>
-            <Upload /> Drop to upload {folder !== 'all' && folder !== 'none' && folders.find((f) => f.id === folder) ? `into “${folders.find((f) => f.id === folder)!.name}”` : ''}
+            <Upload /> {$t("Drop to upload")} {folder !== 'all' && folder !== 'none' && folders.find((f) => f.id === folder) ? $t('into “{name}”', { name: folders.find((f) => f.id === folder)!.name }) : ''}
           </div>
           {list.length === 0 ? (
             <div className="panel">
               <EmptyState
                 icon={<FolderOpen />}
-                title={assets.length ? 'No files here' : 'Your library is empty'}
-                text={assets.length ? 'Try another folder or filter — or drop files anywhere on this page.' : 'Upload images, videos, audio, thumbnails and documents. Drag files anywhere on this page.'}
-                actions={<Button variant="primary" icon={<Upload />} onClick={() => openModal({ kind: 'upload', defaults })}>Upload files</Button>}
+                title={assets.length ? $t("No files here") : $t("Your library is empty")}
+                text={assets.length ? $t("Try another folder or filter — or drop files anywhere on this page.") : $t("Upload images, videos, audio, thumbnails and documents. Drag files anywhere on this page.")}
+                actions={<Button variant="primary" icon={<Upload />} onClick={() => openModal({ kind: 'upload', defaults })}>{$t("Upload files")}</Button>}
               />
             </div>
           ) : view === 'grid' ? (
@@ -217,11 +218,11 @@ export default function Assets() {
                 <thead>
                   <tr>
                     <th style={{ width: 56 }} />
-                    <th>Name</th>
-                    <th className="hide-mobile">Type</th>
-                    <th className="hide-mobile">Folder</th>
-                    <th className="num hide-mobile">Size</th>
-                    <th className="hide-mobile">Added</th>
+                    <th>{$t("Name")}</th>
+                    <th className="hide-mobile">{$t("Type")}</th>
+                    <th className="hide-mobile">{$t("Folder")}</th>
+                    <th className="num hide-mobile">{$t("Size")}</th>
+                    <th className="hide-mobile">{$t("Added")}</th>
                     <th style={{ width: 44 }} />
                   </tr>
                 </thead>

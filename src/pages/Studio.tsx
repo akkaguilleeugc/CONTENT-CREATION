@@ -14,6 +14,7 @@ import type { ContentProject, Stage } from '@/lib/types';
 import { confirmDialog, openModal, toast } from '@/lib/ui';
 import { cn, daysFromToday, relativeDay } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type View = 'board' | 'list';
 type SortKey = 'title' | 'stage' | 'date' | 'priority' | 'progress';
 
@@ -34,14 +35,14 @@ export function ProjectCard({ p }: { p: ContentProject }) {
   return (
     <div className="pcard">
       <Thumb p={p} />
-      <div className="pcard__title">{p.title || 'Untitled video'}</div>
+      <div className="pcard__title">{p.title || $t("Untitled video")}</div>
       <div className="row wrap" style={{ gap: 6 }}>
         <PlatformDots ids={p.platformIds} />
         <span className="subtle" style={{ fontSize: 11.5 }}>{FORMATS.find((f) => f.id === p.format)?.label}</span>
       </div>
       <div className="row" style={{ gap: 8 }}>
         <span className="grow">
-          <ProgressBar value={prog} label="Progress" />
+          <ProgressBar value={prog} label={$t("Progress")} />
         </span>
         <span className="tnum subtle" style={{ fontSize: 11 }}>{prog}%</span>
       </div>
@@ -54,7 +55,7 @@ export function ProjectCard({ p }: { p: ContentProject }) {
             {p.publishTime ? ` · ${p.publishTime}` : ''}
           </span>
         ) : (
-          <span className="subtle" style={{ fontSize: 11.5 }}>No date</span>
+          <span className="subtle" style={{ fontSize: 11.5 }}>{$t("No date")}</span>
         )}
       </div>
     </div>
@@ -115,12 +116,12 @@ export default function Studio() {
 
   const moveTo = (p: ContentProject, stage: Stage) => {
     store.setStage(p.id, stage);
-    toast(`Moved to ${STAGES.find((s) => s.id === stage)?.label}`, { description: p.title, action: { label: 'Undo', run: () => useStore.getState().setStage(p.id, p.stage) } });
+    toast($t('Moved to {where}', { where: STAGES.find((s) => s.id === stage)?.label ?? '' }), { description: p.title, action: { label: $t("Undo"), run: () => useStore.getState().setStage(p.id, p.stage) } });
   };
 
   const th = (key: SortKey, label: string, cls?: string) => (
     <th className={cls}>
-      <button onClick={() => setSort((s) => ({ key, dir: s.key === key ? (s.dir === 1 ? -1 : 1) : 1 }))} aria-label={`Sort by ${label}`}>
+      <button onClick={() => setSort((s) => ({ key, dir: s.key === key ? (s.dir === 1 ? -1 : 1) : 1 }))} aria-label={$t('Sort by {label}', { label })}>
         {label}
         {sort.key === key && (sort.dir === 1 ? <ArrowUp size={11} /> : <ArrowDown size={11} />)}
       </button>
@@ -130,29 +131,29 @@ export default function Studio() {
   return (
     <div className={cn('page', view === 'board' && 'page--wide')}>
       <PageHeader
-        title="Content Studio"
-        sub={projects.length ? `${projects.length} videos · ${inProd} in production · ${scheduled} scheduled` : 'Every video is a project: concept, script, shots, edit and publishing in one place.'}
+        title={$t("Content Studio")}
+        sub={projects.length ? $t('{n} videos · {p} in production · {s} scheduled', { n: projects.length, p: inProd, s: scheduled }) : $t("Every video is a project: concept, script, shots, edit and publishing in one place.")}
         actions={
           <>
             <Segmented
-              label="View"
+              label={$t("View")}
               value={view}
               onChange={setView}
               options={[
-                { value: 'board', icon: <Columns3 />, label: 'Board' },
-                { value: 'list', icon: <List />, label: 'List' },
+                { value: 'board', icon: <Columns3 />, label: $t("Board") },
+                { value: 'list', icon: <List />, label: $t("List") },
               ]}
             />
             <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'project' })} kbd="V">
-              New video
+              {$t("New video")}
             </Button>
           </>
         }
       />
       <div className="toolbar">
-        <SearchInput value={q} onChange={setQ} placeholder="Search videos…" />
-        <Select sm value={platform} onChange={(e) => setPlatform(e.target.value)} options={platforms.list.map((p) => ({ value: p.id, label: p.name }))} placeholder="All platforms" aria-label="Platform" style={{ width: 'auto' }} />
-        <Select sm value={priority} onChange={(e) => setPriority(e.target.value)} options={PRIORITIES.map((p) => ({ value: p.id, label: p.label }))} placeholder="Any priority" aria-label="Priority" style={{ width: 'auto' }} />
+        <SearchInput value={q} onChange={setQ} placeholder={$t("Search videos…")} />
+        <Select sm value={platform} onChange={(e) => setPlatform(e.target.value)} options={platforms.list.map((p) => ({ value: p.id, label: p.name }))} placeholder={$t("All platforms")} aria-label={$t("Platform")} style={{ width: 'auto' }} />
+        <Select sm value={priority} onChange={(e) => setPriority(e.target.value)} options={PRIORITIES.map((p) => ({ value: p.id, label: p.label }))} placeholder={$t("Any priority")} aria-label={$t("Priority")} style={{ width: 'auto' }} />
         {view === 'list' && (
           <Select
             sm
@@ -162,8 +163,8 @@ export default function Studio() {
               setParams(v ? { stage: v } : {});
             }}
             options={STAGES.map((s) => ({ value: s.id, label: s.label }))}
-            placeholder="All stages"
-            aria-label="Stage"
+            placeholder={$t("All stages")}
+            aria-label={$t("Stage")}
             style={{ width: 'auto' }}
           />
         )}
@@ -173,14 +174,14 @@ export default function Studio() {
         <div className="panel">
           <EmptyState
             icon={<Clapperboard />}
-            title="No videos in production yet"
-            text="Create a video project from scratch or convert one of your ideas."
+            title={$t("No videos in production yet")}
+            text={$t("Create a video project from scratch or convert one of your ideas.")}
             actions={
               <>
                 <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'project' })}>
-                  New video
+                  {$t("New video")}
                 </Button>
-                <Button onClick={() => navigate('/ideas')}>Browse ideas</Button>
+                <Button onClick={() => navigate('/ideas')}>{$t("Browse ideas")}</Button>
               </>
             }
           />
@@ -194,7 +195,7 @@ export default function Studio() {
             footer:
               s.id === 'idea' || s.id === 'planning' ? (
                 <button className="kcol__add" onClick={() => openModal({ kind: 'project', defaults: { stage: s.id } })}>
-                  <Plus size={14} /> Add video
+                  <Plus size={14} /> {$t("Add video")}
                 </button>
               ) : undefined,
           }))}
@@ -207,7 +208,7 @@ export default function Studio() {
         />
       ) : sorted.length === 0 ? (
         <div className="panel">
-          <EmptyState icon={<Clapperboard />} title="No videos match" text="Try another filter." actions={<Button onClick={() => (setQ(''), setPlatform(''), setPriority(''), setParams({}))}>Clear filters</Button>} />
+          <EmptyState icon={<Clapperboard />} title={$t("No videos match")} text={$t("Try another filter.")} actions={<Button onClick={() => (setQ(''), setPlatform(''), setPriority(''), setParams({}))}>{$t("Clear filters")}</Button>} />
         </div>
       ) : (
         <div className="table-wrap">
@@ -215,7 +216,7 @@ export default function Studio() {
             <thead>
               <tr>
                 {th('title', 'Video')}
-                <th className="hide-mobile">Platforms</th>
+                <th className="hide-mobile">{$t("Platforms")}</th>
                 {th('stage', 'Stage')}
                 {th('date', 'Publish', 'hide-mobile')}
                 {th('progress', 'Progress', 'hide-mobile')}
@@ -229,20 +230,20 @@ export default function Studio() {
                 return (
                   <tr key={p.id} className="clickable" onClick={() => navigate(`/studio/${p.id}`)}>
                     <td style={{ fontWeight: 600, maxWidth: 360 }}>
-                      <div className="truncate">{p.title || 'Untitled video'}</div>
+                      <div className="truncate">{p.title || $t("Untitled video")}</div>
                       <div className="subtle" style={{ fontSize: 12, fontWeight: 400 }}>{p.category}</div>
                     </td>
                     <td className="hide-mobile">
                       <PlatformDots ids={p.platformIds} />
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
-                      <Select sm value={p.stage} onChange={(e) => moveTo(p, e.target.value as Stage)} options={STAGES.map((s) => ({ value: s.id, label: s.label }))} aria-label="Stage" style={{ width: 150 }} />
+                      <Select sm value={p.stage} onChange={(e) => moveTo(p, e.target.value as Stage)} options={STAGES.map((s) => ({ value: s.id, label: s.label }))} aria-label={$t("Stage")} style={{ width: 150 }} />
                     </td>
                     <td className="hide-mobile tnum">{p.publishDate ? `${relativeDay(p.publishDate)}${p.publishTime ? ` · ${p.publishTime}` : ''}` : <span className="subtle">—</span>}</td>
                     <td className="hide-mobile" style={{ minWidth: 140 }}>
                       <div className="row">
                         <span className="grow">
-                          <ProgressBar value={prog} label="Progress" />
+                          <ProgressBar value={prog} label={$t("Progress")} />
                         </span>
                         <span className="tnum subtle" style={{ fontSize: 12, width: 34, textAlign: 'right' }}>{prog}%</span>
                       </div>
@@ -253,29 +254,29 @@ export default function Studio() {
                     <td onClick={(e) => e.stopPropagation()}>
                       <Menu
                         items={[
-                          { label: 'Open workspace', icon: <ExternalLink />, onSelect: () => navigate(`/studio/${p.id}`) },
+                          { label: $t("Open workspace"), icon: <ExternalLink />, onSelect: () => navigate(`/studio/${p.id}`) },
                           {
-                            label: 'Duplicate',
+                            label: $t("Duplicate"),
                             icon: <Copy />,
                             onSelect: () => {
                               store.duplicateProject(p.id);
-                              toast('Video duplicated');
+                              toast($t("Video duplicated"));
                             },
                           },
                           {
-                            label: 'Delete',
+                            label: $t("Delete"),
                             icon: <Trash2 />,
                             danger: true,
                             separator: true,
                             onSelect: async () => {
-                              if (await confirmDialog({ title: `Delete “${p.title}”?`, description: 'Linked tasks, events and files stay — they are just unlinked.' })) {
+                              if (await confirmDialog({ title: $t('Delete “{name}”?', { name: p.title }), description: $t("Linked tasks, events and files stay — they are just unlinked.") })) {
                                 store.deleteProject(p.id);
-                                toast('Video deleted');
+                                toast($t("Video deleted"));
                               }
                             },
                           },
                         ]}
-                        trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label="Actions" />}
+                        trigger={(t) => <Button {...t} variant="ghost" size="sm" iconOnly icon={<MoreHorizontal />} aria-label={$t("Actions")} />}
                       />
                     </td>
                   </tr>

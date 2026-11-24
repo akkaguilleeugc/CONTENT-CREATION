@@ -13,6 +13,7 @@ import {
 import type { ContentProject, DB, HabitLog, Settings, Stage } from './types';
 import { toDateStr, uid } from './utils';
 
+import { $t } from './i18n';
 export function buildSample(settings: Settings): Partial<DB> {
   const now = new Date();
   const d = (n: number) => toDateStr(addDays(now, n));
@@ -24,12 +25,12 @@ export function buildSample(settings: Settings): Partial<DB> {
   const demo = { demo: true as const };
 
   const ideas = [
-    newIdea({ ...demo, title: '24h in Madrid with a €50 budget', description: 'Challenge format: every euro on screen, tally at the end.', category: 'Vlogs', platformIds: ['tiktok', 'yt_long'], format: 'vertical', priority: 'high', status: 'ready', tags: ['challenge', 'city'], favorite: true }),
-    newIdea({ ...demo, title: 'Unboxing: the creator desk setup', description: 'Lights, mic, arm — real costs and what I would skip.', category: 'Unboxings', platformIds: ['yt_long'], format: 'horizontal', priority: 'medium', status: 'developing', tags: ['setup', 'gear'] }),
-    newIdea({ ...demo, title: '3 editing tricks that doubled my retention', description: 'Pattern interrupts, J-cuts, captions in the safe zone.', category: 'Tech', platformIds: ['tiktok', 'ig_reels', 'yt_shorts'], format: 'vertical', priority: 'urgent', status: 'interesting', tags: ['editing', 'tutorial'], favorite: true }),
-    newIdea({ ...demo, title: 'Honest opinion: is posting daily worth it?', category: 'Opinion', platformIds: ['ig_reels'], priority: 'medium', status: 'inbox', tags: ['opinion'] }),
-    newIdea({ ...demo, title: 'Story time — my first brand deal', category: 'Storytelling', platformIds: ['tiktok'], priority: 'low', status: 'inbox' }),
-    newIdea({ ...demo, title: 'Morning routine, but realistic', category: 'Lifestyle', platformIds: ['ig_stories', 'ig_reels'], priority: 'low', status: 'archived' }),
+    newIdea({ ...demo, title: '24h in Madrid with a €50 budget', description: 'Challenge format: every euro on screen, tally at the end.', category: $t('Vlogs'), platformIds: ['tiktok', 'yt_long'], format: 'vertical', priority: 'high', status: 'ready', tags: ['challenge', 'city'], favorite: true }),
+    newIdea({ ...demo, title: 'Unboxing: the creator desk setup', description: 'Lights, mic, arm — real costs and what I would skip.', category: $t('Unboxings'), platformIds: ['yt_long'], format: 'horizontal', priority: 'medium', status: 'developing', tags: ['setup', 'gear'] }),
+    newIdea({ ...demo, title: '3 editing tricks that doubled my retention', description: 'Pattern interrupts, J-cuts, captions in the safe zone.', category: $t('Tech'), platformIds: ['tiktok', 'ig_reels', 'yt_shorts'], format: 'vertical', priority: 'urgent', status: 'interesting', tags: ['editing', 'tutorial'], favorite: true }),
+    newIdea({ ...demo, title: 'Honest opinion: is posting daily worth it?', category: $t('Opinion'), platformIds: ['ig_reels'], priority: 'medium', status: 'inbox', tags: ['opinion'] }),
+    newIdea({ ...demo, title: 'Story time — my first brand deal', category: $t('Storytelling'), platformIds: ['tiktok'], priority: 'low', status: 'inbox' }),
+    newIdea({ ...demo, title: 'Morning routine, but realistic', category: $t('Lifestyle'), platformIds: ['ig_stories', 'ig_reels'], priority: 'low', status: 'archived' }),
   ];
 
   const mk = (stage: Stage, p: Partial<ContentProject>) => {
@@ -45,14 +46,14 @@ export function buildSample(settings: Settings): Partial<DB> {
   };
 
   const projects = [
-    mk('published', { title: 'I tried the 5AM creator routine for a week', platformIds: ['tiktok', 'ig_reels'], category: 'Lifestyle', publishDate: d(-2), publishTime: '18:00', duration: 58, goal: 'Reach + follows', priority: 'high' }),
-    mk('published', { title: 'Camera settings I use for every reel', platformIds: ['yt_shorts', 'tiktok'], category: 'Tech', publishDate: d(-6), publishTime: '19:30', duration: 45, priority: 'medium' }),
-    mk('scheduled', { title: 'Budget city guide — Lisbon', platformIds: ['tiktok', 'ig_reels'], category: 'Vlogs', publishDate: d(1), publishTime: '18:00', duration: 72, priority: 'high' }),
-    mk('review', { title: 'Desk setup tour 2026', platformIds: ['yt_long'], format: 'horizontal', category: 'Unboxings', publishDate: d(4), publishTime: '17:00', duration: 540, priority: 'medium' }),
-    mk('editing', { title: '3 editing tricks that doubled my retention', platformIds: ['tiktok', 'yt_shorts'], category: 'Tech', publishDate: d(6), publishTime: '19:00', editDate: d(0), duration: 50, priority: 'urgent' }),
-    mk('ready', { title: 'Coffee spots you need to try', platformIds: ['ig_reels'], category: 'Lifestyle', recordDate: d(0), publishDate: d(9), duration: 40, priority: 'medium' }),
-    mk('script', { title: 'Why I stopped chasing trends', platformIds: ['tiktok', 'yt_long'], category: 'Opinion', recordDate: d(3), duration: 90, priority: 'low' }),
-    mk('planning', { title: 'Q&A — 10K followers special', platformIds: ['ig_stories', 'tiktok'], category: 'Entertainment', priority: 'medium' }),
+    mk('published', { title: 'I tried the 5AM creator routine for a week', platformIds: ['tiktok', 'ig_reels'], category: $t('Lifestyle'), publishDate: d(-2), publishTime: '18:00', duration: 58, goal: 'Reach + follows', priority: 'high' }),
+    mk('published', { title: 'Camera settings I use for every reel', platformIds: ['yt_shorts', 'tiktok'], category: $t('Tech'), publishDate: d(-6), publishTime: '19:30', duration: 45, priority: 'medium' }),
+    mk('scheduled', { title: 'Budget city guide — Lisbon', platformIds: ['tiktok', 'ig_reels'], category: $t('Vlogs'), publishDate: d(1), publishTime: '18:00', duration: 72, priority: 'high' }),
+    mk('review', { title: 'Desk setup tour 2026', platformIds: ['yt_long'], format: 'horizontal', category: $t('Unboxings'), publishDate: d(4), publishTime: '17:00', duration: 540, priority: 'medium' }),
+    mk('editing', { title: '3 editing tricks that doubled my retention', platformIds: ['tiktok', 'yt_shorts'], category: $t('Tech'), publishDate: d(6), publishTime: '19:00', editDate: d(0), duration: 50, priority: 'urgent' }),
+    mk('ready', { title: 'Coffee spots you need to try', platformIds: ['ig_reels'], category: $t('Lifestyle'), recordDate: d(0), publishDate: d(9), duration: 40, priority: 'medium' }),
+    mk('script', { title: 'Why I stopped chasing trends', platformIds: ['tiktok', 'yt_long'], category: $t('Opinion'), recordDate: d(3), duration: 90, priority: 'low' }),
+    mk('planning', { title: 'Q&A — 10K followers special', platformIds: ['ig_stories', 'tiktok'], category: $t('Entertainment'), priority: 'medium' }),
   ];
   projects[4]!.script = {
     hook: 'You’re losing viewers in the first 2 seconds — here’s the fix.',

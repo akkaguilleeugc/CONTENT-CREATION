@@ -1,0 +1,320 @@
+640	Aún no hay estadísticas. Regístralas después de publicar.	Ainda não há estatísticas. Registre depois de publicar.
+641	Aún no hay tareas	Ainda não há tarefas
+642	No hay tiempo registrado	Nenhum tempo registrado
+643	Sin vídeo	Sem vídeo
+644	Aún no hay vídeos en producción	Ainda não há vídeos em produção
+645	Ningún vídeo coincide	Nenhum vídeo encontrado
+646	Ninguno	Nenhum
+647	Sin configurar · entrada manual	Não configurado · entrada manual
+648	Sin vincular	Não vinculado
+649	Sin iniciar sesión	Não conectado
+650	Nota	Nota
+651	Notas	Notas
+652	Aquí no hay nada	Nada aqui
+653	Aquí no hay nada predefinido: cada norma de abajo se genera con lo que añades.	Nada aqui vem pronto — cada diretriz abaixo é gerada a partir do que você adiciona.
+654	Aún no hay nada. Todo lo que subas aquí, o marques como «En el Kit de marca» en la Biblioteca de recursos, aparece en esta pestaña.	Ainda não há nada. Tudo o que você enviar aqui — ou marcar como “No Kit da marca” na Biblioteca de recursos — aparece nesta aba.
+655	Nada en producción	Nada em produção
+656	Nada en los próximos 45 días	Nada nos próximos 45 dias
+657	Nada en esta vista	Nada nesta visualização
+658	Nada planificado.	Nada planejado.
+659	Nada programado hoy	Nada agendado para hoje
+660	Notificaciones	Notificações
+661	Este navegador no admite notificaciones	Este navegador não suporta notificações
+662	Ahora es un proyecto de contenido	Agora é um projeto de conteúdo
+663	Ahora añade su primer color.	Agora adicione a primeira cor.
+664	Objetivo	Objetivo
+665	Las API oficiales requieren OAuth y un servidor que guarde los tokens en secreto, así que llegarán con el backend de Supabase (	As APIs oficiais exigem OAuth e um servidor que guarde os tokens em segredo, então chegarão com o backend do Supabase (
+666	Sin conexión	Offline
+667	Sin conexión: guardado en este dispositivo	Offline — salvo neste dispositivo
+668	Más antiguos primero	Mais antigos primeiro
+669	Activado	Ativado
+670	En Android y en ordenadores, mantén pulsado o haz clic derecho en el icono para Nueva idea, Nuevo vídeo, Nueva tarea y Calendario.	No Android e no computador, toque e segure ou clique com o botão direito no ícone para Nova ideia, Novo vídeo, Nova tarefa e Calendário.
+671	En Android, comparte un TikTok, un reel o un enlace desde cualquier app y llegará como una idea nueva.	No Android, compartilhe um TikTok, reel ou link de qualquer app e ele chega como uma nova ideia.
+672	En iPhone, añade primero KROOPY a tu pantalla de inicio: las notificaciones funcionan en la app instalada.	No iPhone, adicione primeiro o KROOPY à Tela de Início — as notificações funcionam no app instalado.
+673	Estos días	Nestes dias
+674	Una cuenta, el mismo KROOPY en tu portátil y en tu móvil.	Uma conta, o mesmo KROOPY no notebook e no celular.
+675	Una línea que lo resuma	Uma linha que resuma
+676	Un paso por línea. Se aplica a los vídeos nuevos.	Um passo por linha. Vale para os vídeos novos.
+677	Abrir	Abrir
+678	Ideas abiertas	Ideias abertas
+679	Ábrela desde tu pantalla de inicio.	Abra pela tela inicial.
+680	Abrir enlace	Abrir link
+681	Abrir proyecto	Abrir projeto
+682	Abrir estudio	Abrir estúdio
+683	Abre el	Abra o
+684	Abre esta página en Safari (o usa el menú de compartir de tu navegador) y luego:	Abra esta página no Safari (ou use o menu de compartilhar do navegador) e depois:
+685	Abrir proyecto de vídeo	Abrir projeto de vídeo
+686	Abrir espacio de trabajo	Abrir espaço de trabalho
+687	Abrir el {date}	Abrir {date}
+688	Abierto en Content Studio.	Aberto no Content Studio.
+689	Opinión	Opinião
+690	Opcional	Opcional
+691	Opcional: o escribe un título para publicaciones que no sigues aquí.	Opcional — ou digite um título para posts que você não acompanha aqui.
+692	Idea original	Ideia original
+693	Otro	Outro
+694	Otros archivos de logo	Outros arquivos de logo
+695	Sobre el hombro	Sobre o ombro
+696	Vencidas	Atrasadas
+697	Inicio	Início
+698	POV	POV
+699	Paleta	Paleta
+700	Paleta creada	Paleta criada
+701	Paleta eliminada	Paleta excluída
+702	Paleta actualizada	Paleta atualizada
+703	Aparcada para más tarde	Guardada para depois
+704	Contraseña	Senha
+705	Contraseña actualizada	Senha atualizada
+706	Pausar	Pausar
+707	En pausa	Pausado
+708	Vídeos pendientes	Vídeos pendentes
+709	Rendimiento	Desempenho
+710	Periodo	Período
+711	Elimina para siempre todos los registros y archivos de este dispositivo.	Exclui permanentemente todos os registros e arquivos deste dispositivo.
+712	Permiso concedido: los recordatorios también aparecen como notificaciones del sistema y el icono muestra una insignia de tareas.	Permissão concedida — os lembretes também aparecem como notificações do sistema e o ícone mostra um selo de tarefas.
+713	Permiso no concedido	Permissão não concedida
+714	Personal	Pessoal
+715	Personal y profesional: todo lo que tienes que hacer, en una sola lista.	Pessoal e profissional — tudo o que você precisa fazer, numa lista só.
+716	Personal o profesional	Pessoal ou profissional
+717	Foto	Foto
+718	Fotografía	Fotografia
+719	Elegir color	Escolher cor
+720	Elige hasta 3 con el botón de comparar o desde la tabla	Escolha até 3 com o botão comparar ou pela tabela
+721	Planificar	Planejar
+722	Planificar un vídeo	Planejar um vídeo
+723	Planificación	Planejamento
+724	Plataforma	Plataforma
+725	Nombre de la plataforma	Nome da plataforma
+726	Plataformas	Plataformas
+727	Publicación	Post
+728	Título de la publicación	Título do post
+729	Publicaciones	Posts
+730	Preparar el equipo	Preparar o equipamento
+731	Preparar la ubicación	Preparar o local
+732	Pulsa N para crear lo que sea.	Pressione N para criar qualquer coisa.
+733	Vista previa	Prévia
+734	Tamaño de la vista previa	Tamanho da prévia
+735	Texto de la vista previa	Texto da prévia
+736	Anterior	Anterior
+737	Etapa anterior	Etapa anterior
+738	Principal	Principal
+739	Logo principal	Logo principal
+740	Prioridad	Prioridade
+741	Privacidad	Privacidade
+742	Privacidad y aspectos legales	Privacidade e termos
+743	Política de privacidad	Política de privacidade
+744	Privado por diseño	Privado desde a concepção
+745	Producidos	Produzidos
+746	Producción	Produção
+747	Checklist de producción	Checklist de produção
+748	Plantilla del checklist de producción	Modelo do checklist de produção
+749	Etapa de producción	Etapa de produção
+750	Días productivos	Dias produtivos
+751	Días productivos · últimos 30	Dias produtivos · últimos 30
+752	Productividad	Produtividade
+753	Perfil	Perfil
+754	Foto de perfil actualizada	Foto de perfil atualizada
+755	Ajustes del perfil	Configurações do perfil
+756	Progreso	Progresso
+757	Progreso registrado	Progresso registrado
+758	Enlace de la publicación	Link da publicação
+759	Publicaciones	Publicações
+760	Publicaciones, días de grabación y edición, tareas y eventos personales: arrastra para reprogramar.	Publicações, dias de gravação e edição, tarefas e eventos pessoais — arraste para reagendar.
+761	Publicar	Publicar
+762	Fecha de publicación	Data de publicação
+763	Hora de publicación	Hora de publicação
+764	Publicado	Publicado
+765	Publicado el	Publicado em
+766	Publicación	Publicação
+767	Se publica pronto pero aún está en «{stage}».	Publica em breve, mas ainda está em “{stage}”.
+768	Añadir tarea rápida	Adicionar tarefa rápida
+769	Creación rápida	Criação rápida
+770	Tarea rápida	Tarefa rápida
+771	Tarea rápida para este vídeo…	Tarefa rápida para este vídeo…
+772	RGB	RGB
+773	RGB copiado	RGB copiado
+774	Ordenar por	Classificar por
+775	Alcance	Alcance
+776	Reactivar	Reativar
+777	Lista	Pronta
+778	Listo para grabar	Pronto para gravar
+779	Lista para producir	Pronta para produzir
+780	Grab.	Grav.
+781	Sesiones recientes	Sessões recentes
+782	Editados recientemente	Editados recentemente
+783	Grabar	Gravar
+784	Grabar A-roll	Gravar A-roll
+785	Grabar B-roll	Gravar B-roll
+786	Registra los números de una publicación	Registre os números de um post
+787	Registro eliminado	Registro excluído
+788	Grabar recursos extra	Gravar recursos extras
+789	Registra los números de cada publicación y aprende qué funciona de verdad.	Registre os números de cada post e descubra o que realmente funciona.
+790	Grabación	Gravação
+791	Día de grabación	Dia de gravação
+792	Grabación, edición, reunión…	Gravação, edição, reunião…
+793	Referencia o inspiración	Referência ou inspiração
+794	Referencia eliminada	Referência removida
+795	Referencia guardada	Referência salva
+796	Referencia actualizada	Referência atualizada
+797	Referencias	Referências
+798	Referencias, miniaturas, clips en bruto, música: adjunta lo que necesite este vídeo.	Referências, miniaturas, clipes brutos, música — anexe tudo o que este vídeo precisa.
+799	Vídeo relacionado	Vídeo relacionado
+800	Recordatorio	Lembrete
+801	Recordatorio activado	Lembrete definido
+802	Hora del recordatorio	Hora do lembrete
+803	Los recordatorios de tareas, eventos, hábitos y publicaciones programadas suenan mientras KROOPY está abierta.	Os lembretes de tarefas, eventos, hábitos e posts agendados disparam enquanto o KROOPY está aberto.
+804	Quitar	Remover
+805	Quitar de favoritos	Remover dos favoritos
+806	Quitar de Mi día	Remover do Meu dia
+807	Quitar de la comparación	Remover da comparação
+808	Quítalos cuando quieras desde Ajustes → Datos.	Remova quando quiser em Configurações → Dados.
+809	Quitar regla	Remover regra
+810	Quitar datos de ejemplo	Remover dados de exemplo
+811	Quitar subtarea	Remover subtarefa
+812	Quitar {name}	Remover {name}
+813	¿Quitar {name}?	Remover {name}?
+814	Renombrar	Renomear
+815	Renombrar y organizar	Renomear e organizar
+816	Renombrar carpeta	Renomear pasta
+817	Repetir	Repetir
+818	Reemplazar	Substituir
+819	¿Reemplazar todos los datos por esta copia?	Substituir todos os dados por este backup?
+820	¿Reemplazar los datos de este dispositivo?	Substituir os dados deste dispositivo?
+821	Reemplaza los datos actuales por un archivo de copia de KROOPY.	Substitui os dados atuais por um arquivo de backup do KROOPY.
+822	Reemplaza esta lista por tu plantilla predeterminada (Ajustes → Checklists).	Substitui esta lista pelo seu modelo padrão (Configurações → Checklists).
+823	Reprográmalo o márcalo como publicado.	Reagende ou marque como publicado.
+824	Reprogramado	Reagendado
+825	Restablecer	Redefinir
+826	¿Restablecer KROOPY?	Redefinir o KROOPY?
+827	¿Restablecer el checklist?	Redefinir o checklist?
+828	Restablecer todo	Redefinir tudo
+829	Volver a la plantilla	Voltar ao modelo
+830	Restablece tu contraseña	Redefina sua senha
+831	Restaurar	Restaurar
+832	Restaurar copia	Restaurar backup
+833	Devolver a la bandeja de entrada	Devolver à caixa de entrada
+834	Revisión	Revisão
+835	Revisar el material	Revisar o material
+836	Reseñas	Reviews
+837	Rol	Função
+838	Rol / uso	Função / uso
+839	ST	ST
+840	Datos de ejemplo	Dados de exemplo
+841	Datos de ejemplo cargados	Dados de exemplo carregados
+842	Datos de ejemplo eliminados	Dados de exemplo removidos
+843	Los registros de ejemplo se cargan marcados: al quitarlos se conservan tus datos.	Os registros de exemplo são carregados identificados — removê-los mantém seus próprios dados.
+844	Sáb	Sáb
+845	Guardar	Salvar
+846	Guardar y convertir	Salvar e transformar
+847	Guardar una referencia	Salvar uma referência
+848	Guarda combinaciones aprobadas de fondo / texto / acento y comprueba su contraste.	Salve combinações aprovadas de fundo / texto / destaque e confira o contraste.
+849	Guardar marca	Salvar marca
+850	Guardar color	Salvar cor
+851	Guarda referencias de diseño, fotografía, capturas e ideas de campaña para tu marca, con enlaces, notas y etiquetas.	Salve referências de design, fotografia, capturas de tela e ideias de campanha para sua marca — com links, notas e tags.
+852	Guardar evento	Salvar evento
+853	Error al guardar	Falha ao salvar
+854	Guardar fuente	Salvar fonte
+855	Guardar objetivo	Salvar meta
+856	Guardar hábito	Salvar hábito
+857	Guardar contraseña	Salvar senha
+858	Guardar estadísticas	Salvar estatísticas
+859	Guardar tarea	Salvar tarefa
+860	Guardado en local	Salvo localmente
+861	Se guarda en este dispositivo y se aplica antes de que cargue la app.	Salvo neste dispositivo e aplicado antes de o app carregar.
+862	Guardados	Salvamentos
+863	Guardando…	Salvando…
+864	Prog.	Agend.
+865	Programa una publicación, un día de grabación o un evento.	Agende uma publicação, um dia de gravação ou um evento.
+866	Programado	Agendado
+867	Programado y listo para publicarse.	Agendado e pronto para ir ao ar.
+868	Captura de pantalla	Captura de tela
+869	Guion	Roteiro
+870	Guion copiado	Roteiro copiado
+871	Se eliminan el guion, los planos y los checklists. Las tareas, eventos y archivos vinculados se conservan.	O roteiro, as cenas e os checklists são excluídos. Tarefas, eventos e arquivos vinculados são mantidos.
+872	Guion	Roteirização
+873	Buscar	Buscar
+874	Búsqueda y comandos	Busca e comandos
+875	Buscar archivos y etiquetas…	Buscar arquivos e tags…
+876	Buscar ideas, etiquetas, referencias…	Buscar ideias, tags, referências…
+877	Busca ideas, vídeos, tareas… o escribe un comando	Busque ideias, vídeos, tarefas… ou digite um comando
+878	Buscar o ir a…	Buscar ou ir para…
+879	Buscar tareas…	Buscar tarefas…
+880	Buscar vídeos…	Buscar vídeos…
+881	Elige dos o tres publicaciones para compararlas lado a lado.	Selecione dois ou três posts para comparar lado a lado.
+882	Enviar enlace	Enviar link
+883	Separa con espacios, p. ej. #creador #vlog	Separe com espaços, ex.: #criador #vlog
+884	Sesión registrada	Sessão registrada
+885	Sesión de menos de un minuto: no se registra	Sessão com menos de um minuto — não registrada
+886	Crear un objetivo	Criar uma meta
+887	Usar como logo principal	Usar como logo principal
+888	Usar como símbolo	Usar como símbolo
+889	Crea objetivos diarios, semanales, mensuales o anuales. Los automáticos se miden solos con tu actividad real.	Crie metas diárias, semanais, mensais ou anuais. As automáticas se acompanham sozinhas pela sua atividade real.
+890	Crear objetivo	Criar meta
+891	Define lo esencial: después se abre el espacio de trabajo para concepto, guion, planos y publicación.	Defina o essencial — em seguida abre o espaço de trabalho para conceito, roteiro, cenas e publicação.
+892	Configurar marca	Configurar marca
+893	Preparar la iluminación	Preparar a iluminação
+894	Configura tu marca	Configure sua marca
+895	Ajustes	Configurações
+896	Secciones de ajustes	Seções de configurações
+897	Ajustes → Integraciones	Configurações → Integrações
+898	Dando forma al enfoque	Lapidando o ângulo
+899	Compartir	Compartilhar
+900	Compartir con KROOPY	Compartilhar com o KROOPY
+901	Idea compartida	Ideia compartilhada
+902	Compartidos	Compartilhamentos
+903	Etiqueta corta	Rótulo curto
+904	Accesos directos	Atalhos
+905	Plano	Cena
+906	Descripción del plano	Descrição da cena
+907	Lista de planos	Lista de cenas
+908	Tipo de plano	Tipo de cena
+909	Planos grabados	Cenas gravadas
+910	Mostrar	Mostrar
+911	Se muestra en Hoy y como notificación.	Aparece em Hoje e como notificação.
+912	Aparece en el calendario.	Aparece no calendário.
+913	Iniciar sesión	Entrar
+914	Inicia sesión en tu portátil y en tu móvil para tener el mismo KROOPY en ambos.	Entre no notebook e no celular para ter o mesmo KROOPY nos dois.
+915	Inicia sesión o crea una cuenta	Entre ou crie uma conta
+916	Inicia sesión en KROOPY	Entrar no KROOPY
+917	Inicia sesión para sincronizar	Entre para sincronizar
+918	Inicia sesión con la misma cuenta en tu portátil y en tu móvil. Completa una tarea en uno y aparecerá hecha en el otro en segundos; aunque uno estuviera sin conexión, se pone al día en cuanto vuelve a conectarse.	Entre com a mesma conta no notebook e no celular. Conclua uma tarefa em um e ela aparece feita no outro em segundos — mesmo que um deles esteja offline, ele se atualiza assim que se reconectar.
+919	Cerrar sesión	Sair
+920	¿Cerrar sesión?	Sair da conta?
+921	Sesión iniciada	Você entrou
+922	Sesión cerrada	Você saiu
+923	Tamaño	Tamanho
+924	Omitir	Pular
+925	Pequeños, repetibles, medibles.	Pequenos, repetíveis, mensuráveis.
+926	Se omitieron algunos archivos	Alguns arquivos foram ignorados
+927	Algo salió mal. Inténtalo de nuevo.	Algo deu errado. Tente de novo.
+928	Ordenar	Ordenar
+929	Ordenar por {label}	Ordenar por {label}
+930	Origen	Origem
+931	Texto de muestra	Texto de amostra
+932	Se recomienda una imagen cuadrada. Se guarda en tu Biblioteca de recursos.	Recomenda-se uma imagem quadrada. Fica salva na sua Biblioteca de recursos.
+933	Etapa	Etapa
+934	Empezar	Começar
+935	Empieza una sesión de concentración arriba o registra tiempo a mano.	Comece uma sessão de foco acima ou registre o tempo manualmente.
+936	Empieza una producción	Comece uma produção
+937	Empezar a concentrarse	Começar foco
+938	Empezar con un espacio vacío	Começar com um espaço limpo
+939	Empieza	Começa
+940	Empieza a las {time}	Começa às {time}
+941	Estadísticas registradas	Estatísticas registradas
+942	Estadísticas actualizadas	Estatísticas atualizadas
+943	Estado	Status
+944	Parar y registrar	Parar e registrar
+945	Almacenamiento usado	Armazenamento usado
+946	Historia	Story
+947	Storytelling	Storytelling
+948	Racha	Sequência
+949	Subtítulo	Subtítulo
+950	Subtarea	Subtarefa
+951	Subtareas	Subtarefas
+952	Subtítulos	Legendas
+953	Dom	Dom
+954	Domingo	Domingo
+955	Soporte	Suporte
+956	Cambiar tema (actual: {theme})	Mudar tema (atual: {theme})
+957	Símbolo	Símbolo
+958	Símbolo subido	Símbolo enviado
+959	Sincronizar ahora	Sincronizar agora

@@ -406,6 +406,19 @@ export function snapshot(s: Store = useStore.getState()): DB {
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let applyingRemote = false;
 
+/* Changes that arrive from outside this tab (another tab, the cloud) are applied inside
+   applyExternal() so the sync engine and the achievements don't treat them as the user's own edits. */
+let external = 0;
+export const isExternalApply = () => external > 0;
+export function applyExternal(fn: () => void) {
+  external++;
+  try {
+    fn();
+  } finally {
+    external--;
+  }
+}
+
 /** Write any pending change immediately (used when the page is being hidden or closed). */
 export function flushPendingSave() {
   if (saveTimer) {
@@ -453,7 +466,7 @@ export async function initStore() {
     const remote = await localData.load();
     if (!remote) return;
     applyingRemote = true;
-    useStore.setState({ ...migrate(remote) });
+    applyExternal(() => useStore.setState({ ...migrate(remote) }));
     applyingRemote = false;
   });
 }

@@ -12,6 +12,7 @@ import type { Asset, AssetType } from '@/lib/types';
 import { closeModal, confirmDialog, toast } from '@/lib/ui';
 import { cn, downloadBlob, fmtBytes, fmtDate, imageSize, uid } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 const MAX_BYTES = 200 * 1024 * 1024;
 
 export function guessType(file: File): AssetType {
@@ -28,7 +29,7 @@ export async function uploadFiles(files: File[], defaults: Partial<Asset> & { pr
   const created: Asset[] = [];
   for (const file of files) {
     if (file.size > MAX_BYTES) {
-      toast(`${file.name} is too large`, { tone: 'error', description: 'Files up to 200 MB are supported locally.' });
+      toast($t('{name} is too large', { name: file.name }), { tone: 'error', description: $t("Files up to 200 MB are supported locally.") });
       continue;
     }
     const blobKey = `file-${uid()}`;
@@ -36,7 +37,7 @@ export async function uploadFiles(files: File[], defaults: Partial<Asset> & { pr
       await localFiles.put(blobKey, file);
     } catch (e) {
       console.error(e);
-      toast(`Could not store ${file.name}`, { tone: 'error', description: 'Your browser storage may be full.' });
+      toast($t('Could not store {name}', { name: file.name }), { tone: 'error', description: $t("Your browser storage may be full.") });
       continue;
     }
     const dims = await imageSize(file);
@@ -66,7 +67,7 @@ export async function uploadFiles(files: File[], defaults: Partial<Asset> & { pr
 export async function downloadAsset(a: Asset) {
   if (a.blobKey) {
     const blob = await localFiles.get(a.blobKey);
-    if (!blob) return toast('File not found in local storage', { tone: 'error' });
+    if (!blob) return toast($t("File not found in local storage"), { tone: 'error' });
     const ext = a.mime.split('/')[1]?.split('+')[0] ?? 'bin';
     downloadBlob(blob, `${a.name}.${ext}`);
   } else if (a.src) {
@@ -111,9 +112,9 @@ function FontSample({ asset }: { asset: Asset }) {
   useEffect(() => void previewFamily(asset).then(setFamily), [asset]);
   return (
     <div style={{ fontFamily: family ? `"${family}"` : undefined, fontSize: 22, textAlign: 'center', lineHeight: 1.4 }}>
-      ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      {$t("ABCDEFGHIJKLMNOPQRSTUVWXYZ")}
       <br />
-      abcdefghijklmnopqrstuvwxyz 0123456789
+      {$t("abcdefghijklmnopqrstuvwxyz 0123456789")}
     </div>
   );
 }
@@ -127,7 +128,7 @@ function FontThumb({ asset, size = 44 }: { asset: Asset; size?: number }) {
       alive = false;
     };
   }, [asset]);
-  return <span style={{ fontFamily: family ? `"${family}"` : undefined, fontSize: size, lineHeight: 1 }}>Aa</span>;
+  return <span style={{ fontFamily: family ? `"${family}"` : undefined, fontSize: size, lineHeight: 1 }}>{$t("Aa")}</span>;
 }
 
 /* ════════════════════════ Upload dialog ════════════════════════ */
@@ -168,8 +169,8 @@ export function Dropzone({ onFiles, accept, children, compact }: { onFiles: (f: 
       {children ?? (
         <>
           <UploadCloud />
-          <div className="dropzone__title">Drop files here or click to browse</div>
-          <div className="dropzone__sub">Images, video, audio, fonts and documents · up to 200 MB each · stored privately in this browser</div>
+          <div className="dropzone__title">{$t("Drop files here or click to browse")}</div>
+          <div className="dropzone__sub">{$t("Images, video, audio, fonts and documents · up to 200 MB each · stored privately in this browser")}</div>
         </>
       )}
     </div>
@@ -188,7 +189,7 @@ export function UploadModal({ defaults = {}, files: initialFiles }: { defaults?:
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    if (!files.length) return toast('Choose at least one file', { tone: 'error' });
+    if (!files.length) return toast($t("Choose at least one file"), { tone: 'error' });
     setBusy(true);
     const { referenceId, ...rest } = defaults as typeof defaults & { referenceId?: string };
     const created = await uploadFiles(files, { ...rest, type: type || undefined, folderId: folderId || undefined, projectId: projectId || undefined, brand, tags });
@@ -196,7 +197,7 @@ export function UploadModal({ defaults = {}, files: initialFiles }: { defaults?:
     if (referenceId && created[0]) useStore.getState().update('references', referenceId, { assetId: created[0].id });
     if (created.length) {
       closeModal();
-      toast(`${created.length} file${created.length > 1 ? 's' : ''} uploaded`, { description: created.map((a) => a.name).join(', ') });
+      toast(created.length > 1 ? $t('{n} files uploaded', { n: created.length }) : $t('1 file uploaded'), { description: created.map((a) => a.name).join(', ') });
       created.forEach((a) => a.blobKey && fileUrl(a.blobKey));
     }
   };
@@ -206,14 +207,14 @@ export function UploadModal({ defaults = {}, files: initialFiles }: { defaults?:
       open
       onClose={closeModal}
       size="lg"
-      title="Upload assets"
-      description="Files stay on this device (IndexedDB) and keep their links to your videos."
+      title={$t("Upload assets")}
+      description={$t("Files stay on this device (IndexedDB) and keep their links to your videos.")}
       footer={
         <>
           <span className="spacer" />
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" loading={busy} onClick={submit} disabled={!files.length || busy}>
-            Upload {files.length ? `${files.length} file${files.length > 1 ? 's' : ''}` : ''}
+            {$t("Upload")} {files.length ? (files.length > 1 ? $t('{n} files', { n: files.length }) : $t('1 file')) : ''}
           </Button>
         </>
       }
@@ -227,27 +228,27 @@ export function UploadModal({ defaults = {}, files: initialFiles }: { defaults?:
                 <TypeIcon a={{ mime: f.type, type: guessType(f) }} />
                 <span className="grow truncate">{f.name}</span>
                 <span className="subtle tnum">{fmtBytes(f.size)}</span>
-                <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => setFiles((p) => p.filter((_, j) => j !== i))} aria-label={`Remove ${f.name}`} />
+                <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => setFiles((p) => p.filter((_, j) => j !== i))} aria-label={$t('Remove {name}', { name: f.name })} />
               </div>
             ))}
           </div>
         )}
         <div className="form-grid">
-          <Field label="Type" hint="Auto-detected when left empty.">
-            <Select value={type} onChange={(e) => setType(e.target.value as AssetType)} options={ASSET_TYPES.map((t) => ({ value: t.id, label: t.label.replace(/s$/, '') }))} placeholder="Auto" />
+          <Field label={$t("Type")} hint={$t("Auto-detected when left empty.")}>
+            <Select value={type} onChange={(e) => setType(e.target.value as AssetType)} options={ASSET_TYPES.map((t) => ({ value: t.id, label: t.label.replace(/s$/, '') }))} placeholder={$t("Auto")} />
           </Field>
-          <Field label="Folder">
-            <Select value={folderId} onChange={(e) => setFolderId(e.target.value)} options={folders.map((f) => ({ value: f.id, label: f.name }))} placeholder="No folder" />
+          <Field label={$t("Folder")}>
+            <Select value={folderId} onChange={(e) => setFolderId(e.target.value)} options={folders.map((f) => ({ value: f.id, label: f.name }))} placeholder={$t("No folder")} />
           </Field>
-          <Field label="Link to video" className="span-2">
-            <Select value={projectId} onChange={(e) => setProjectId(e.target.value)} options={projects.map((p) => ({ value: p.id, label: p.title || 'Untitled' }))} placeholder="Not linked" />
+          <Field label={$t("Link to video")} className="span-2">
+            <Select value={projectId} onChange={(e) => setProjectId(e.target.value)} options={projects.map((p) => ({ value: p.id, label: p.title || $t("Untitled") }))} placeholder={$t("Not linked")} />
           </Field>
-          <Field label="Tags" className="span-2">
+          <Field label={$t("Tags")} className="span-2">
             <TagInput value={tags} onChange={setTags} />
           </Field>
           <div className="span-2 row between">
-            <span className="field__label">Add to Brand Kit</span>
-            <Switch checked={brand} onChange={setBrand} label="Add to Brand Kit" />
+            <span className="field__label">{$t("Add to Brand Kit")}</span>
+            <Switch checked={brand} onChange={setBrand} label={$t("Add to Brand Kit")} />
           </div>
         </div>
       </div>
@@ -266,10 +267,10 @@ export function AssetModal({ id }: { id: string }) {
   if (!asset || !draft) return null;
 
   const save = () => {
-    if (!draft.name.trim()) return toast('Name cannot be empty', { tone: 'error' });
+    if (!draft.name.trim()) return toast($t("Name cannot be empty"), { tone: 'error' });
     store.update('assets', asset.id, { ...draft, name: draft.name.trim(), folderId: draft.folderId || undefined });
     closeModal();
-    toast('Asset updated');
+    toast($t("Asset updated"));
   };
 
   const linked = asset.projectIds;
@@ -279,7 +280,7 @@ export function AssetModal({ id }: { id: string }) {
       onClose={closeModal}
       size="xl"
       title={asset.name}
-      description={`${asset.mime || asset.type} · ${fmtBytes(asset.size)}${asset.width ? ` · ${asset.width}×${asset.height}` : ''} · added ${fmtDate(asset.createdAt, 'd MMM yyyy')}`}
+      description={`${asset.mime || asset.type} · ${fmtBytes(asset.size)}${asset.width ? ` · ${asset.width}×${asset.height}` : ''} · ${$t('added {date}', { date: fmtDate(asset.createdAt, 'd MMM yyyy') })}`}
       initialFocus={false}
       footer={
         <>
@@ -288,22 +289,22 @@ export function AssetModal({ id }: { id: string }) {
               variant="danger-ghost"
               icon={<Trash2 />}
               onClick={async () => {
-                if (await confirmDialog({ title: `Delete “${asset.name}”?`, description: linked.length ? `It is linked to ${linked.length} video(s); the links are removed too.` : 'The file is removed from this device.' })) {
+                if (await confirmDialog({ title: $t('Delete “{name}”?', { name: asset.name }), description: linked.length ? $t('It is linked to {n} video(s); the links are removed too.', { n: linked.length }) : $t("The file is removed from this device.") })) {
                   await store.deleteAsset(asset.id);
                   closeModal();
-                  toast('Asset deleted');
+                  toast($t("Asset deleted"));
                 }
               }}
             >
-              Delete
+              {$t("Delete")}
             </Button>
           )}
           <span className="spacer" />
           <Button icon={<Download />} onClick={() => downloadAsset(asset)}>
-            Download
+            {$t("Download")}
           </Button>
           <Button variant="primary" onClick={save}>
-            Save
+            {$t("Save")}
           </Button>
         </>
       }
@@ -328,34 +329,34 @@ export function AssetModal({ id }: { id: string }) {
           {asset.type !== 'font' && (!url || (!/^(image|video|audio)\//.test(asset.mime) && asset.mime !== 'application/pdf')) && (
             <div className="col" style={{ alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>
               <FileText size={40} />
-              No inline preview for this file type — download to open it.
+              {$t("No inline preview for this file type — download to open it.")}
             </div>
           )}
         </div>
         <div className="form">
-          <Field label="Name">
+          <Field label={$t("Name")}>
             <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} disabled={asset.system} />
           </Field>
           <div className="form-grid">
-            <Field label="Type">
+            <Field label={$t("Type")}>
               <Select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value as AssetType })} options={ASSET_TYPES.map((t) => ({ value: t.id, label: t.label.replace(/s$/, '') }))} />
             </Field>
-            <Field label="Folder">
-              <Select value={draft.folderId} onChange={(e) => setDraft({ ...draft, folderId: e.target.value })} options={folders.map((f) => ({ value: f.id, label: f.name }))} placeholder="No folder" />
+            <Field label={$t("Folder")}>
+              <Select value={draft.folderId} onChange={(e) => setDraft({ ...draft, folderId: e.target.value })} options={folders.map((f) => ({ value: f.id, label: f.name }))} placeholder={$t("No folder")} />
             </Field>
           </div>
-          <Field label="Tags">
+          <Field label={$t("Tags")}>
             <TagInput value={draft.tags} onChange={(t) => setDraft({ ...draft, tags: t })} />
           </Field>
-          <Field label="Notes">
+          <Field label={$t("Notes")}>
             <Textarea value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} style={{ minHeight: 60 }} />
           </Field>
           <div className="row between">
-            <span className="field__label">In Brand Kit</span>
-            <Switch checked={draft.brand} onChange={(b) => setDraft({ ...draft, brand: b })} label="In Brand Kit" />
+            <span className="field__label">{$t("In Brand Kit")}</span>
+            <Switch checked={draft.brand} onChange={(b) => setDraft({ ...draft, brand: b })} label={$t("In Brand Kit")} />
           </div>
-          <Field label="Linked videos" hint={projects.length ? 'Toggle to link or unlink — saved instantly.' : 'Create a video in Content Studio to link files.'}>
-            <ChipToggle options={projects.map((p) => ({ value: p.id, label: p.title || 'Untitled' }))} value={linked} onChange={(next) => {
+          <Field label={$t("Linked videos")} hint={projects.length ? $t("Toggle to link or unlink — saved instantly.") : $t("Create a video in Content Studio to link files.")}>
+            <ChipToggle options={projects.map((p) => ({ value: p.id, label: p.title || $t("Untitled") }))} value={linked} onChange={(next) => {
               for (const p of projects) {
                 const was = linked.includes(p.id);
                 const is = next.includes(p.id);

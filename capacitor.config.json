@@ -1,0 +1,14 @@
+{
+  "appId": "app.kroopy.studio",
+  "appName": "KROOPY",
+  "webDir": "dist",
+  "backgroundColor": "#0B0F14",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0B0F14",
+    "scheme": "KROOPY"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

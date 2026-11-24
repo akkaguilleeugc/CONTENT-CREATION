@@ -119,12 +119,23 @@ export function onRemoteSave(cb: () => void) {
 const urlCache = new Map<string, string>();
 const pending = new Map<string, Promise<string | null>>();
 
+/* When a file isn't on this device yet (it was added on another device), the sync engine can fetch it. */
+let remoteSource: ((key: string) => Promise<Blob | null>) | null = null;
+export function setRemoteFileSource(fn: ((key: string) => Promise<Blob | null>) | null) {
+  remoteSource = fn;
+}
+
 export function fileUrl(key: string): Promise<string | null> {
   const cached = urlCache.get(key);
   if (cached) return Promise.resolve(cached);
   let p = pending.get(key);
   if (!p) {
-    p = localFiles.get(key).then((blob) => {
+    p = localFiles.get(key).then(async (local) => {
+      let blob = local;
+      if (!blob && remoteSource) {
+        blob = (await remoteSource(key).catch(() => null)) ?? undefined;
+        if (blob) await localFiles.put(key, blob).catch(() => undefined);
+      }
       pending.delete(key);
       if (!blob) return null;
       const url = URL.createObjectURL(blob);

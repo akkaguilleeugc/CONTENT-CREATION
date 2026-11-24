@@ -5,6 +5,7 @@ import { systemNotify } from '@/lib/pwa';
 import { toast } from '@/lib/ui';
 import { dateTime, toDateStr } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 const WINDOW = 6 * 60 * 60 * 1000; // ignore reminders that are more than 6 h stale
 
 function notify(title: string, body: string, url: string) {
@@ -26,7 +27,7 @@ export function checkReminders(now = new Date()) {
     const key = `task:${task.id}:${task.dueDate}:${task.dueTime ?? ''}:${task.reminder}`;
     if (due(key, fire)) {
       s.markReminder(key);
-      notify(`Reminder · ${task.title}`, task.dueTime ? `Due ${task.dueDate === toDateStr(now) ? 'today' : task.dueDate} at ${task.dueTime}` : 'Due today', '/tasks');
+      notify(`${$t('Reminder')} · ${task.title}`, task.dueTime ? (task.dueDate === toDateStr(now) ? $t('Due today at {time}', { time: task.dueTime }) : $t('Due {date} at {time}', { date: task.dueDate!, time: task.dueTime })) : $t('Due today'), '/tasks');
     }
   }
   for (const ev of s.events) {
@@ -36,7 +37,7 @@ export function checkReminders(now = new Date()) {
     const key = `event:${ev.id}:${ev.date}:${ev.startTime}:${ev.reminder}`;
     if (due(key, new Date(at.getTime() - ev.reminder * 60_000))) {
       s.markReminder(key);
-      notify(`Coming up · ${ev.title}`, `Starts at ${ev.startTime}`, '/calendar');
+      notify(`${$t('Coming up')} · ${ev.title}`, $t('Starts at {time}', { time: ev.startTime! }), '/calendar');
     }
   }
   for (const p of s.projects) {
@@ -54,7 +55,7 @@ export function checkReminders(now = new Date()) {
     const key = `habit:${h.id}:${today}`;
     if (due(key, dateTime(today, h.reminderTime))) {
       s.markReminder(key);
-      notify(`Habit · ${h.name}`, 'Keep the streak alive.', '/trackers');
+      notify(`${$t('Habit')} · ${h.name}`, $t('Keep the streak alive.'), '/trackers');
     }
   }
 }

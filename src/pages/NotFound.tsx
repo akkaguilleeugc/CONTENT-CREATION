@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/overlay';
 import { Button } from '@/components/ui';
 
+import { $t } from '@/lib/i18n';
 export default function NotFound() {
   const navigate = useNavigate();
   return (
@@ -10,12 +11,12 @@ export default function NotFound() {
       <div className="panel" style={{ marginTop: '8vh' }}>
         <EmptyState
           icon={<Compass />}
-          title="This page doesn’t exist"
-          text="The link may be old or mistyped. Everything you need is one click away."
+          title={$t("This page doesn’t exist")}
+          text={$t("The link may be old or mistyped. Everything you need is one click away.")}
           actions={
             <>
-              <Button variant="primary" onClick={() => navigate('/')}>Go to Overview</Button>
-              <Button onClick={() => navigate(-1)}>Go back</Button>
+              <Button variant="primary" onClick={() => navigate('/')}>{$t("Go to Overview")}</Button>
+              <Button onClick={() => navigate(-1)}>{$t("Go back")}</Button>
             </>
           }
         />

@@ -1,8 +1,10 @@
 import {
   Bell,
+  Cloud,
   ChevronLeft,
   ChevronRight,
   Home,
+  Languages,
   Menu as MenuIcon,
   Moon,
   Plus,
@@ -20,9 +22,12 @@ import { BrandMark, Wordmark } from './brand';
 import { CustomCursor, PointerGlow } from './PointerFX';
 import { GlassSurface } from './Glass';
 import { NAV, NAV_GROUPS, titleFor } from './nav';
-import { Modal, Popover, usePopover } from './overlay';
+import { Menu, Modal, Popover, usePopover } from './overlay';
+import { syncLabel, useSync } from '@/lib/sync';
+import { LANG, LANGS, setLang } from '@/lib/i18n';
 import { Button } from './ui';
 
+import { $t } from '@/lib/i18n';
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 export const MOD = isMac ? '⌘' : 'Ctrl';
 
@@ -54,6 +59,24 @@ function useNavCounts() {
   }, [ideas, tasks, projects]);
 }
 
+/** Language switch (English · Español · Português do Brasil). */
+export function LanguageMenu({ size = 'sm' }: { size?: 'sm' | 'md' }) {
+  const cur = LANGS.find((l) => l.id === LANG)!;
+  return (
+    <Menu
+      align="end"
+      width={220}
+      items={LANGS.map((l) => ({ label: `${l.flag}  ${l.label}${l.id === LANG ? '  ✓' : ''}`, onSelect: () => l.id !== LANG && setLang(l.id) }))}
+      trigger={(t) => (
+        <button {...t} className={cn('lang-btn', size === 'md' && 'lang-btn--md')} aria-label={$t('Language')} data-tip={$t('Language')}>
+          <Languages />
+          <span>{cur.short}</span>
+        </button>
+      )}
+    />
+  );
+}
+
 export function ThemeToggle({ size = 'sm' }: { size?: 'sm' | 'md' }) {
   const theme = useStore((s) => s.settings.theme);
   const setSettings = useStore((s) => s.setSettings);
@@ -63,10 +86,10 @@ export function ThemeToggle({ size = 'sm' }: { size?: 'sm' | 'md' }) {
       variant="ghost"
       size={size}
       iconOnly
-      tip={resolved === 'dark' ? 'Light mode' : 'Dark mode'}
+      tip={resolved === 'dark' ? $t("Light mode") : $t("Dark mode")}
       icon={resolved === 'dark' ? <Sun /> : <Moon />}
       onClick={() => setSettings({ theme: resolved === 'dark' ? 'light' : 'dark' })}
-      aria-label={`Switch theme (current: ${theme})`}
+      aria-label={$t('Switch theme (current: {theme})', { theme })}
     />
   );
 }
@@ -83,18 +106,18 @@ export function NotificationsButton() {
         <Button
           variant="ghost"
           iconOnly
-          tip="Notifications"
+          tip={$t("Notifications")}
           tipSide="bottom"
           icon={<Bell />}
           onClick={(e) => pop.toggle(e.currentTarget)}
-          aria-label={`Notifications${items.length ? ` (${items.length})` : ''}`}
+          aria-label={`${$t('Notifications')}${items.length ? ` (${items.length})` : ''}`}
         />
         {items.length > 0 && <span className="bell__dot" aria-hidden />}
       </span>
       <Popover anchor={pop.anchor} onClose={pop.close} align="end" width={340}>
-        <div className="menu__label">Notifications</div>
+        <div className="menu__label">{$t("Notifications")}</div>
         {items.length === 0 ? (
-          <div style={{ padding: '14px 10px 16px', color: 'var(--text-3)', fontSize: 13 }}>You’re all caught up. Nothing overdue or due soon.</div>
+          <div style={{ padding: '14px 10px 16px', color: 'var(--text-3)', fontSize: 13 }}>{$t("You’re all caught up. Nothing overdue or due soon.")}</div>
         ) : (
           items.map((n) => (
             <button
@@ -123,6 +146,7 @@ function Sidebar() {
   const setSettings = useStore((s) => s.setSettings);
   const profile = useStore((s) => s.settings.profile);
   const saveState = useStore((s) => s.saveState);
+  const { user: syncUser, status: syncStatus, pending: syncPending } = useSync();
   const counts = useNavCounts();
   const { setPalette, setQuick } = useUI();
   const loc = useLocation();
@@ -141,26 +165,26 @@ function Sidebar() {
   };
 
   return (
-    <aside className={cn('sidebar', collapsed && 'sidebar--collapsed')} aria-label="Main navigation">
-      <button className="sidebar__collapse-floating" onClick={() => setSettings({ sidebarCollapsed: !collapsed })} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+    <aside className={cn('sidebar', collapsed && 'sidebar--collapsed')} aria-label={$t("Main navigation")}>
+      <button className="sidebar__collapse-floating" onClick={() => setSettings({ sidebarCollapsed: !collapsed })} aria-label={collapsed ? $t("Expand sidebar") : $t("Collapse sidebar")}>
         {collapsed ? <ChevronRight /> : <ChevronLeft />}
       </button>
-      <Link to="/" className="sidebar__brand" aria-label="KROOPY home">
+      <Link to="/" className="sidebar__brand" aria-label={$t("KROOPY home")}>
         <BrandMark />
         <span className="brand-word">
           <Wordmark height={25} plate="none" tone="auto" />
           <span className="brand-word__product">
-            Creator<em>studio</em>
+            {$t("Creator")}<em>studio</em>
           </span>
         </span>
       </Link>
       <div className="sidebar__actions">
-        <Button variant="primary" block icon={<Plus />} onClick={() => setQuick(true)} tip={tip('Create')} tipSide="right" aria-label="Create">
-          <span className="btn-label">Create</span>
+        <Button variant="primary" block icon={<Plus />} onClick={() => setQuick(true)} tip={tip('Create')} tipSide="right" aria-label={$t("Create")}>
+          <span className="btn-label">{$t("Create")}</span>
         </Button>
-        <button className="search-trigger" onClick={() => setPalette(true)} data-tip={tip(`Search ${MOD}K`)} data-tip-side="right" aria-label="Search and commands">
+        <button className="search-trigger" onClick={() => setPalette(true)} data-tip={tip(`Search ${MOD}K`)} data-tip-side="right" aria-label={$t("Search and commands")}>
           <Search />
-          <span>Search or jump to…</span>
+          <span>{$t("Search or jump to…")}</span>
           <span className="kbd">{MOD}K</span>
         </button>
       </div>
@@ -175,16 +199,17 @@ function Sidebar() {
       <div className="sidebar__foot">
         {item(NAV.find((n) => n.to === '/settings')!)}
         <div className="row sidebar__foot-row" style={{ gap: 4 }}>
-          <Link to="/settings" className="profile-chip grow" aria-label="Profile settings">
+          <Link to="/settings" className="profile-chip grow" aria-label={$t("Profile settings")}>
             <Avatar />
             <span className="profile-chip__meta" style={{ minWidth: 0 }}>
-              <div className="profile-chip__name truncate">{profile.name || 'Creator'}</div>
+              <div className="profile-chip__name truncate">{profile.name || $t("Creator")}</div>
               <div className="profile-chip__sub">
-                <span className={cn('save-dot', saveState === 'saving' && 'save-dot--saving', saveState === 'error' && 'save-dot--error')} />
-                {saveState === 'saving' ? 'Saving…' : saveState === 'error' ? 'Save failed' : 'Saved locally'}
+                <span className={cn('save-dot', (saveState === 'saving' || syncStatus === 'syncing') && 'save-dot--saving', (saveState === 'error' || (syncUser && syncStatus === 'error')) && 'save-dot--error', syncUser && syncStatus === 'offline' && 'save-dot--offline')} />
+                {saveState === 'saving' ? $t("Saving…") : saveState === 'error' ? $t("Save failed") : syncUser ? syncLabel(syncStatus, syncPending) : $t("Saved locally")}
               </div>
             </span>
           </Link>
+          <LanguageMenu />
           <ThemeToggle />
         </div>
       </div>
@@ -197,13 +222,13 @@ function Topbar() {
   const { setPalette, setMore } = useUI();
   return (
     <GlassSurface as="header" radius={22} tone="chrome" className="topbar">
-      <Link to="/" aria-label="Home">
+      <Link to="/" aria-label={$t("Home")}>
         <BrandMark />
       </Link>
       <div className="topbar__title">{titleFor(loc.pathname)}</div>
-      <Button variant="ghost" iconOnly icon={<Search />} onClick={() => setPalette(true)} aria-label="Search" />
+      <Button variant="ghost" iconOnly icon={<Search />} onClick={() => setPalette(true)} aria-label={$t("Search")} />
       <NotificationsButton />
-      <Button variant="ghost" iconOnly icon={<MenuIcon />} onClick={() => setMore(true)} aria-label="More sections" />
+      <Button variant="ghost" iconOnly icon={<MenuIcon />} onClick={() => setMore(true)} aria-label={$t("More sections")} />
     </GlassSurface>
   );
 }
@@ -224,16 +249,16 @@ function BottomNav() {
   const Cal = NAV.find((n) => n.to === '/calendar')!.icon;
   const inMore = !PRIMARY_MOBILE.some((p) => isActive(p));
   return (
-    <GlassSurface as="nav" radius={30} tone="chrome" className="bottomnav" aria-label="Primary">
-      {tab('/', 'Home', <Home />)}
-      {tab('/studio', 'Studio', <Studio />)}
-      <button className="bottomnav__fab" onClick={() => setQuick(true)} aria-label="Create">
+    <GlassSurface as="nav" radius={30} tone="chrome" className="bottomnav" aria-label={$t("Primary")}>
+      {tab('/', $t('Home'), <Home />)}
+      {tab('/studio', $t('Studio'), <Studio />)}
+      <button className="bottomnav__fab" onClick={() => setQuick(true)} aria-label={$t("Create")}>
         <Plus />
       </button>
-      {tab('/calendar', 'Calendar', <Cal />)}
+      {tab('/calendar', $t('Calendar'), <Cal />)}
       <button className={cn('bottomnav__item', (inMore || moreOpen) && 'bottomnav__item--active')} onClick={() => setMore(true)}>
         <MenuIcon />
-        More
+        {$t("More")}
       </button>
     </GlassSurface>
   );
@@ -245,7 +270,7 @@ function MoreSheet() {
   const counts = useNavCounts();
   const navigate = useNavigate();
   return (
-    <Modal open={moreOpen} onClose={() => setMore(false)} title="All sections" description="Everything in KROOPY." initialFocus={false}>
+    <Modal open={moreOpen} onClose={() => setMore(false)} title={$t("All sections")} description={$t("Everything in KROOPY.")} initialFocus={false}>
       <div className="more-grid">
         {NAV.filter((n) => !PRIMARY_MOBILE.includes(n.to)).map((n) => (
           <button
@@ -263,11 +288,22 @@ function MoreSheet() {
             </span>
           </button>
         ))}
+        <button className={cn('more-tile', loc.pathname === '/account' && 'more-tile--active')} onClick={() => { setMore(false); navigate('/account'); }}>
+          <Cloud />
+          <span>{$t('Account & sync')}</span>
+        </button>
+      </div>
+      <div className="row between mt-16">
+        <span className="subtle" style={{ fontSize: 13 }}>{$t('Language')}</span>
+        <LanguageMenu size="md" />
       </div>
       <div className="row between mt-16" style={{ paddingBottom: 8 }}>
-        <span className="subtle" style={{ fontSize: 13 }}>Theme</span>
+        <span className="subtle" style={{ fontSize: 13 }}>{$t("Theme")}</span>
         <ThemeToggle size="md" />
       </div>
+      <p className="subtle more-legal">
+        <Link to="/privacy" onClick={() => setMore(false)}>{$t('Privacy')}</Link> · <Link to="/terms" onClick={() => setMore(false)}>{$t('Terms')}</Link> · <Link to="/cookies" onClick={() => setMore(false)}>{$t('Cookies')}</Link> · <Link to="/support" onClick={() => setMore(false)}>{$t('Support')}</Link>
+      </p>
     </Modal>
   );
 }

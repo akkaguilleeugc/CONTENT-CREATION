@@ -435,3 +435,15 @@ html.has-cursor :is(input:not([type='checkbox']):not([type='radio']):not([type='
   font-size: 22px;
   line-height: 1;
 }
+
+/* Entrance choreography: a page's top-level blocks arrive one after another. */
+.page-enter > .page > * {
+  /* backwards, not both: once finished no transform lingers (fixed-position children keep working) */
+  animation: rise-in 560ms var(--ease-out) backwards;
+}
+.page-enter > .page > *:nth-child(2) { animation-delay: 45ms; }
+.page-enter > .page > *:nth-child(3) { animation-delay: 90ms; }
+.page-enter > .page > *:nth-child(4) { animation-delay: 135ms; }
+.page-enter > .page > *:nth-child(5) { animation-delay: 180ms; }
+.page-enter > .page > *:nth-child(6) { animation-delay: 225ms; }
+.page-enter > .page > *:nth-child(n + 7) { animation-delay: 270ms; }

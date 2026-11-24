@@ -85,14 +85,45 @@ motion/                             vídeo de 15 s y vídeo de lanzamiento de 80
 
 Local-first y real: todos los registros se guardan en **IndexedDB** (con respaldo a `localStorage` si IndexedDB no está disponible) con guardado diferido de 250 ms, flush al ocultar la pestaña y sincronización entre pestañas (`BroadcastChannel`). Los archivos se guardan como blobs en un almacén IndexedDB separado. *Ajustes → Data & backup* exporta/importa una copia JSON completa (registros + archivos).
 
-La UI solo habla con dos interfaces (`DataAdapter` y `FileAdapter` en `src/lib/persistence.ts`). Para pasar a **Supabase**:
-
-1. `supabase db push` con `supabase/migrations/` — `0001_init.sql` (tablas, enums, índices, triggers `updated_at`, RLS por `user_id = auth.uid()` y bucket privado `assets` con carpeta por usuario) y `0002_brand_kit.sql` (perfil de tu marca y tipografías propias).
-2. Implementar `DataAdapter`/`FileAdapter` con `@supabase/supabase-js` usando solo la *anon key* pública (las claves secretas nunca van al cliente) y Supabase Auth.
+La UI solo habla con dos interfaces (`DataAdapter` y `FileAdapter` en `src/lib/persistence.ts`). Con una cuenta, `src/lib/sync.ts` mantiene esa copia local sincronizada con la nube (ver *Cuenta y sincronización entre dispositivos*). `supabase/migrations/0001_init.sql` y `0002_brand_kit.sql` describen además un esquema relacional completo con RLS, útil para informes o integraciones futuras; la sincronización usa `0003_sync.sql`.
 
 ### Integraciones de plataformas
 
 No se simula ninguna API. `analytics_records.source` y `content_publications.external_id` ya existen para cuando se configuren las APIs oficiales (TikTok Display API, Instagram Graph API, YouTube Data + Analytics API), que requieren OAuth y un servidor (Supabase Edge Functions) para custodiar los tokens.
+
+## Cuenta y sincronización entre dispositivos
+
+KROOPY sigue siendo *local-first* (funciona sin cuenta y sin conexión), pero con una cuenta (correo + contraseña) el portátil y el móvil comparten los mismos datos: completas una tarea en el móvil y en segundos aparece completada en el ordenador; si un dispositivo estaba sin conexión, sus cambios esperan en una cola y se envían al reconectar.
+
+- **Motor:** `src/lib/sync.ts` — detecta cada alta, cambio o borrado local, lo guarda en una cola persistente y lo sube; descarga lo que cambió desde la última vez (ordenado por el reloj del servidor), recibe los cambios de otros dispositivos en directo (Realtime) y sincroniza los archivos subidos (Storage privado, una carpeta por usuario). Gana la última escritura; los borrados viajan como «lápidas».
+- **Pantalla:** `/account` (iniciar sesión, crear cuenta, recuperar contraseña, estado de sincronización, cerrar sesión y **eliminar cuenta**).
+- **Pruebas:** `node scripts/sync-dev-server.cjs` + `VITE_SYNC_DEV_URL=http://127.0.0.1:8787 npm run dev` simula la nube en local; con dos navegadores (portátil e iPhone) se comprobó: alta, inicio de sesión, tarea completada en el móvil → visible en el portátil (~0,5 s), cambios sin conexión, borrados y estado idéntico tras recargar.
+
+**Activarla (≈5 minutos, plan gratuito de Supabase):**
+
+1. Crea un proyecto en [supabase.com](https://supabase.com) (región UE recomendada).
+2. SQL Editor → pega y ejecuta `supabase/migrations/0003_sync.sql` (tabla con RLS, Realtime, bucket privado y función de borrado de cuenta).
+3. Authentication → URL configuration → añade `https://kroopy.netlify.app` (y tu dominio) como Site URL / Redirect URL.
+4. En Netlify → Site settings → Environment variables: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (Project Settings → API; usa la *anon key*, nunca la *service_role*). Ver `.env.example`.
+5. Vuelve a desplegar. En la app aparecerá *Cuenta y sincronización* lista para usar.
+
+## Idiomas
+
+Inglés, español y portugués de Brasil, con selector en Ajustes → Idioma, en la barra lateral (botón EN/ES/PT), en el menú *Más* del móvil y en la pantalla de bienvenida. Fechas en el idioma elegido (date-fns). Cómo añadir textos: `scripts/i18n/README.md`.
+
+## Privacidad, cookies y App Store
+
+- Páginas públicas en los tres idiomas: `/privacy`, `/terms`, `/cookies`, `/support` (enlazadas desde Ajustes → Privacidad y aspectos legales, la cuenta, la bienvenida y el menú *Más*).
+- Solo almacenamiento estrictamente necesario (sin cookies de publicidad ni analítica), con un aviso informativo la primera vez.
+- **Antes de publicar:** pon tus datos reales en `src/lib/legal.ts` (titular, correo de contacto, país).
+- Guía paso a paso para la App Store (Capacitor, ficha, etiqueta de privacidad, notas para revisión): `docs/APP_STORE.md`.
+
+## Animaciones e interacción
+
+- Fondo que reacciona al ratón o al dedo (`src/components/PointerFX.tsx`, capas en GPU, sin repintar degradados).
+- Cursor propio: punto inmediato + anillo con retraso (lerp 0,14) que crece sobre elementos interactivos y reacciona al clic; solo con ratón/trackpad y nunca en campos de texto.
+- Microcelebraciones al completar un logro (tarea, hábito, checklist, vídeo publicado, objetivo, idea convertida): `src/lib/celebrate.ts`. Nunca se disparan por cambios que llegan de la sincronización.
+- Entrada escalonada de cada página. Todo respeta `prefers-reduced-motion`.
 
 ## Landing page — `/landing/`
 

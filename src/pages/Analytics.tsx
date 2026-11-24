@@ -13,6 +13,7 @@ import type { AnalyticsRecord } from '@/lib/types';
 import { openModal } from '@/lib/ui';
 import { cn, compact, fmtDate, fmtNumber, toDateStr } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type Range = '7' | '30' | '90' | '365' | 'all';
 type Metric = 'views' | 'engagement' | 'followersGained' | 'saves' | 'shares';
 type SortKey = 'publishedDate' | 'views' | 'engagement' | 'likes' | 'followersGained';
@@ -88,7 +89,7 @@ export default function Analytics() {
       FORMATS.map((f) => {
         const rs = filtered.filter((r) => r.format === f.id);
         const s = sumRecords(rs);
-        return { key: f.id, label: f.label, value: rs.length ? s.engagement : 0, sub: `${rs.length} posts · ${compact(rs.length ? s.views / rs.length : 0)} avg views`, n: rs.length };
+        return { key: f.id, label: f.label, value: rs.length ? s.engagement : 0, sub: $t('{n} posts · {v} avg views', { n: rs.length, v: compact(rs.length ? s.views / rs.length : 0) }), n: rs.length };
       })
         .filter((x) => x.n > 0)
         .sort((a, b) => b.value - a.value),
@@ -106,12 +107,12 @@ export default function Analytics() {
   const compared = compare.map((id) => records.find((r) => r.id === id)).filter(Boolean) as AnalyticsRecord[];
 
   const kpis = [
-    { label: 'Views', value: t.views, d: delta(t.views, p.views) },
-    { label: 'Reach', value: t.reach, d: delta(t.reach, p.reach) },
-    { label: 'Engagement rate', value: t.engagement, d: p.posts ? t.engagement - p.engagement : null, pct: true },
-    { label: 'Followers gained', value: t.followersGained, d: delta(t.followersGained, p.followersGained) },
-    { label: 'Interactions', value: t.likes + t.comments + t.shares + t.saves, d: delta(t.likes + t.comments + t.shares + t.saves, p.likes + p.comments + p.shares + p.saves) },
-    { label: 'Posts', value: t.posts, d: null },
+    { label: $t("Views"), value: t.views, d: delta(t.views, p.views) },
+    { label: $t("Reach"), value: t.reach, d: delta(t.reach, p.reach) },
+    { label: $t("Engagement rate"), value: t.engagement, d: p.posts ? t.engagement - p.engagement : null, pct: true },
+    { label: $t("Followers gained"), value: t.followersGained, d: delta(t.followersGained, p.followersGained) },
+    { label: $t("Interactions"), value: t.likes + t.comments + t.shares + t.saves, d: delta(t.likes + t.comments + t.shares + t.saves, p.likes + p.comments + p.shares + p.saves) },
+    { label: $t("Posts"), value: t.posts, d: null },
   ];
 
   const th = (key: SortKey, label: string, cls = '') => (
@@ -126,30 +127,30 @@ export default function Analytics() {
   return (
     <div className="page">
       <PageHeader
-        title="Analytics"
-        sub={records.length ? `${records.length} post records · understand what works and do more of it.` : 'Record the numbers behind every post and learn what really works.'}
+        title={$t("Analytics")}
+        sub={records.length ? $t('{n} post records · understand what works and do more of it.', { n: records.length }) : $t("Record the numbers behind every post and learn what really works.")}
         actions={
           <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'stats' })}>
-            Log statistics
+            {$t("Log statistics")}
           </Button>
         }
       />
       <div className="notice-bar">
         <Info size={15} />
         <span>
-          No platform API is connected, so statistics are entered manually from each app’s insights. The data layer is ready for official integrations — see <Link to="/settings#integrations">Settings → Integrations</Link>.
+          {$t("No platform API is connected, so statistics are entered manually from each app’s insights. The data layer is ready for official integrations — see")} <Link to="/settings#integrations">{$t("Settings → Integrations")}</Link>.
         </span>
       </div>
 
       {records.length === 0 ? (
         <div className="panel">
-          <EmptyState icon={<BarChart3 />} title="No statistics yet" text="After a post has been live for a few days, log its views, likes, comments, shares, saves, reach and followers gained." actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'stats' })}>Log first post</Button>} />
+          <EmptyState icon={<BarChart3 />} title={$t("No statistics yet")} text={$t("After a post has been live for a few days, log its views, likes, comments, shares, saves, reach and followers gained.")} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'stats' })}>{$t("Log first post")}</Button>} />
         </div>
       ) : (
         <>
           <div className="toolbar">
             <Segmented
-              label="Date range"
+              label={$t("Date range")}
               value={range}
               onChange={setRange}
               options={[
@@ -157,12 +158,12 @@ export default function Analytics() {
                 { value: '30', label: '30d' },
                 { value: '90', label: '90d' },
                 { value: '365', label: '1y' },
-                { value: 'all', label: 'All' },
+                { value: 'all', label: $t("All") },
               ]}
             />
-            <Select sm value={platform} onChange={(e) => setPlatform(e.target.value)} options={platforms.list.map((x) => ({ value: x.id, label: x.name }))} placeholder="All platforms" aria-label="Platform" style={{ width: 'auto' }} />
-            <Select sm value={category} onChange={(e) => setCategory(e.target.value)} options={categories.map((c) => ({ value: c, label: c }))} placeholder="All categories" aria-label="Category" style={{ width: 'auto' }} />
-            <Select sm value={fmt} onChange={(e) => setFmt(e.target.value)} options={FORMATS.map((f) => ({ value: f.id, label: f.label }))} placeholder="All formats" aria-label="Format" style={{ width: 'auto' }} />
+            <Select sm value={platform} onChange={(e) => setPlatform(e.target.value)} options={platforms.list.map((x) => ({ value: x.id, label: x.name }))} placeholder={$t("All platforms")} aria-label={$t("Platform")} style={{ width: 'auto' }} />
+            <Select sm value={category} onChange={(e) => setCategory(e.target.value)} options={categories.map((c) => ({ value: c, label: c }))} placeholder={$t("All categories")} aria-label={$t("Category")} style={{ width: 'auto' }} />
+            <Select sm value={fmt} onChange={(e) => setFmt(e.target.value)} options={FORMATS.map((f) => ({ value: f.id, label: f.label }))} placeholder={$t("All formats")} aria-label={$t("Format")} style={{ width: 'auto' }} />
           </div>
 
           <section className="kpis panel" style={{ gridTemplateColumns: undefined }}>
@@ -173,9 +174,9 @@ export default function Analytics() {
                 </span>
                 <span className="kpi__label">{k.label}</span>
                 <span className="kpi__sub">
-                  {k.d === null ? (range === 'all' ? 'all time' : 'no previous data') : (
+                  {k.d === null ? (range === 'all' ? $t("all time") : $t("no previous data")) : (
                     <span className={cn('delta', k.d >= 0 ? 'delta--up' : 'delta--down')}>
-                      {k.d >= 0 ? '▲' : '▼'} {Math.abs(k.d).toFixed(1)}{k.pct ? ' pts' : '%'} <span className="subtle">vs prev.</span>
+                      {k.d >= 0 ? '▲' : '▼'} {Math.abs(k.d).toFixed(1)}{k.pct ? $t(" pts") : '%'} <span className="subtle">{$t("vs prev.")}</span>
                     </span>
                   )}
                 </span>
@@ -185,26 +186,26 @@ export default function Analytics() {
 
           {filtered.length === 0 ? (
             <div className="panel">
-              <EmptyState compact icon={<BarChart3 />} title="No posts in this range" text="Try a longer date range or different filters." />
+              <EmptyState compact icon={<BarChart3 />} title={$t("No posts in this range")} text={$t("Try a longer date range or different filters.")} />
             </div>
           ) : (
             <>
               <section className="panel" style={{ marginBottom: 16 }}>
                 <div className="panel__head">
-                  <h3 className="panel__title">Views over time</h3>
+                  <h3 className="panel__title">{$t("Views over time")}</h3>
                   <span className="row" style={{ gap: 12, fontSize: 12 }}>
-                    <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: BRAND.lime }} />Views</span>
-                    <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: BRAND.royal }} />Reach</span>
+                    <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: BRAND.lime }} />{$t("Views")}</span>
+                    <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: BRAND.royal }} />{$t("Reach")}</span>
                   </span>
                 </div>
                 <div className="panel__body">
-                  <LineChart labels={timeline.labels} series={[{ label: 'Reach', values: timeline.reach, color: BRAND.royal }, { label: 'Views', values: timeline.views, color: BRAND.lime }]} height={240} />
+                  <LineChart labels={timeline.labels} series={[{ label: $t("Reach"), values: timeline.reach, color: BRAND.royal }, { label: $t("Views"), values: timeline.views, color: BRAND.lime }]} height={240} />
                 </div>
               </section>
               <div className="ov-grid">
                 <section className="panel">
                   <div className="panel__head">
-                    <h3 className="panel__title">By platform</h3>
+                    <h3 className="panel__title">{$t("By platform")}</h3>
                     <span className="eyebrow">views</span>
                   </div>
                   <div className="panel__body">
@@ -213,8 +214,8 @@ export default function Analytics() {
                 </section>
                 <section className="panel">
                   <div className="panel__head">
-                    <h3 className="panel__title">Best formats</h3>
-                    <span className="eyebrow">engagement rate</span>
+                    <h3 className="panel__title">{$t("Best formats")}</h3>
+                    <span className="eyebrow">{$t("engagement rate")}</span>
                   </div>
                   <div className="panel__body">
                     <RankBars data={byFormat} format={(n) => `${n.toFixed(1)}%`} />
@@ -224,8 +225,8 @@ export default function Analytics() {
               <div className="ov-grid">
                 <section className="panel">
                   <div className="panel__head">
-                    <h3 className="panel__title">Top posts</h3>
-                    <Select sm value={topMetric} onChange={(e) => setTopMetric(e.target.value as Metric)} options={(Object.keys(METRIC_LABEL) as Metric[]).map((m) => ({ value: m, label: METRIC_LABEL[m] }))} aria-label="Rank by" style={{ width: 'auto' }} />
+                    <h3 className="panel__title">{$t("Top posts")}</h3>
+                    <Select sm value={topMetric} onChange={(e) => setTopMetric(e.target.value as Metric)} options={(Object.keys(METRIC_LABEL) as Metric[]).map((m) => ({ value: m, label: METRIC_LABEL[m] }))} aria-label={$t("Rank by")} style={{ width: 'auto' }} />
                   </div>
                   <div className="panel__body">
                     <ol className="top-posts">
@@ -245,7 +246,7 @@ export default function Analytics() {
                             size="sm"
                             iconOnly
                             icon={<GitCompare />}
-                            tip={compare.includes(r.id) ? 'Remove from comparison' : 'Compare'}
+                            tip={compare.includes(r.id) ? $t("Remove from comparison") : $t("Compare")}
                             onClick={() => setCompare((c) => (c.includes(r.id) ? c.filter((x) => x !== r.id) : [...c.slice(-2), r.id]))}
                             aria-pressed={compare.includes(r.id)}
                           />
@@ -256,8 +257,8 @@ export default function Analytics() {
                 </section>
                 <section className="panel">
                   <div className="panel__head">
-                    <h3 className="panel__title">Monthly performance</h3>
-                    <span className="eyebrow">views · 6 months</span>
+                    <h3 className="panel__title">{$t("Monthly performance")}</h3>
+                    <span className="eyebrow">{$t("views · 6 months")}</span>
                   </div>
                   <div className="panel__body">
                     <BarChart data={monthlyBars} height={200} highlight={5} />
@@ -267,23 +268,23 @@ export default function Analytics() {
 
               <section className="panel" style={{ marginBottom: 16 }}>
                 <div className="panel__head">
-                  <h3 className="panel__title">Compare posts</h3>
-                  <span className="subtle" style={{ fontSize: 12 }}>Pick up to 3 with the compare button or from the table</span>
+                  <h3 className="panel__title">{$t("Compare posts")}</h3>
+                  <span className="subtle" style={{ fontSize: 12 }}>{$t("Pick up to 3 with the compare button or from the table")}</span>
                 </div>
                 <div className="panel__body">
                   {compared.length < 2 ? (
-                    <p className="subtle" style={{ fontSize: 13 }}>{compared.length === 1 ? `“${compared[0]!.title}” selected — add one more to compare.` : 'Select two or three posts to compare them side by side.'}</p>
+                    <p className="subtle" style={{ fontSize: 13 }}>{compared.length === 1 ? `“${compared[0]!.title}” selected — add one more to compare.` : $t("Select two or three posts to compare them side by side.")}</p>
                   ) : (
                     <div className="table-wrap" style={{ border: 0 }}>
                       <table className="table compare">
                         <thead>
                           <tr>
-                            <th>Metric</th>
+                            <th>{$t("Metric")}</th>
                             {compared.map((r) => (
                               <th key={r.id}>
                                 <span className="row" style={{ gap: 6, textTransform: 'none', letterSpacing: 0, fontFamily: 'var(--font-ui)', fontSize: 12.5, color: 'var(--text)' }}>
                                   <span className="truncate" style={{ maxWidth: 180 }}>{r.title}</span>
-                                  <button onClick={() => setCompare((c) => c.filter((x) => x !== r.id))} aria-label="Remove"><X size={12} /></button>
+                                  <button onClick={() => setCompare((c) => c.filter((x) => x !== r.id))} aria-label={$t("Remove")}><X size={12} /></button>
                                 </span>
                               </th>
                             ))}
@@ -295,7 +296,7 @@ export default function Analytics() {
                             const best = Math.max(...vals);
                             return (
                               <tr key={m}>
-                                <td style={{ textTransform: 'capitalize' }}>{m === 'followersGained' ? 'Followers gained' : m}</td>
+                                <td style={{ textTransform: 'capitalize' }}>{m === 'followersGained' ? $t("Followers gained") : m}</td>
                                 {vals.map((v, i) => (
                                   <td key={i} className={cn('num', v === best && best > 0 && 'best')}>{m === 'engagement' ? `${v.toFixed(2)}%` : fmtNumber(v)}</td>
                                 ))}
@@ -314,7 +315,7 @@ export default function Analytics() {
                   <thead>
                     <tr>
                       <th style={{ width: 36 }} />
-                      <th>Post</th>
+                      <th>{$t("Post")}</th>
                       {th('publishedDate', 'Date', 'hide-mobile')}
                       {th('views', 'Views', 'num')}
                       {th('likes', 'Likes', 'num hide-mobile')}
@@ -331,7 +332,7 @@ export default function Analytics() {
                             className="cmp-check"
                             checked={compare.includes(r.id)}
                             onChange={() => setCompare((c) => (c.includes(r.id) ? c.filter((x) => x !== r.id) : [...c.slice(-2), r.id]))}
-                            aria-label={`Compare ${r.title}`}
+                            aria-label={$t('Compare {title}', { title: r.title })}
                           />
                         </td>
                         <td style={{ maxWidth: 340 }}>

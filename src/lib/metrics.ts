@@ -14,6 +14,7 @@ import { PENDING_STAGES, PRODUCTION_STAGES } from './constants';
 import type { AnalyticsRecord, ContentProject, DB, Goal, Habit, HabitLog, Stage } from './types';
 import { dateTime, parseDate, toDateStr, todayStr, weekStart } from './utils';
 
+import { $t } from '@/lib/i18n';
 const inRange = (iso: string | undefined, start: Date, end: Date) => {
   if (!iso) return false;
   const d = iso.length === 10 ? parseDate(iso) : parseISO(iso);
@@ -81,7 +82,7 @@ export function agendaFor(db: DB, date: string, includeOverdue = false): AgendaI
       items.push({ key: `edit-${p.id}`, kind: 'editing', title: p.title, refId: p.id, done: ['review', 'scheduled', 'published'].includes(p.stage) });
   }
   for (const e of db.events) {
-    if (e.date === date) items.push({ key: `ev-${e.id}`, kind: 'event', title: e.title, time: e.startTime, refId: e.id, meta: e.endTime ? `until ${e.endTime}` : undefined });
+    if (e.date === date) items.push({ key: `ev-${e.id}`, kind: 'event', title: e.title, time: e.startTime, refId: e.id, meta: e.endTime ? $t('until {time}', { time: e.endTime }) : undefined });
   }
   const d = parseDate(date)!;
   for (const h of db.habits) {
@@ -298,10 +299,10 @@ export function notices(db: DB, now = new Date()): NoticeItem[] {
   const tomorrow = toDateStr(addDays(now, 1));
   const overdue = db.tasks.filter((t) => t.status !== 'done' && t.dueDate && (t.dueDate < today || (t.dueDate === today && t.dueTime && dateTime(t.dueDate, t.dueTime)! < now)));
   if (overdue.length)
-    out.push({ key: 'overdue', tone: 'danger', title: `${overdue.length} overdue task${overdue.length > 1 ? 's' : ''}`, detail: overdue.slice(0, 3).map((t) => t.title).join(' · '), href: '/tasks' });
+    out.push({ key: 'overdue', tone: 'danger', title: overdue.length > 1 ? $t('{n} overdue tasks', { n: overdue.length }) : $t('1 overdue task'), detail: overdue.slice(0, 3).map((t) => t.title).join(' · '), href: '/tasks' });
   const dueToday = db.tasks.filter((t) => t.status !== 'done' && t.dueDate === today && !overdue.includes(t));
   if (dueToday.length)
-    out.push({ key: 'today', tone: 'info', title: `${dueToday.length} task${dueToday.length > 1 ? 's' : ''} due today`, detail: dueToday.slice(0, 3).map((t) => t.title).join(' · '), href: '/tasks' });
+    out.push({ key: 'today', tone: 'info', title: dueToday.length > 1 ? $t('{n} tasks due today', { n: dueToday.length }) : $t('1 task due today'), detail: dueToday.slice(0, 3).map((t) => t.title).join(' · '), href: '/tasks' });
   for (const p of db.projects) {
     if (p.stage === 'published' || !p.publishDate) continue;
     if (p.publishDate === today || p.publishDate === tomorrow) {
@@ -309,19 +310,19 @@ export function notices(db: DB, now = new Date()): NoticeItem[] {
       out.push({
         key: `pub-${p.id}`,
         tone: notReady ? 'danger' : 'accent',
-        title: `${p.publishDate === today ? 'Today' : 'Tomorrow'}${p.publishTime ? ` ${p.publishTime}` : ''} · ${p.title || 'Untitled'}`,
-        detail: notReady ? `Publishing soon but still in “${p.stage}”.` : 'Scheduled and ready to go live.',
+        title: `${p.publishDate === today ? $t('Today') : $t('Tomorrow')}${p.publishTime ? ` ${p.publishTime}` : ''} · ${p.title || $t('Untitled')}`,
+        detail: notReady ? $t('Publishing soon but still in “{stage}”.', { stage: p.stage }) : $t("Scheduled and ready to go live."),
         href: `/studio/${p.id}`,
       });
     }
     if (p.publishDate < today) {
-      out.push({ key: `late-${p.id}`, tone: 'danger', title: `Missed publish date · ${p.title || 'Untitled'}`, detail: 'Reschedule it or mark it published.', href: `/studio/${p.id}` });
+      out.push({ key: `late-${p.id}`, tone: 'danger', title: `Missed publish date · ${p.title || 'Untitled'}`, detail: $t("Reschedule it or mark it published."), href: `/studio/${p.id}` });
     }
     if (p.recordDate === today) out.push({ key: `rec-${p.id}`, tone: 'info', title: `Recording today · ${p.title}`, detail: `${p.shots.filter((s) => s.status === 'pending').length} shots pending`, href: `/studio/${p.id}` });
   }
   const pendingHabits = db.habits.filter((h) => !h.archived && h.reminderTime && habitScheduledOn(h, now) && h.reminderTime <= toTime(now) && !db.habitLogs.some((l) => l.habitId === h.id && l.date === today));
   if (pendingHabits.length)
-    out.push({ key: 'habits', tone: 'accent', title: `${pendingHabits.length} habit${pendingHabits.length > 1 ? 's' : ''} left today`, detail: pendingHabits.map((h) => h.name).join(' · '), href: '/trackers' });
+    out.push({ key: 'habits', tone: 'accent', title: pendingHabits.length > 1 ? $t('{n} habits left today', { n: pendingHabits.length }) : $t('1 habit left today'), detail: pendingHabits.map((h) => h.name).join(' · '), href: '/trackers' });
   return out;
 }
 

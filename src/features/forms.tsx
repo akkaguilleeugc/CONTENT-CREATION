@@ -61,6 +61,7 @@ import type {
 import { closeModal, confirmDialog, openModal, toast } from '@/lib/ui';
 import { contrastRatio, fmtDate, isHex, normalizeHex, readableOn, toDateStr, todayStr, uid } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 /* ── tiny form state helper ── */
 function useFormState<T extends object>(initial: T) {
   const [v, setV] = useState<T>(initial);
@@ -79,7 +80,7 @@ const usePlatformOptions = () => {
 };
 const useProjectOptions = () => {
   const projects = useStore((s) => s.projects);
-  return projects.map((p) => ({ value: p.id, label: p.title || 'Untitled video' }));
+  return projects.map((p) => ({ value: p.id, label: p.title || $t("Untitled video") }));
 };
 
 function Foot({ children, onDelete, deleteLabel = 'Delete' }: { children: ReactNode; onDelete?: () => void; deleteLabel?: string }) {
@@ -97,7 +98,7 @@ function Foot({ children, onDelete, deleteLabel = 'Delete' }: { children: ReactN
 }
 
 async function confirmDelete(what: string) {
-  return confirmDialog({ title: `Delete ${what}?`, description: `“${what}” will be permanently removed.`, confirmLabel: 'Delete' });
+  return confirmDialog({ title: $t('Delete {what}?', { what }), description: $t('“{what}” will be permanently removed.', { what }), confirmLabel: $t("Delete") });
 }
 
 /* ════════════════════════ Idea ════════════════════════ */
@@ -111,7 +112,7 @@ export function IdeaModal({ id, defaults }: { id?: string; defaults?: Partial<Id
   const { v, set, errors, setErrors } = useFormState<Idea>(existing ?? newIdea({ category: categories[0] ?? 'Other', ...defaults }));
 
   const save = (thenConvert = false) => {
-    if (!v.title.trim()) return setErrors({ title: 'Give the idea a short title.' });
+    if (!v.title.trim()) return setErrors({ title: $t("Give the idea a short title.") });
     const rec = { ...v, title: v.title.trim() };
     if (existing) update('ideas', existing.id, rec);
     else insert('ideas', rec);
@@ -119,12 +120,12 @@ export function IdeaModal({ id, defaults }: { id?: string; defaults?: Partial<Id
     if (thenConvert) {
       const p = useStore.getState().convertIdea(rec.id);
       if (p) {
-        toast('Idea converted to a video project', { description: 'Opened in Content Studio.' });
+        toast($t("Idea converted to a video project"), { description: $t("Opened in Content Studio.") });
         navigate(`/studio/${p.id}`);
       }
       return;
     }
-    toast(existing ? 'Idea updated' : 'Idea captured', { description: rec.title });
+    toast(existing ? $t("Idea updated") : $t("Idea captured"), { description: rec.title });
   };
 
   return (
@@ -132,8 +133,8 @@ export function IdeaModal({ id, defaults }: { id?: string; defaults?: Partial<Id
       open
       onClose={closeModal}
       size="lg"
-      title={existing ? 'Edit idea' : 'New idea'}
-      description={existing ? `Captured ${fmtDate(existing.createdAt, 'd MMM yyyy')}` : 'Your second brain. Capture now, shape later.'}
+      title={existing ? $t("Edit idea") : $t("New idea")}
+      description={existing ? $t('Captured {date}', { date: fmtDate(existing.createdAt, 'd MMM yyyy') }) : $t("Your second brain. Capture now, shape later.")}
       footer={
         <Foot
           onDelete={
@@ -142,7 +143,7 @@ export function IdeaModal({ id, defaults }: { id?: string; defaults?: Partial<Id
                   if (await confirmDelete(existing.title)) {
                     remove('ideas', existing.id);
                     closeModal();
-                    toast('Idea deleted');
+                    toast($t("Idea deleted"));
                   }
                 }
               : undefined
@@ -155,10 +156,10 @@ export function IdeaModal({ id, defaults }: { id?: string; defaults?: Partial<Id
               onClick={() => {
                 duplicateIdea(existing.id);
                 closeModal();
-                toast('Idea duplicated');
+                toast($t("Idea duplicated"));
               }}
             >
-              Duplicate
+              {$t("Duplicate")}
             </Button>
           )}
           {existing?.projectId ? (
@@ -169,15 +170,15 @@ export function IdeaModal({ id, defaults }: { id?: string; defaults?: Partial<Id
                 navigate(`/studio/${existing.projectId}`);
               }}
             >
-              Open project
+              {$t("Open project")}
             </Button>
           ) : (
             <Button icon={<ArrowRightCircle />} onClick={() => save(true)}>
-              {existing ? 'Convert to content' : 'Save & convert'}
+              {existing ? $t("Convert to content") : $t("Save & convert")}
             </Button>
           )}
           <Button variant="primary" onClick={() => save()} kbd="↵">
-            {existing ? 'Save' : 'Capture idea'}
+            {existing ? $t("Save") : $t("Capture idea")}
           </Button>
         </Foot>
       }
@@ -190,40 +191,40 @@ export function IdeaModal({ id, defaults }: { id?: string; defaults?: Partial<Id
         }}
       >
         <div className="row gap-12" style={{ alignItems: 'flex-end' }}>
-          <Field label="Title" required error={errors.title} className="grow">
-            <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. 24h with a €100 budget in Madrid" invalid={!!errors.title} autoFocus />
+          <Field label={$t("Title")} required error={errors.title} className="grow">
+            <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder={$t("e.g. 24h with a €100 budget in Madrid")} invalid={!!errors.title} autoFocus />
           </Field>
           <Button
             iconOnly
-            tip={v.favorite ? 'Remove favourite' : 'Mark favourite'}
+            tip={v.favorite ? $t("Remove favourite") : $t("Mark favourite")}
             icon={<Star fill={v.favorite ? 'var(--lime)' : 'none'} color={v.favorite ? 'var(--lime)' : undefined} />}
             onClick={() => set('favorite', !v.favorite)}
             aria-pressed={v.favorite}
           />
         </div>
-        <Field label="Description">
-          <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder="The angle, the hook, why it matters…" />
+        <Field label={$t("Description")}>
+          <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder={$t("The angle, the hook, why it matters…")} />
         </Field>
         <div className="form-grid">
-          <Field label="Category">
+          <Field label={$t("Category")}>
             <Select value={v.category} onChange={(e) => set('category', e.target.value)} options={categories.map((c) => ({ value: c, label: c }))} />
           </Field>
-          <Field label="Format">
-            <Select value={v.format} onChange={(e) => set('format', e.target.value as Idea['format'])} placeholder="Any format" options={FORMATS.map((f) => ({ value: f.id, label: f.label }))} />
+          <Field label={$t("Format")}>
+            <Select value={v.format} onChange={(e) => set('format', e.target.value as Idea['format'])} placeholder={$t("Any format")} options={FORMATS.map((f) => ({ value: f.id, label: f.label }))} />
           </Field>
-          <Field label="Status">
+          <Field label={$t("Status")}>
             <Select value={v.status} onChange={(e) => set('status', e.target.value as Idea['status'])} options={IDEA_STATUSES.map((s) => ({ value: s.id, label: s.label }))} />
           </Field>
-          <Field label="Priority">
-            <Segmented label="Priority" value={v.priority} onChange={(p) => set('priority', p as Priority)} options={priorityOptions} />
+          <Field label={$t("Priority")}>
+            <Segmented label={$t("Priority")} value={v.priority} onChange={(p) => set('priority', p as Priority)} options={priorityOptions} />
           </Field>
-          <Field label="Platforms" className="span-2">
+          <Field label={$t("Platforms")} className="span-2">
             <ChipToggle options={platformOptions} value={v.platformIds} onChange={(x) => set('platformIds', x)} />
           </Field>
-          <Field label="Reference or inspiration" className="span-2" hint="A link, a creator, a song — anything that sparked it.">
+          <Field label={$t("Reference or inspiration")} className="span-2" hint={$t("A link, a creator, a song — anything that sparked it.")}>
             <Input value={v.reference} onChange={(e) => set('reference', e.target.value)} placeholder="https://…" />
           </Field>
-          <Field label="Tags" className="span-2">
+          <Field label={$t("Tags")} className="span-2">
             <TagInput value={v.tags} onChange={(t) => set('tags', t)} suggestions={allTags} />
           </Field>
         </div>
@@ -242,11 +243,11 @@ export function ProjectModal({ defaults }: { defaults?: Partial<ContentProject> 
   const [mins, setMins] = useState(v.duration ? String(Math.round(v.duration / 6) / 10) : '');
 
   const save = () => {
-    if (!v.title.trim()) return setErrors({ title: 'Every video needs a working title.' });
+    if (!v.title.trim()) return setErrors({ title: $t("Every video needs a working title.") });
     const rec: ContentProject = { ...v, title: v.title.trim(), duration: mins ? Math.round(parseFloat(mins) * 60) : undefined, stageDates: { [v.stage]: new Date().toISOString() } };
     useStore.getState().insert('projects', rec);
     closeModal();
-    toast('Video project created', { description: 'Your production workspace is ready.' });
+    toast($t("Video project created"), { description: $t("Your production workspace is ready.") });
     navigate(`/studio/${rec.id}`);
   };
 
@@ -255,51 +256,51 @@ export function ProjectModal({ defaults }: { defaults?: Partial<ContentProject> 
       open
       onClose={closeModal}
       size="lg"
-      title="New video"
-      description="Set the essentials — the workspace opens next for concept, script, shots and publishing."
+      title={$t("New video")}
+      description={$t("Set the essentials — the workspace opens next for concept, script, shots and publishing.")}
       footer={
         <Foot>
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" onClick={save}>
-            Create & open workspace
+            {$t("Create & open workspace")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
-        <Field label="Working title" required error={errors.title}>
-          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. My honest review of the new camera" invalid={!!errors.title} autoFocus />
+        <Field label={$t("Working title")} required error={errors.title}>
+          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder={$t("e.g. My honest review of the new camera")} invalid={!!errors.title} autoFocus />
         </Field>
-        <Field label="Description">
-          <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder="What is this video about?" />
+        <Field label={$t("Description")}>
+          <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder={$t("What is this video about?")} />
         </Field>
         <div className="form-grid">
-          <Field label="Platforms" className="span-2">
+          <Field label={$t("Platforms")} className="span-2">
             <ChipToggle options={platformOptions} value={v.platformIds} onChange={(x) => set('platformIds', x)} />
           </Field>
-          <Field label="Format">
+          <Field label={$t("Format")}>
             <Select value={v.format} onChange={(e) => set('format', e.target.value as ContentProject['format'])} options={FORMATS.map((f) => ({ value: f.id, label: f.label }))} />
           </Field>
-          <Field label="Category">
+          <Field label={$t("Category")}>
             <Select value={v.category} onChange={(e) => set('category', e.target.value)} options={settings.ideaCategories.map((c) => ({ value: c, label: c }))} />
           </Field>
-          <Field label="Goal of the video" className="span-2">
-            <Input value={v.goal} onChange={(e) => set('goal', e.target.value)} placeholder="Grow followers, drive saves, sell, entertain…" />
+          <Field label={$t("Goal of the video")} className="span-2">
+            <Input value={v.goal} onChange={(e) => set('goal', e.target.value)} placeholder={$t("Grow followers, drive saves, sell, entertain…")} />
           </Field>
-          <Field label="Publish date">
+          <Field label={$t("Publish date")}>
             <Input type="date" value={v.publishDate ?? ''} onChange={(e) => set('publishDate', e.target.value || undefined)} />
           </Field>
-          <Field label="Publish time">
+          <Field label={$t("Publish time")}>
             <Input type="time" value={v.publishTime ?? ''} onChange={(e) => set('publishTime', e.target.value || undefined)} />
           </Field>
-          <Field label="Estimated duration (min)">
+          <Field label={$t("Estimated duration (min)")}>
             <Input type="number" min={0} step={0.5} value={mins} onChange={(e) => setMins(e.target.value)} placeholder="1" />
           </Field>
-          <Field label="Stage">
+          <Field label={$t("Stage")}>
             <Select value={v.stage} onChange={(e) => set('stage', e.target.value as ContentProject['stage'])} options={STAGES.map((s) => ({ value: s.id, label: s.label }))} />
           </Field>
-          <Field label="Priority" className="span-2">
-            <Segmented label="Priority" value={v.priority} onChange={(p) => set('priority', p as Priority)} options={priorityOptions} />
+          <Field label={$t("Priority")} className="span-2">
+            <Segmented label={$t("Priority")} value={v.priority} onChange={(p) => set('priority', p as Priority)} options={priorityOptions} />
           </Field>
         </div>
         <button type="submit" hidden />
@@ -317,7 +318,7 @@ export function TaskModal({ id, defaults }: { id?: string; defaults?: Partial<Ta
   const store = useStore.getState();
 
   const save = () => {
-    if (!v.title.trim()) return setErrors({ title: 'What needs to be done?' });
+    if (!v.title.trim()) return setErrors({ title: $t("What needs to be done?") });
     if (v.reminder !== null && !v.dueDate) return setErrors({ reminder: 'Set a due date to receive a reminder.' } as never);
     const rec = { ...v, title: v.title.trim() };
     if (existing) {
@@ -331,7 +332,7 @@ export function TaskModal({ id, defaults }: { id?: string; defaults?: Partial<Ta
       store.insert('tasks', { ...rec, completedAt: rec.status === 'done' ? new Date().toISOString() : undefined });
     }
     closeModal();
-    toast(existing ? 'Task updated' : 'Task added', { description: rec.title });
+    toast(existing ? $t("Task updated") : $t("Task added"), { description: rec.title });
   };
 
   const addSub = () => {
@@ -345,7 +346,7 @@ export function TaskModal({ id, defaults }: { id?: string; defaults?: Partial<Ta
       open
       onClose={closeModal}
       size="lg"
-      title={existing ? 'Edit task' : 'New task'}
+      title={existing ? $t("Edit task") : $t("New task")}
       footer={
         <Foot
           onDelete={
@@ -354,82 +355,82 @@ export function TaskModal({ id, defaults }: { id?: string; defaults?: Partial<Ta
                   if (await confirmDelete(existing.title)) {
                     store.remove('tasks', existing.id);
                     closeModal();
-                    toast('Task deleted');
+                    toast($t("Task deleted"));
                   }
                 }
               : undefined
           }
         >
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" onClick={save}>
-            {existing ? 'Save task' : 'Add task'}
+            {existing ? $t("Save task") : $t("Add task")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
-        <Field label="Task" required error={errors.title}>
-          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Send invoice to the brand" invalid={!!errors.title} autoFocus />
+        <Field label={$t("Task")} required error={errors.title}>
+          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder={$t("e.g. Send invoice to the brand")} invalid={!!errors.title} autoFocus />
         </Field>
-        <Field label="Notes">
-          <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder="Details, links, context…" style={{ minHeight: 64 }} />
+        <Field label={$t("Notes")}>
+          <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder={$t("Details, links, context…")} style={{ minHeight: 64 }} />
         </Field>
         <div className="form-grid">
-          <Field label="Category">
+          <Field label={$t("Category")}>
             <Select value={v.category} onChange={(e) => set('category', e.target.value as Task['category'])} options={TASK_CATEGORIES.map((c) => ({ value: c.id, label: c.label }))} />
           </Field>
-          <Field label="Status">
+          <Field label={$t("Status")}>
             <Select
               value={v.status}
               onChange={(e) => set('status', e.target.value as Task['status'])}
               options={[
-                { value: 'todo', label: 'To do' },
-                { value: 'in_progress', label: 'In progress' },
-                { value: 'done', label: 'Done' },
+                { value: 'todo', label: $t("To do") },
+                { value: 'in_progress', label: $t("In progress") },
+                { value: 'done', label: $t("Done") },
               ]}
             />
           </Field>
-          <Field label="Due date">
+          <Field label={$t("Due date")}>
             <Input type="date" value={v.dueDate ?? ''} onChange={(e) => set('dueDate', e.target.value || undefined)} />
           </Field>
-          <Field label="Time">
+          <Field label={$t("Time")}>
             <Input type="time" value={v.dueTime ?? ''} onChange={(e) => set('dueTime', e.target.value || undefined)} disabled={!v.dueDate} />
           </Field>
-          <Field label="Repeat">
+          <Field label={$t("Repeat")}>
             <Select value={v.recurrence} onChange={(e) => set('recurrence', e.target.value as Task['recurrence'])} options={RECURRENCES.map((r) => ({ value: r.id, label: r.label }))} />
           </Field>
-          <Field label="Reminder" error={(errors as Record<string, string>).reminder}>
+          <Field label={$t("Reminder")} error={(errors as Record<string, string>).reminder}>
             <Select
               value={v.reminder === null ? '' : String(v.reminder)}
               onChange={(e) => set('reminder', e.target.value === '' ? null : Number(e.target.value))}
               options={REMINDER_OPTIONS.filter((r) => r.value !== null).map((r) => ({ value: String(r.value), label: r.label }))}
-              placeholder="No reminder"
+              placeholder={$t("No reminder")}
             />
           </Field>
-          <Field label="Related video">
-            <Select value={v.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || undefined)} options={projectOptions} placeholder="None" />
+          <Field label={$t("Related video")}>
+            <Select value={v.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || undefined)} options={projectOptions} placeholder={$t("None")} />
           </Field>
-          <Field label="Priority">
-            <Segmented label="Priority" value={v.priority} onChange={(p) => set('priority', p as Priority)} options={priorityOptions} />
+          <Field label={$t("Priority")}>
+            <Segmented label={$t("Priority")} value={v.priority} onChange={(p) => set('priority', p as Priority)} options={priorityOptions} />
           </Field>
           <div className="span-2 row between" style={{ padding: '4px 0' }}>
-            <span className="field__label">Add to My Day</span>
-            <Checkbox checked={v.myDay === todayStr()} onChange={(c) => set('myDay', c ? todayStr() : undefined)} label="Add to My Day" />
+            <span className="field__label">{$t("Add to My Day")}</span>
+            <Checkbox checked={v.myDay === todayStr()} onChange={(c) => set('myDay', c ? todayStr() : undefined)} label={$t("Add to My Day")} />
           </div>
         </div>
-        <Field label={`Subtasks${v.subtasks.length ? ` · ${v.subtasks.filter((s) => s.done).length}/${v.subtasks.length}` : ''}`}>
+        <Field label={`${$t('Subtasks')}${v.subtasks.length ? ` · ${v.subtasks.filter((s) => s.done).length}/${v.subtasks.length}` : ''}`}>
           <div className="col" style={{ gap: 6 }}>
             {v.subtasks.map((s) => (
               <div key={s.id} className="row subtask-row">
                 <Checkbox sm checked={s.done} onChange={(c) => set('subtasks', v.subtasks.map((x) => (x.id === s.id ? { ...x, done: c } : x)))} label={s.title} />
-                <input className="input input--sm grow" value={s.title} onChange={(e) => set('subtasks', v.subtasks.map((x) => (x.id === s.id ? { ...x, title: e.target.value } : x)))} aria-label="Subtask" />
-                <Button variant="ghost" size="sm" iconOnly icon={<X />} onClick={() => set('subtasks', v.subtasks.filter((x) => x.id !== s.id))} aria-label="Remove subtask" />
+                <input className="input input--sm grow" value={s.title} onChange={(e) => set('subtasks', v.subtasks.map((x) => (x.id === s.id ? { ...x, title: e.target.value } : x)))} aria-label={$t("Subtask")} />
+                <Button variant="ghost" size="sm" iconOnly icon={<X />} onClick={() => set('subtasks', v.subtasks.filter((x) => x.id !== s.id))} aria-label={$t("Remove subtask")} />
               </div>
             ))}
             <div className="row">
-              <Input sm value={sub} onChange={(e) => setSub(e.target.value)} placeholder="Add a subtask and press Enter" onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSub())} />
+              <Input sm value={sub} onChange={(e) => setSub(e.target.value)} placeholder={$t("Add a subtask and press Enter")} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSub())} />
               <Button size="sm" icon={<Plus />} onClick={addSub}>
-                Add
+                {$t("Add")}
               </Button>
             </div>
           </div>
@@ -445,20 +446,20 @@ export function HabitModal({ id }: { id?: string }) {
   const { v, set, errors, setErrors } = useFormState<Habit>(existing ?? newHabit());
   const store = useStore.getState();
   const save = () => {
-    if (!v.name.trim()) return setErrors({ name: 'Name your habit.' });
+    if (!v.name.trim()) return setErrors({ name: $t("Name your habit.") });
     if (v.frequency === 'custom' && !v.days.length) return setErrors({ days: 'Pick at least one day.' } as never);
     const rec = { ...v, name: v.name.trim(), target: v.frequency === 'weekly' ? Math.max(1, Math.min(7, v.target)) : 1 };
     if (existing) store.update('habits', existing.id, rec);
     else store.insert('habits', rec);
     closeModal();
-    toast(existing ? 'Habit updated' : 'Habit created', { description: rec.name });
+    toast(existing ? $t("Habit updated") : $t("Habit created"), { description: rec.name });
   };
   return (
     <Modal
       open
       onClose={closeModal}
-      title={existing ? 'Edit habit' : 'New habit'}
-      description="Small, repeatable, trackable."
+      title={existing ? $t("Edit habit") : $t("New habit")}
+      description={$t("Small, repeatable, trackable.")}
       footer={
         <Foot
           onDelete={
@@ -467,7 +468,7 @@ export function HabitModal({ id }: { id?: string }) {
                   if (await confirmDelete(existing.name)) {
                     store.deleteHabit(existing.id);
                     closeModal();
-                    toast('Habit deleted');
+                    toast($t("Habit deleted"));
                   }
                 }
               : undefined
@@ -479,53 +480,53 @@ export function HabitModal({ id }: { id?: string }) {
               onClick={() => {
                 store.update('habits', existing.id, { archived: !existing.archived });
                 closeModal();
-                toast(existing.archived ? 'Habit restored' : 'Habit archived');
+                toast(existing.archived ? $t("Habit restored") : $t("Habit archived"));
               }}
             >
-              {existing.archived ? 'Restore' : 'Archive'}
+              {existing.archived ? $t("Restore") : $t("Archive")}
             </Button>
           )}
           <Button variant="primary" onClick={save}>
-            {existing ? 'Save habit' : 'Create habit'}
+            {existing ? $t("Save habit") : $t("Create habit")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
-        <Field label="Habit" required error={errors.name}>
-          <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Record content" invalid={!!errors.name} autoFocus />
+        <Field label={$t("Habit")} required error={errors.name}>
+          <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder={$t("e.g. Record content")} invalid={!!errors.name} autoFocus />
         </Field>
-        <Field label="Why it matters">
-          <Input value={v.description} onChange={(e) => set('description', e.target.value)} placeholder="Optional" />
+        <Field label={$t("Why it matters")}>
+          <Input value={v.description} onChange={(e) => set('description', e.target.value)} placeholder={$t("Optional")} />
         </Field>
-        <Field label="Frequency">
+        <Field label={$t("Frequency")}>
           <Segmented
-            label="Frequency"
+            label={$t("Frequency")}
             value={v.frequency}
             onChange={(f) => set('frequency', f as Habit['frequency'])}
             options={[
-              { value: 'daily', label: 'Daily' },
-              { value: 'weekdays', label: 'Weekdays' },
-              { value: 'custom', label: 'Custom days' },
-              { value: 'weekly', label: 'X / week' },
+              { value: 'daily', label: $t("Daily") },
+              { value: 'weekdays', label: $t("Weekdays") },
+              { value: 'custom', label: $t("Custom days") },
+              { value: 'weekly', label: $t("X / week") },
             ]}
           />
         </Field>
         {v.frequency === 'custom' && (
-          <Field label="On these days" error={(errors as Record<string, string>).days}>
+          <Field label={$t("On these days")} error={(errors as Record<string, string>).days}>
             <ChipToggle options={WEEKDAYS_SHORT.map((d, i) => ({ value: String(i), label: d }))} value={v.days.map(String)} onChange={(x) => set('days', x.map(Number).sort())} />
           </Field>
         )}
         {v.frequency === 'weekly' && (
-          <Field label="Times per week">
+          <Field label={$t("Times per week")}>
             <Input type="number" min={1} max={7} value={v.target} onChange={(e) => set('target', Number(e.target.value) || 1)} />
           </Field>
         )}
         <div className="form-grid">
-          <Field label="Reminder time" hint="Shown in Today and as a notification.">
+          <Field label={$t("Reminder time")} hint={$t("Shown in Today and as a notification.")}>
             <Input type="time" value={v.reminderTime ?? ''} onChange={(e) => set('reminderTime', e.target.value || undefined)} />
           </Field>
-          <Field label="Colour">
+          <Field label={$t("Colour")}>
             <div className="chips">
               {HABIT_COLORS.map((c) => (
                 <button key={c} type="button" className="swatch-btn" aria-pressed={v.color === c} style={{ background: c }} onClick={() => set('color', c)} aria-label={`Colour ${c}`} />
@@ -580,7 +581,7 @@ export function GoalModal({ id }: { id?: string }) {
     if (existing) store.update('goals', existing.id, rec);
     else store.insert('goals', rec);
     closeModal();
-    toast(existing ? 'Goal updated' : 'Goal set', { description: rec.title });
+    toast(existing ? $t("Goal updated") : $t("Goal set"), { description: rec.title });
   };
 
   return (
@@ -588,8 +589,8 @@ export function GoalModal({ id }: { id?: string }) {
       open
       onClose={closeModal}
       size="lg"
-      title={existing ? 'Edit goal' : 'New goal'}
-      description="Automatic goals measure themselves from your real activity."
+      title={existing ? $t("Edit goal") : $t("New goal")}
+      description={$t("Automatic goals measure themselves from your real activity.")}
       footer={
         <Foot
           onDelete={
@@ -598,25 +599,25 @@ export function GoalModal({ id }: { id?: string }) {
                   if (await confirmDelete(existing.title)) {
                     store.deleteGoal(existing.id);
                     closeModal();
-                    toast('Goal deleted');
+                    toast($t("Goal deleted"));
                   }
                 }
               : undefined
           }
         >
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" onClick={save}>
-            {existing ? 'Save goal' : 'Set goal'}
+            {existing ? $t("Save goal") : $t("Set goal")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
-        <Field label="Goal" required error={errors.title}>
-          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Publish 12 videos this month" invalid={!!errors.title} autoFocus />
+        <Field label={$t("Goal")} required error={errors.title}>
+          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder={$t("e.g. Publish 12 videos this month")} invalid={!!errors.title} autoFocus />
         </Field>
         <div className="form-grid">
-          <Field label="Period">
+          <Field label={$t("Period")}>
             <Select
               value={v.period}
               onChange={(e) => {
@@ -627,7 +628,7 @@ export function GoalModal({ id }: { id?: string }) {
               options={GOAL_PERIODS.map((p) => ({ value: p.id, label: p.label }))}
             />
           </Field>
-          <Field label="How progress is measured">
+          <Field label={$t("How progress is measured")}>
             <Select
               value={v.metric}
               onChange={(e) => {
@@ -638,36 +639,36 @@ export function GoalModal({ id }: { id?: string }) {
             />
           </Field>
           {(v.metric === 'videos_published' || v.metric === 'videos_produced' || v.metric === 'followers_gained') && (
-            <Field label="Platform" className="span-2">
-              <Select value={v.platformId ?? ''} onChange={(e) => set('platformId', e.target.value || undefined)} options={platformOptions.map((p) => ({ value: p.value, label: p.label }))} placeholder="All platforms" />
+            <Field label={$t("Platform")} className="span-2">
+              <Select value={v.platformId ?? ''} onChange={(e) => set('platformId', e.target.value || undefined)} options={platformOptions.map((p) => ({ value: p.value, label: p.label }))} placeholder={$t("All platforms")} />
             </Field>
           )}
-          <Field label="Target" required error={errors.target}>
+          <Field label={$t("Target")} required error={errors.target}>
             <Input type="number" min={0} step="any" value={v.target} onChange={(e) => set('target', Number(e.target.value))} invalid={!!errors.target} />
           </Field>
-          <Field label="Unit">
-            <Input value={v.unit} onChange={(e) => set('unit', e.target.value)} placeholder="videos, followers, hours…" disabled={metric.auto} />
+          <Field label={$t("Unit")}>
+            <Input value={v.unit} onChange={(e) => set('unit', e.target.value)} placeholder={$t("videos, followers, hours…")} disabled={metric.auto} />
           </Field>
-          <Field label="Start">
+          <Field label={$t("Start")}>
             <Input type="date" value={v.startDate} onChange={(e) => set('startDate', e.target.value)} />
           </Field>
-          <Field label="Target date" error={errors.dueDate}>
+          <Field label={$t("Target date")} error={errors.dueDate}>
             <Input type="date" value={v.dueDate} onChange={(e) => set('dueDate', e.target.value)} invalid={!!errors.dueDate} />
           </Field>
-          <Field label="Status">
+          <Field label={$t("Status")}>
             <Select
               value={v.status}
               onChange={(e) => set('status', e.target.value as Goal['status'])}
               options={[
-                { value: 'active', label: 'Active' },
-                { value: 'achieved', label: 'Achieved' },
-                { value: 'paused', label: 'Paused' },
-                { value: 'missed', label: 'Missed' },
+                { value: 'active', label: $t("Active") },
+                { value: 'achieved', label: $t("Achieved") },
+                { value: 'paused', label: $t("Paused") },
+                { value: 'missed', label: $t("Missed") },
               ]}
             />
           </Field>
-          <Field label="Notes" className="span-2">
-            <Textarea value={v.description} onChange={(e) => set('description', e.target.value)} style={{ minHeight: 64 }} placeholder="Why this goal, how you’ll get there…" />
+          <Field label={$t("Notes")} className="span-2">
+            <Textarea value={v.description} onChange={(e) => set('description', e.target.value)} style={{ minHeight: 64 }} placeholder={$t("Why this goal, how you’ll get there…")} />
           </Field>
         </div>
       </form>
@@ -686,37 +687,37 @@ export function GoalProgressModal({ goalId }: { goalId: string }) {
   const cur = goalValue(snapshot(state), goal);
   const add = () => {
     const n = Number(value);
-    if (!Number.isFinite(n) || n === 0) return toast('Enter a non-zero amount', { tone: 'error' });
+    if (!Number.isFinite(n) || n === 0) return toast($t("Enter a non-zero amount"), { tone: 'error' });
     state.insert('goalProgress', { id: uid(), goalId, date, value: n, note: note.trim(), createdAt: new Date().toISOString() });
     setNote('');
-    toast('Progress logged', { description: `${n > 0 ? '+' : ''}${n} ${goal.unit}` });
+    toast($t("Progress logged"), { description: `${n > 0 ? '+' : ''}${n} ${goal.unit}` });
   };
   return (
-    <Modal open onClose={closeModal} title="Log progress" description={`${goal.title} · ${cur.value} / ${goal.target} ${goal.unit}`} footer={<Button variant="primary" onClick={closeModal}>Done</Button>}>
+    <Modal open onClose={closeModal} title={$t("Log progress")} description={`${goal.title} · ${cur.value} / ${goal.target} ${goal.unit}`} footer={<Button variant="primary" onClick={closeModal}>{$t("Done")}</Button>}>
       <div className="form">
         <div className="form-grid">
-          <Field label="Amount" hint="Use a negative number to correct.">
+          <Field label={$t("Amount")} hint={$t("Use a negative number to correct.")}>
             <Input type="number" step="any" value={value} onChange={(e) => setValue(e.target.value)} autoFocus />
           </Field>
-          <Field label="Date">
+          <Field label={$t("Date")}>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </Field>
-          <Field label="Note" className="span-2">
-            <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional" onKeyDown={(e) => e.key === 'Enter' && add()} />
+          <Field label={$t("Note")} className="span-2">
+            <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder={$t("Optional")} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </Field>
         </div>
         <Button variant="lime" icon={<Plus />} onClick={add}>
-          Add progress
+          {$t("Add progress")}
         </Button>
         {entries.length > 0 && (
           <div className="col" style={{ gap: 2 }}>
-            <div className="eyebrow" style={{ margin: '6px 0' }}>History</div>
+            <div className="eyebrow" style={{ margin: '6px 0' }}>{$t("History")}</div>
             {entries.map((e) => (
               <div key={e.id} className="row between list-row">
                 <span className="tnum" style={{ fontWeight: 600, minWidth: 54 }}>{e.value > 0 ? `+${e.value}` : e.value}</span>
                 <span className="grow subtle truncate">{e.note || '—'}</span>
                 <span className="subtle tnum">{fmtDate(e.date, 'd MMM')}</span>
-                <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => state.remove('goalProgress', e.id)} aria-label="Delete entry" />
+                <Button variant="ghost" size="sm" iconOnly icon={<Trash2 />} onClick={() => state.remove('goalProgress', e.id)} aria-label={$t("Delete entry")} />
               </div>
             ))}
           </div>
@@ -743,13 +744,13 @@ export function EventModal({ id, defaults }: { id?: string; defaults?: Partial<C
     if (existing) store.update('events', existing.id, rec);
     else store.insert('events', rec);
     closeModal();
-    toast(existing ? 'Event updated' : 'Event added', { description: `${rec.title} · ${fmtDate(rec.date, 'EEE d MMM')}` });
+    toast(existing ? $t("Event updated") : $t("Event added"), { description: `${rec.title} · ${fmtDate(rec.date, 'EEE d MMM')}` });
   };
   return (
     <Modal
       open
       onClose={closeModal}
-      title={existing ? 'Edit event' : 'New event'}
+      title={existing ? $t("Edit event") : $t("New event")}
       footer={
         <Foot
           onDelete={
@@ -758,49 +759,49 @@ export function EventModal({ id, defaults }: { id?: string; defaults?: Partial<C
                   if (await confirmDelete(existing.title)) {
                     store.remove('events', existing.id);
                     closeModal();
-                    toast('Event deleted');
+                    toast($t("Event deleted"));
                   }
                 }
               : undefined
           }
         >
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" onClick={save}>
-            {existing ? 'Save event' : 'Add event'}
+            {existing ? $t("Save event") : $t("Add event")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
-        <Field label="Title" required error={errors.title}>
-          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Shoot day — city vlog" invalid={!!errors.title} autoFocus />
+        <Field label={$t("Title")} required error={errors.title}>
+          <Input value={v.title} onChange={(e) => set('title', e.target.value)} placeholder={$t("e.g. Shoot day — city vlog")} invalid={!!errors.title} autoFocus />
         </Field>
         <div className="form-grid">
-          <Field label="Type">
+          <Field label={$t("Type")}>
             <Select value={v.type} onChange={(e) => set('type', e.target.value as CalendarEvent['type'])} options={EVENT_TYPES.map((t) => ({ value: t.id, label: t.label }))} />
           </Field>
-          <Field label="Date" required error={errors.date}>
+          <Field label={$t("Date")} required error={errors.date}>
             <Input type="date" value={v.date} onChange={(e) => set('date', e.target.value)} invalid={!!errors.date} />
           </Field>
-          <Field label="Starts">
+          <Field label={$t("Starts")}>
             <Input type="time" value={v.startTime ?? ''} onChange={(e) => set('startTime', e.target.value || undefined)} />
           </Field>
-          <Field label="Ends" error={errors.endTime}>
+          <Field label={$t("Ends")} error={errors.endTime}>
             <Input type="time" value={v.endTime ?? ''} onChange={(e) => set('endTime', e.target.value || undefined)} invalid={!!errors.endTime} />
           </Field>
-          <Field label="Related video">
-            <Select value={v.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || undefined)} options={projectOptions} placeholder="None" />
+          <Field label={$t("Related video")}>
+            <Select value={v.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || undefined)} options={projectOptions} placeholder={$t("None")} />
           </Field>
-          <Field label="Reminder" error={errors.reminder}>
+          <Field label={$t("Reminder")} error={errors.reminder}>
             <Select
               value={v.reminder === null ? '' : String(v.reminder)}
               onChange={(e) => set('reminder', e.target.value === '' ? null : Number(e.target.value))}
               options={REMINDER_OPTIONS.filter((r) => r.value !== null).map((r) => ({ value: String(r.value), label: r.label }))}
-              placeholder="No reminder"
+              placeholder={$t("No reminder")}
             />
           </Field>
-          <Field label="Notes" className="span-2">
-            <Textarea value={v.notes} onChange={(e) => set('notes', e.target.value)} style={{ minHeight: 64 }} placeholder="Location, gear, people…" />
+          <Field label={$t("Notes")} className="span-2">
+            <Textarea value={v.notes} onChange={(e) => set('notes', e.target.value)} style={{ minHeight: 64 }} placeholder={$t("Location, gear, people…")} />
           </Field>
         </div>
       </form>
@@ -810,13 +811,13 @@ export function EventModal({ id, defaults }: { id?: string; defaults?: Partial<C
 
 /* ════════════════════════ Analytics record ════════════════════════ */
 const METRIC_FIELDS: { key: keyof AnalyticsRecord; label: string }[] = [
-  { key: 'views', label: 'Views' },
-  { key: 'reach', label: 'Reach' },
-  { key: 'likes', label: 'Likes' },
-  { key: 'comments', label: 'Comments' },
-  { key: 'shares', label: 'Shares' },
-  { key: 'saves', label: 'Saves' },
-  { key: 'followersGained', label: 'Followers gained' },
+  { key: 'views', label: $t("Views") },
+  { key: 'reach', label: $t("Reach") },
+  { key: 'likes', label: $t("Likes") },
+  { key: 'comments', label: $t("Comments") },
+  { key: 'shares', label: $t("Shares") },
+  { key: 'saves', label: $t("Saves") },
+  { key: 'followersGained', label: $t("Followers gained") },
 ];
 
 export function StatsModal({ id, defaults }: { id?: string; defaults?: Partial<AnalyticsRecord> }) {
@@ -857,7 +858,7 @@ export function StatsModal({ id, defaults }: { id?: string; defaults?: Partial<A
     if (existing) store.update('analytics', existing.id, v);
     else store.insert('analytics', v);
     closeModal();
-    toast(existing ? 'Statistics updated' : 'Statistics recorded', { description: v.title });
+    toast(existing ? $t("Statistics updated") : $t("Statistics recorded"), { description: v.title });
   };
 
   return (
@@ -865,47 +866,47 @@ export function StatsModal({ id, defaults }: { id?: string; defaults?: Partial<A
       open
       onClose={closeModal}
       size="lg"
-      title={existing ? 'Edit statistics' : 'Log statistics'}
-      description="Manual entry — no platform API is connected, so numbers come from your app’s insights."
+      title={existing ? $t("Edit statistics") : $t("Log statistics")}
+      description={$t("Manual entry — no platform API is connected, so numbers come from your app’s insights.")}
       footer={
         <Foot
           onDelete={
             existing
               ? async () => {
-                  if (await confirmDelete(`stats for ${existing.title}`)) {
+                  if (await confirmDelete($t('stats for {title}', { title: existing.title }))) {
                     store.remove('analytics', existing.id);
                     closeModal();
-                    toast('Record deleted');
+                    toast($t("Record deleted"));
                   }
                 }
               : undefined
           }
         >
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" onClick={save}>
-            Save statistics
+            {$t("Save statistics")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
         <div className="form-grid">
-          <Field label="Video from Content Studio" className="span-2" hint="Optional — or type a title for posts you don’t track here.">
-            <Select value={v.projectId ?? ''} onChange={(e) => pickProject(e.target.value)} options={projects.map((p) => ({ value: p.id, label: p.title || 'Untitled' }))} placeholder="Not linked" />
+          <Field label={$t("Video from Content Studio")} className="span-2" hint={$t("Optional — or type a title for posts you don’t track here.")}>
+            <Select value={v.projectId ?? ''} onChange={(e) => pickProject(e.target.value)} options={projects.map((p) => ({ value: p.id, label: p.title || $t("Untitled") }))} placeholder={$t("Not linked")} />
           </Field>
-          <Field label="Post title" required error={errors.title} className="span-2">
+          <Field label={$t("Post title")} required error={errors.title} className="span-2">
             <Input value={v.title} onChange={(e) => set('title', e.target.value)} invalid={!!errors.title} />
           </Field>
-          <Field label="Platform">
+          <Field label={$t("Platform")}>
             <Select value={v.platformId} onChange={(e) => set('platformId', e.target.value)} options={platformOptions.map((p) => ({ value: p.value, label: p.label }))} />
           </Field>
-          <Field label="Published on">
+          <Field label={$t("Published on")}>
             <Input type="date" value={v.publishedDate} onChange={(e) => set('publishedDate', e.target.value)} />
           </Field>
-          <Field label="Category">
+          <Field label={$t("Category")}>
             <Select value={v.category} onChange={(e) => set('category', e.target.value)} options={categories.map((c) => ({ value: c, label: c }))} />
           </Field>
-          <Field label="Format">
+          <Field label={$t("Format")}>
             <Select value={v.format} onChange={(e) => set('format', e.target.value as AnalyticsRecord['format'])} options={FORMATS.map((f) => ({ value: f.id, label: f.label }))} />
           </Field>
         </div>
@@ -931,19 +932,19 @@ export function TimeLogModal({ id, defaults }: { id?: string; defaults?: { proje
   const store = useStore.getState();
   const save = () => {
     const minutes = (Number(h) || 0) * 60 + (Number(m) || 0);
-    if (minutes <= 0) return toast('Log at least one minute', { tone: 'error' });
+    if (minutes <= 0) return toast($t("Log at least one minute"), { tone: 'error' });
     const rec = { ...v, minutes };
     if (existing) store.update('timeLogs', existing.id, rec);
     else store.insert('timeLogs', rec);
     closeModal();
-    toast('Time logged', { description: `${Math.floor(minutes / 60)}h ${minutes % 60}m · ${rec.activity}` });
+    toast($t("Time logged"), { description: `${Math.floor(minutes / 60)}h ${minutes % 60}m · ${rec.activity}` });
   };
   return (
     <Modal
       open
       onClose={closeModal}
       size="sm"
-      title={existing ? 'Edit time entry' : 'Log time'}
+      title={existing ? $t("Edit time entry") : $t("Log time")}
       footer={
         <Foot
           onDelete={
@@ -951,36 +952,36 @@ export function TimeLogModal({ id, defaults }: { id?: string; defaults?: { proje
               ? () => {
                   store.remove('timeLogs', existing.id);
                   closeModal();
-                  toast('Entry deleted');
+                  toast($t("Entry deleted"));
                 }
               : undefined
           }
         >
           <Button variant="primary" onClick={save}>
-            Save
+            {$t("Save")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
         <div className="form-grid">
-          <Field label="Hours">
+          <Field label={$t("Hours")}>
             <Input type="number" min={0} value={h} onChange={(e) => setH(e.target.value)} autoFocus />
           </Field>
-          <Field label="Minutes">
+          <Field label={$t("Minutes")}>
             <Input type="number" min={0} max={59} value={m} onChange={(e) => setM(e.target.value)} />
           </Field>
-          <Field label="Activity">
+          <Field label={$t("Activity")}>
             <Select value={v.activity} onChange={(e) => set('activity', e.target.value as never)} options={WORK_ACTIVITIES.map((a) => ({ value: a.id, label: a.label }))} />
           </Field>
-          <Field label="Date">
+          <Field label={$t("Date")}>
             <Input type="date" value={v.date} onChange={(e) => set('date', e.target.value)} />
           </Field>
-          <Field label="Video" className="span-2">
-            <Select value={v.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || undefined)} options={projectOptions} placeholder="None" />
+          <Field label={$t("Video")} className="span-2">
+            <Select value={v.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || undefined)} options={projectOptions} placeholder={$t("None")} />
           </Field>
-          <Field label="Note" className="span-2">
-            <Input value={v.note} onChange={(e) => set('note', e.target.value)} placeholder="Optional" />
+          <Field label={$t("Note")} className="span-2">
+            <Input value={v.note} onChange={(e) => set('note', e.target.value)} placeholder={$t("Optional")} />
           </Field>
         </div>
       </form>
@@ -1004,14 +1005,14 @@ export function ColorModal({ id, paletteId }: { id?: string; paletteId?: string 
     if (existing) store.update('colors', existing.id, rec);
     else store.insert('colors', rec);
     closeModal();
-    toast(existing ? 'Colour updated' : 'Colour added', { description: `${rec.name} ${rec.hex}` });
+    toast(existing ? $t("Colour updated") : $t("Colour added"), { description: `${rec.name} ${rec.hex}` });
   };
   return (
     <Modal
       open
       onClose={closeModal}
       size="sm"
-      title={existing ? 'Edit colour' : 'Add colour'}
+      title={existing ? $t("Edit colour") : $t("Add colour")}
       footer={
         <Foot
           onDelete={
@@ -1020,36 +1021,36 @@ export function ColorModal({ id, paletteId }: { id?: string; paletteId?: string 
                   if (await confirmDelete(existing.name)) {
                     store.remove('colors', existing.id);
                     closeModal();
-                    toast('Colour removed');
+                    toast($t("Colour removed"));
                   }
                 }
               : undefined
           }
         >
           <Button variant="primary" onClick={save}>
-            Save colour
+            {$t("Save colour")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
         <div className="color-preview" style={{ background: isHex(v.hex) ? normalizeHex(v.hex) : 'transparent', color: isHex(v.hex) ? readableOn(v.hex) : 'inherit' }}>
-          <span className="display" style={{ fontSize: 26 }}>{v.name || 'Colour'}</span>
+          <span className="display" style={{ fontSize: 26 }}>{v.name || $t("Colour")}</span>
           <span className="mono">{isHex(v.hex) ? normalizeHex(v.hex) : '—'}</span>
         </div>
-        <Field label="Name" required error={errors.name}>
+        <Field label={$t("Name")} required error={errors.name}>
           <Input value={v.name} onChange={(e) => set('name', e.target.value)} invalid={!!errors.name} autoFocus />
         </Field>
-        <Field label="HEX" required error={errors.hex}>
+        <Field label={$t("HEX")} required error={errors.hex}>
           <div className="row">
-            <input type="color" value={isHex(v.hex) ? normalizeHex(v.hex) : '#000000'} onChange={(e) => set('hex', e.target.value.toUpperCase())} aria-label="Pick colour" />
+            <input type="color" value={isHex(v.hex) ? normalizeHex(v.hex) : '#000000'} onChange={(e) => set('hex', e.target.value.toUpperCase())} aria-label={$t("Pick colour")} />
             <Input value={v.hex} onChange={(e) => set('hex', e.target.value)} className="mono" invalid={!!errors.hex} />
           </div>
         </Field>
-        <Field label="Role / usage">
-          <Input value={v.role} onChange={(e) => set('role', e.target.value)} placeholder="e.g. Buttons and links" />
+        <Field label={$t("Role / usage")}>
+          <Input value={v.role} onChange={(e) => set('role', e.target.value)} placeholder={$t("e.g. Buttons and links")} />
         </Field>
-        <Field label="Palette" error={(errors as Record<string, string>).paletteId}>
+        <Field label={$t("Palette")} error={(errors as Record<string, string>).paletteId}>
           <Select value={v.paletteId} onChange={(e) => set('paletteId', e.target.value)} options={palettes.map((p) => ({ value: p.id, label: p.name }))} />
         </Field>
       </form>
@@ -1068,11 +1069,11 @@ export function PaletteModal({ id }: { id?: string }) {
     if (existing) {
       store.update('palettes', existing.id, { name: name.trim(), description });
       closeModal();
-      toast('Palette updated');
+      toast($t("Palette updated"));
     } else {
       const id = uid();
       store.insert('palettes', { id, name: name.trim(), description, order: Date.now() });
-      toast('Palette created', { description: 'Now add its first colour.' });
+      toast($t("Palette created"), { description: $t("Now add its first colour.") });
       openModal({ kind: 'color', paletteId: id });
     }
   };
@@ -1081,33 +1082,33 @@ export function PaletteModal({ id }: { id?: string }) {
       open
       onClose={closeModal}
       size="sm"
-      title={existing ? 'Edit palette' : 'New palette'}
+      title={existing ? $t("Edit palette") : $t("New palette")}
       footer={
         <Foot
           onDelete={
             existing
               ? async () => {
-                  if (await confirmDialog({ title: `Delete “${existing.name}”?`, description: 'All colours in this palette are removed too.' })) {
+                  if (await confirmDialog({ title: $t('Delete “{name}”?', { name: existing.name }), description: $t("All colours in this palette are removed too.") })) {
                     store.deletePalette(existing.id);
                     closeModal();
-                    toast('Palette deleted');
+                    toast($t("Palette deleted"));
                   }
                 }
               : undefined
           }
         >
           <Button variant="primary" onClick={save}>
-            Save
+            {$t("Save")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
-        <Field label="Name" required error={err}>
+        <Field label={$t("Name")} required error={err}>
           <Input value={name} onChange={(e) => (setName(e.target.value), setErr(null))} autoFocus />
         </Field>
-        <Field label="Description">
-          <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="When to use it" />
+        <Field label={$t("Description")}>
+          <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={$t("When to use it")} />
         </Field>
       </form>
     </Modal>
@@ -1123,13 +1124,13 @@ export function ComboModal({ id }: { id?: string }) {
   const store = useStore.getState();
   const ratio = contrastRatio(v.background, v.foreground);
   const save = () => {
-    if (!v.name.trim()) return setErrors({ name: 'Name the combination.' });
-    if (!isHex(v.background) || !isHex(v.foreground) || (v.accent && !isHex(v.accent))) return toast('Use valid HEX colours', { tone: 'error' });
+    if (!v.name.trim()) return setErrors({ name: $t("Name the combination.") });
+    if (!isHex(v.background) || !isHex(v.foreground) || (v.accent && !isHex(v.accent))) return toast($t("Use valid HEX colours"), { tone: 'error' });
     const rec = { ...v, name: v.name.trim(), background: normalizeHex(v.background), foreground: normalizeHex(v.foreground), accent: v.accent ? normalizeHex(v.accent) : undefined };
     if (existing) store.update('combos', existing.id, rec);
     else store.insert('combos', rec);
     closeModal();
-    toast(existing ? 'Combination updated' : 'Combination saved');
+    toast(existing ? $t("Combination updated") : $t("Combination saved"));
   };
   const colorSelect = (key: 'background' | 'foreground' | 'accent', label: string, optional = false) => (
     <Field label={label}>
@@ -1139,7 +1140,7 @@ export function ComboModal({ id }: { id?: string }) {
           value={colors.find((c) => c.hex === v[key])?.hex ?? ''}
           onChange={(e) => set(key, e.target.value || (optional ? undefined : v[key]) as never)}
           options={colors.map((c) => ({ value: c.hex, label: `${c.name} ${c.hex}` }))}
-          placeholder={optional ? 'None' : v[key] ?? 'Custom'}
+          placeholder={optional ? $t("None") : v[key] ?? $t("Custom")}
         />
       </div>
     </Field>
@@ -1148,7 +1149,7 @@ export function ComboModal({ id }: { id?: string }) {
     <Modal
       open
       onClose={closeModal}
-      title={existing ? 'Edit combination' : 'New combination'}
+      title={existing ? $t("Edit combination") : $t("New combination")}
       footer={
         <Foot
           onDelete={
@@ -1156,13 +1157,13 @@ export function ComboModal({ id }: { id?: string }) {
               ? () => {
                   store.remove('combos', existing.id);
                   closeModal();
-                  toast('Combination removed');
+                  toast($t("Combination removed"));
                 }
               : undefined
           }
         >
           <Button variant="primary" onClick={save}>
-            Save
+            {$t("Save")}
           </Button>
         </Foot>
       }
@@ -1170,24 +1171,24 @@ export function ComboModal({ id }: { id?: string }) {
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
         <div className="combo-preview" style={{ background: v.background, color: v.foreground }}>
           <span className="display" style={{ fontSize: 30 }}>
-            Aa<span style={{ color: v.accent ?? v.foreground }}>.</span>
+            {$t("Aa")}<span style={{ color: v.accent ?? v.foreground }}>.</span>
           </span>
-          <span style={{ fontSize: 13 }}>{v.name || 'Preview'}</span>
+          <span style={{ fontSize: 13 }}>{v.name || $t("Preview")}</span>
           {v.accent && <span className="combo-preview__accent" style={{ background: v.accent }} />}
         </div>
         <div className="row between">
-          <span className="subtle" style={{ fontSize: 12.5 }}>Contrast ratio</span>
+          <span className="subtle" style={{ fontSize: 12.5 }}>{$t("Contrast ratio")}</span>
           <span className={ratio >= 4.5 ? 'badge badge--positive' : ratio >= 3 ? 'badge' : 'badge badge--danger'}>
-            {ratio.toFixed(2)}:1 · {ratio >= 7 ? 'AAA' : ratio >= 4.5 ? 'AA' : ratio >= 3 ? 'AA large text' : 'Fails'}
+            {ratio.toFixed(2)}:1 · {ratio >= 7 ? $t("AAA") : ratio >= 4.5 ? $t("AA") : ratio >= 3 ? $t("AA large text") : $t("Fails")}
           </span>
         </div>
-        <Field label="Name" required error={errors.name}>
+        <Field label={$t("Name")} required error={errors.name}>
           <Input value={v.name} onChange={(e) => set('name', e.target.value)} autoFocus />
         </Field>
         {colorSelect('background', 'Background')}
         {colorSelect('foreground', 'Text')}
         {colorSelect('accent', 'Accent (optional)', true)}
-        <Field label="Usage note">
+        <Field label={$t("Usage note")}>
           <Input value={v.note} onChange={(e) => set('note', e.target.value)} />
         </Field>
       </form>
@@ -1202,19 +1203,19 @@ export function ReferenceModal({ id }: { id?: string }) {
   const { v, set, errors, setErrors } = useFormState(existing ?? newReference());
   const store = useStore.getState();
   const save = () => {
-    if (!v.title.trim()) return setErrors({ title: 'Give it a title.' });
+    if (!v.title.trim()) return setErrors({ title: $t("Give it a title.") });
     const rec = { ...v, title: v.title.trim() };
     if (existing) store.update('references', existing.id, rec);
     else store.insert('references', rec);
     closeModal();
-    toast(existing ? 'Reference updated' : 'Reference saved');
+    toast(existing ? $t("Reference updated") : $t("Reference saved"));
   };
   return (
     <Modal
       open
       onClose={closeModal}
-      title={existing ? 'Edit reference' : 'Save a reference'}
-      description="Moodboards, photography, screenshots and campaign ideas."
+      title={existing ? $t("Edit reference") : $t("Save a reference")}
+      description={$t("Moodboards, photography, screenshots and campaign ideas.")}
       footer={
         <Foot
           onDelete={
@@ -1223,49 +1224,49 @@ export function ReferenceModal({ id }: { id?: string }) {
                   if (await confirmDelete(existing.title)) {
                     store.remove('references', existing.id);
                     closeModal();
-                    toast('Reference removed');
+                    toast($t("Reference removed"));
                   }
                 }
               : undefined
           }
         >
           <Button variant="primary" onClick={save}>
-            Save
+            {$t("Save")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
-        <Field label="Title" required error={errors.title}>
+        <Field label={$t("Title")} required error={errors.title}>
           <Input value={v.title} onChange={(e) => set('title', e.target.value)} autoFocus />
         </Field>
         <div className="form-grid">
-          <Field label="Kind">
+          <Field label={$t("Kind")}>
             <Select value={v.kind} onChange={(e) => set('kind', e.target.value as never)} options={REFERENCE_KINDS.map((k) => ({ value: k.id, label: k.label }))} />
           </Field>
-          <Field label="Image from library">
-            <Select value={v.assetId ?? ''} onChange={(e) => set('assetId', e.target.value || undefined)} options={assets.map((a) => ({ value: a.id, label: a.name }))} placeholder="None" />
+          <Field label={$t("Image from library")}>
+            <Select value={v.assetId ?? ''} onChange={(e) => set('assetId', e.target.value || undefined)} options={assets.map((a) => ({ value: a.id, label: a.name }))} placeholder={$t("None")} />
           </Field>
         </div>
         <Button
           size="sm"
           icon={<Plus />}
           onClick={() => {
-            const draft = { ...v, title: v.title.trim() || 'Untitled reference' };
+            const draft = { ...v, title: v.title.trim() || $t("Untitled reference") };
             if (existing) store.update('references', existing.id, draft);
             else store.insert('references', draft);
             openModal({ kind: 'upload', defaults: { type: 'reference', brand: true, referenceId: draft.id } as never });
           }}
         >
-          Upload a new image
+          {$t("Upload a new image")}
         </Button>
-        <Field label="Link">
+        <Field label={$t("Link")}>
           <Input value={v.url} onChange={(e) => set('url', e.target.value)} placeholder="https://…" />
         </Field>
-        <Field label="Notes">
+        <Field label={$t("Notes")}>
           <Textarea value={v.notes} onChange={(e) => set('notes', e.target.value)} style={{ minHeight: 70 }} />
         </Field>
-        <Field label="Tags">
+        <Field label={$t("Tags")}>
           <TagInput value={v.tags} onChange={(t) => set('tags', t)} />
         </Field>
       </form>
@@ -1282,41 +1283,41 @@ export function BrandProfileModal() {
   const save = () => {
     useStore.getState().setBrand({ ...v, name: v.name.trim(), tagline: v.tagline.trim() });
     closeModal();
-    toast('Brand updated');
+    toast($t("Brand updated"));
   };
   return (
     <Modal
       open
       onClose={closeModal}
       size="lg"
-      title="Your brand"
-      description="Everything here is yours — the Brand Kit is built from what you enter."
+      title={$t("Your brand")}
+      description={$t("Everything here is yours — the Brand Kit is built from what you enter.")}
       footer={
         <Foot>
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" onClick={save}>
-            Save brand
+            {$t("Save brand")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
         <div className="form-grid">
-          <Field label="Brand name">
-            <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder="Your brand" autoFocus />
+          <Field label={$t("Brand name")}>
+            <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder={$t("Your brand")} autoFocus />
           </Field>
-          <Field label="Tagline">
-            <Input value={v.tagline} onChange={(e) => set('tagline', e.target.value)} placeholder="One line that sums it up" />
+          <Field label={$t("Tagline")}>
+            <Input value={v.tagline} onChange={(e) => set('tagline', e.target.value)} placeholder={$t("One line that sums it up")} />
           </Field>
-          <Field label="Description" className="span-2">
-            <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder="What the brand stands for, who it speaks to, how it should feel…" />
+          <Field label={$t("Description")} className="span-2">
+            <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder={$t("What the brand stands for, who it speaks to, how it should feel…")} />
           </Field>
-          <Field label="Tone of voice" className="span-2" hint="Keywords — e.g. bold, warm, playful.">
-            <TagInput value={v.voice} onChange={(t) => set('voice', t)} placeholder="Add a keyword…" />
+          <Field label={$t("Tone of voice")} className="span-2" hint={$t("Keywords — e.g. bold, warm, playful.")}>
+            <TagInput value={v.voice} onChange={(t) => set('voice', t)} placeholder={$t("Add a keyword…")} />
           </Field>
-          <Field label="Logo preview background" className="span-2" hint="The surface your logo is shown on in the Brand Kit.">
+          <Field label={$t("Logo preview background")} className="span-2" hint={$t("The surface your logo is shown on in the Brand Kit.")}>
             <div className="row">
-              <input type="color" value={isHex(v.logoBackground) ? normalizeHex(v.logoBackground) : '#FFFFFF'} onChange={(e) => set('logoBackground', e.target.value.toUpperCase())} aria-label="Logo background" />
+              <input type="color" value={isHex(v.logoBackground) ? normalizeHex(v.logoBackground) : '#FFFFFF'} onChange={(e) => set('logoBackground', e.target.value.toUpperCase())} aria-label={$t("Logo background")} />
               <Input value={v.logoBackground} onChange={(e) => set('logoBackground', e.target.value)} className="mono" style={{ maxWidth: 160 }} />
               <BrandColorPicks onPick={(hex) => set('logoBackground', hex)} />
             </div>
@@ -1368,15 +1369,15 @@ export function BrandFontModal({ id }: { id?: string }) {
     else store.insert('brandFonts', rec);
     setBusy(false);
     closeModal();
-    toast(existing ? 'Font updated' : 'Font added', { description: rec.name });
+    toast(existing ? $t("Font updated") : $t("Font added"), { description: rec.name });
   };
 
   return (
     <Modal
       open
       onClose={closeModal}
-      title={existing ? 'Edit font' : 'Add a brand font'}
-      description="Upload your font files — they are stored privately and used to render every specimen."
+      title={existing ? $t("Edit font") : $t("Add a brand font")}
+      description={$t("Upload your font files — they are stored privately and used to render every specimen.")}
       footer={
         <Foot
           onDelete={
@@ -1385,56 +1386,56 @@ export function BrandFontModal({ id }: { id?: string }) {
                   if (await confirmDelete(existing.name)) {
                     store.remove('brandFonts', existing.id);
                     closeModal();
-                    toast('Font removed', { description: 'The file stays in your Asset Library.' });
+                    toast($t("Font removed"), { description: $t("The file stays in your Asset Library.") });
                   }
                 }
               : undefined
           }
         >
-          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={closeModal}>{$t("Cancel")}</Button>
           <Button variant="primary" loading={busy} onClick={save}>
-            {existing ? 'Save font' : 'Add font'}
+            {existing ? $t("Save font") : $t("Add font")}
           </Button>
         </Foot>
       }
     >
       <form className="form" onSubmit={(e) => (e.preventDefault(), void save())}>
         <div className="form-grid">
-          <Field label="Name" required error={err.name}>
-            <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Brand Sans Bold" autoFocus invalid={!!err.name} />
+          <Field label={$t("Name")} required error={err.name}>
+            <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder={$t("e.g. Brand Sans Bold")} autoFocus invalid={!!err.name} />
           </Field>
-          <Field label="Role">
+          <Field label={$t("Role")}>
             <Select value={v.role} onChange={(e) => set('role', e.target.value as BrandFont['role'])} options={FONT_ROLES.map((r) => ({ value: r.id, label: `${r.label} — ${r.hint}` }))} />
           </Field>
         </div>
-        <Field label="Source">
+        <Field label={$t("Source")}>
           <Segmented
-            label="Font source"
+            label={$t("Font source")}
             value={source}
             onChange={setSource}
             options={[
-              { value: 'file', label: 'Upload file' },
-              { value: 'installed', label: 'Installed on this device' },
+              { value: 'file', label: $t("Upload file") },
+              { value: 'installed', label: $t("Installed on this device") },
             ]}
           />
         </Field>
         {source === 'file' ? (
-          <Field label="Font file" error={err.file} hint={asset && !file ? `Current file: ${asset.name}` : undefined}>
+          <Field label={$t("Font file")} error={err.file} hint={asset && !file ? $t('Current file: {name}', { name: asset.name }) : undefined}>
             <Dropzone accept=".otf,.ttf,.woff,.woff2,font/*" onFiles={(f) => setFile(f.find((x) => isFontFile(x)) ?? null)}>
-              <span className="dropzone__title">{file ? file.name : asset ? 'Drop a file to replace it' : 'Drop a font file or click to browse'}</span>
-              <span className="dropzone__sub">.otf · .ttf · .woff · .woff2</span>
+              <span className="dropzone__title">{file ? file.name : asset ? $t("Drop a file to replace it") : $t("Drop a font file or click to browse")}</span>
+              <span className="dropzone__sub">{$t(".otf · .ttf · .woff · .woff2")}</span>
             </Dropzone>
           </Field>
         ) : (
-          <Field label="CSS family name" error={err.family} hint="Exactly as installed, e.g. Helvetica Neue.">
+          <Field label={$t("CSS family name")} error={err.family} hint={$t("Exactly as installed, e.g. Helvetica Neue.")}>
             <Input value={v.family.startsWith('brand-font-') ? '' : v.family} onChange={(e) => set('family', e.target.value)} invalid={!!err.family} />
           </Field>
         )}
-        <Field label="Usage">
-          <Textarea value={v.usage} onChange={(e) => set('usage', e.target.value)} placeholder="Where and how to use it — sizes, weights, do’s and don’ts." style={{ minHeight: 70 }} />
+        <Field label={$t("Usage")}>
+          <Textarea value={v.usage} onChange={(e) => set('usage', e.target.value)} placeholder={$t("Where and how to use it — sizes, weights, do’s and don’ts.")} style={{ minHeight: 70 }} />
         </Field>
-        <Field label="Specimen text">
-          <Input value={v.sample} onChange={(e) => set('sample', e.target.value)} placeholder="A phrase that shows off the font" />
+        <Field label={$t("Specimen text")}>
+          <Input value={v.sample} onChange={(e) => set('sample', e.target.value)} placeholder={$t("A phrase that shows off the font")} />
         </Field>
       </form>
     </Modal>

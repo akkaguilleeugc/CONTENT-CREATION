@@ -15,6 +15,7 @@ import type { Task } from '@/lib/types';
 import { confirmDialog, openModal, toast } from '@/lib/ui';
 import { cn, fmtDate, matches, relativeDay, toDateStr, todayStr } from '@/lib/utils';
 
+import { $t } from '@/lib/i18n';
 type View = 'today' | 'upcoming' | 'all' | 'done';
 type Sort = 'manual' | 'due' | 'priority' | 'created';
 
@@ -31,9 +32,9 @@ function TaskRow({ t, sortable, showDate = true }: { t: Task; sortable?: boolean
     const was = t.status === 'done';
     store.toggleTask(t.id);
     if (!was)
-      toast(t.recurrence !== 'none' ? 'Done — next one scheduled' : 'Task completed', {
+      toast(t.recurrence !== 'none' ? $t("Done — next one scheduled") : $t("Task completed"), {
         description: t.title,
-        action: t.recurrence === 'none' ? { label: 'Undo', run: () => useStore.getState().toggleTask(t.id) } : undefined,
+        action: t.recurrence === 'none' ? { label: $t("Undo"), run: () => useStore.getState().toggleTask(t.id) } : undefined,
       });
   };
 
@@ -48,14 +49,14 @@ function TaskRow({ t, sortable, showDate = true }: { t: Task; sortable?: boolean
           <GripVertical />
         </button>
       )}
-      <Checkbox round checked={t.status === 'done'} onChange={toggle} label={`Complete ${t.title}`} />
+      <Checkbox round checked={t.status === 'done'} onChange={toggle} label={$t('Complete {title}', { title: t.title })} />
       <button className="trow__main" onClick={() => openModal({ kind: 'task', id: t.id })}>
         <span className="trow__title">{t.title}</span>
         <span className="trow__meta">
-          {t.status === 'in_progress' && <span className="badge badge--accent">In progress</span>}
+          {t.status === 'in_progress' && <span className="badge badge--accent">{$t("In progress")}</span>}
           {showDate && t.dueDate && (
             <span className={cn('trow__due', overdue && 'trow__due--late', t.dueDate === today && 'trow__due--today')}>
-              {overdue ? `Overdue · ${relativeDay(t.dueDate)}` : relativeDay(t.dueDate)}
+              {overdue ? `${$t('Overdue')} · ${relativeDay(t.dueDate)}` : relativeDay(t.dueDate)}
               {t.dueTime ? ` · ${t.dueTime}` : ''}
             </span>
           )}
@@ -70,7 +71,7 @@ function TaskRow({ t, sortable, showDate = true }: { t: Task; sortable?: boolean
             </span>
           )}
           {t.reminder !== null && (
-            <span className="trow__chip" title="Reminder set">
+            <span className="trow__chip" title={$t("Reminder set")}>
               <Bell />
             </span>
           )}
@@ -90,7 +91,7 @@ function TaskRow({ t, sortable, showDate = true }: { t: Task; sortable?: boolean
             size="sm"
             iconOnly
             icon={inMyDay ? <SunDim /> : <Sun />}
-            tip={inMyDay ? 'Remove from My Day' : 'Add to My Day'}
+            tip={inMyDay ? $t("Remove from My Day") : $t("Add to My Day")}
             onClick={() => store.update('tasks', t.id, { myDay: inMyDay ? undefined : today })}
           />
         )}
@@ -99,10 +100,10 @@ function TaskRow({ t, sortable, showDate = true }: { t: Task; sortable?: boolean
           size="sm"
           iconOnly
           icon={<Trash2 />}
-          tip="Delete"
+          tip={$t("Delete")}
           onClick={() => {
             store.remove('tasks', t.id);
-            toast('Task deleted', { description: t.title, action: { label: 'Undo', run: () => useStore.getState().insert('tasks', t) } });
+            toast($t("Task deleted"), { description: t.title, action: { label: $t("Undo"), run: () => useStore.getState().insert('tasks', t) } });
           }}
         />
       </span>
@@ -181,7 +182,7 @@ export default function Tasks() {
     const minOrder = Math.min(0, ...tasks.map((t) => t.order));
     store.insert('tasks', newTask({ title, ...defaults, order: minOrder - 1 }));
     setDraft('');
-    toast('Task added', { description: view === 'today' ? 'Due today' : view === 'upcoming' ? 'Due tomorrow' : title });
+    toast($t("Task added"), { description: view === 'today' ? $t("Due today") : view === 'upcoming' ? $t("Due tomorrow") : title });
   };
 
   const onDragEnd = (e: DragEndEvent) => {
@@ -200,18 +201,18 @@ export default function Tasks() {
 
   const empty = (text: string) => (
     <div className="panel">
-      <EmptyState icon={<CheckCheck />} title={tasks.length ? 'Nothing here' : 'No tasks yet'} text={text} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'task', defaults: view === 'today' ? { dueDate: today, myDay: today } : {} })}>New task</Button>} />
+      <EmptyState icon={<CheckCheck />} title={tasks.length ? $t("Nothing here") : $t("No tasks yet")} text={text} actions={<Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'task', defaults: view === 'today' ? { dueDate: today, myDay: today } : {} })}>{$t("New task")}</Button>} />
     </div>
   );
 
   return (
     <div className="page tasks-page">
       <PageHeader
-        title="Tasks"
-        sub={tasks.length ? `${open.length} open · ${myDay.overdue.length} overdue · ${myDay.doneToday.length} completed today` : 'Personal and professional — everything you need to get done, in one list.'}
+        title={$t("Tasks")}
+        sub={tasks.length ? $t('{open} open · {overdue} overdue · {done} completed today', { open: open.length, overdue: myDay.overdue.length, done: myDay.doneToday.length }) : $t("Personal and professional — everything you need to get done, in one list.")}
         actions={
           <Button variant="primary" icon={<Plus />} onClick={() => openModal({ kind: 'task', defaults: view === 'today' ? { dueDate: today, myDay: today } : {} })} kbd="T">
-            New task
+            {$t("New task")}
           </Button>
         }
       />
@@ -219,27 +220,27 @@ export default function Tasks() {
         value={view}
         onChange={setView}
         tabs={[
-          { value: 'today', label: 'My Day', icon: <Sun />, count: counts.today },
-          { value: 'upcoming', label: 'Upcoming', count: counts.upcoming },
-          { value: 'all', label: 'All Tasks', count: counts.all },
-          { value: 'done', label: 'Completed', count: counts.done },
+          { value: 'today', label: $t("My Day"), icon: <Sun />, count: counts.today },
+          { value: 'upcoming', label: $t("Upcoming"), count: counts.upcoming },
+          { value: 'all', label: $t("All Tasks"), count: counts.all },
+          { value: 'done', label: $t("Completed"), count: counts.done },
         ]}
       />
       <div className="toolbar" style={{ marginTop: 14 }}>
-        <SearchInput value={q} onChange={setQ} placeholder="Search tasks…" />
-        <Select sm value={prio} onChange={(e) => setPrio(e.target.value)} options={[{ value: 'urgent', label: 'Urgent' }, { value: 'high', label: 'High' }, { value: 'medium', label: 'Medium' }, { value: 'low', label: 'Low' }]} placeholder="Any priority" aria-label="Priority" style={{ width: 'auto' }} />
+        <SearchInput value={q} onChange={setQ} placeholder={$t("Search tasks…")} />
+        <Select sm value={prio} onChange={(e) => setPrio(e.target.value)} options={[{ value: 'urgent', label: $t("Urgent") }, { value: 'high', label: $t("High") }, { value: 'medium', label: $t("Medium") }, { value: 'low', label: $t("Low") }]} placeholder={$t("Any priority")} aria-label={$t("Priority")} style={{ width: 'auto' }} />
         {view === 'all' && (
           <Select
             sm
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
             options={[
-              { value: 'manual', label: 'Manual order (drag)' },
-              { value: 'due', label: 'Due date' },
-              { value: 'priority', label: 'Priority' },
-              { value: 'created', label: 'Newest' },
+              { value: 'manual', label: $t("Manual order (drag)") },
+              { value: 'due', label: $t("Due date") },
+              { value: 'priority', label: $t("Priority") },
+              { value: 'created', label: $t("Newest") },
             ]}
-            aria-label="Sort"
+            aria-label={$t("Sort")}
             style={{ width: 'auto' }}
           />
         )}
@@ -250,13 +251,13 @@ export default function Tasks() {
             icon={<Trash2 />}
             style={{ marginLeft: 'auto' }}
             onClick={async () => {
-              if (await confirmDialog({ title: `Clear ${done.length} completed tasks?`, confirmLabel: 'Clear' })) {
+              if (await confirmDialog({ title: $t('Clear {n} completed tasks?', { n: done.length }), confirmLabel: $t("Clear") })) {
                 done.forEach((t) => store.remove('tasks', t.id));
-                toast('Completed tasks cleared');
+                toast($t("Completed tasks cleared"));
               }
             }}
           >
-            Clear completed
+            {$t("Clear completed")}
           </Button>
         )}
       </div>
@@ -267,7 +268,7 @@ export default function Tasks() {
       {view !== 'done' && (
         <form className="quick-add" onSubmit={(e) => (e.preventDefault(), add())}>
           <Plus size={16} />
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={view === 'today' ? 'Add a task for today…' : view === 'upcoming' ? 'Add a task for tomorrow…' : 'Add a task…'} aria-label="Quick add task" />
+          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={view === 'today' ? $t("Add a task for today…") : view === 'upcoming' ? $t("Add a task for tomorrow…") : $t("Add a task…")} aria-label={$t("Quick add task")} />
           <span className="kbd hide-mobile">↵</span>
         </form>
       )}
@@ -277,9 +278,9 @@ export default function Tasks() {
           empty('Your day is clear. Add a task above or pin tasks to My Day with the sun icon.')
         ) : (
           <>
-            <Group title="Overdue" tasks={myDay.overdue} />
-            <Group title={`Today · ${fmtDate(today, 'EEEE d MMMM')}`} tasks={myDay.todayList} accent />
-            <Group title="Completed today" tasks={myDay.doneToday} />
+            <Group title={$t("Overdue")} tasks={myDay.overdue} />
+            <Group title={`${$t('Today')} · ${fmtDate(today, 'EEEE d MMMM')}`} tasks={myDay.todayList} accent />
+            <Group title={$t("Completed today")} tasks={myDay.doneToday} />
           </>
         ))}
 
@@ -288,10 +289,10 @@ export default function Tasks() {
           empty('No upcoming deadlines.')
         ) : (
           <>
-            <Group title="Tomorrow" tasks={upcoming.tomorrow} accent />
-            <Group title="Later this week" tasks={upcoming.week} />
-            <Group title="Later" tasks={upcoming.later} />
-            <Group title="No date" tasks={upcoming.none} />
+            <Group title={$t("Tomorrow")} tasks={upcoming.tomorrow} accent />
+            <Group title={$t("Later this week")} tasks={upcoming.week} />
+            <Group title={$t("Later")} tasks={upcoming.later} />
+            <Group title={$t("No date")} tasks={upcoming.none} />
           </>
         ))}
 

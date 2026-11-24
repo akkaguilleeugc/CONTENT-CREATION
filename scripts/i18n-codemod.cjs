@@ -8,8 +8,8 @@ const traverse = require('@babel/traverse').default;
 
 const ROOT = path.join(__dirname, '..', 'src');
 const DRY = process.argv.includes('--dry');
-const SKIP = new Set(['lib/sample.ts', 'lib/i18n.ts', 'lib/types.ts', 'main.tsx']);
-const ATTRS = new Set(['label', 'placeholder', 'title', 'aria-label', 'description', 'hint', 'tip', 'text', 'sub', 'alt', 'data-tip', 'subtitle', 'caption', 'emptyText', 'emptyTitle', 'heading', 'cta', 'confirmLabel', 'cancelLabel', 'actionLabel', 'kicker', 'eyebrow', 'note', 'help', 'unit']);
+const SKIP = new Set(['pages/Legal.tsx', 'lib/legal.ts', 'lib/sample.ts', 'lib/i18n.ts', 'lib/types.ts', 'main.tsx']);
+const ATTRS = new Set(['desc', 'label', 'placeholder', 'title', 'aria-label', 'description', 'hint', 'tip', 'text', 'sub', 'alt', 'data-tip', 'subtitle', 'caption', 'emptyText', 'emptyTitle', 'heading', 'cta', 'confirmLabel', 'cancelLabel', 'actionLabel', 'kicker', 'eyebrow', 'note', 'help', 'unit']);
 const KEYS = new Set(['label', 'title', 'description', 'hint', 'sub', 'text', 'placeholder', 'tip', 'short', 'desc', 'caption', 'subtitle', 'heading', 'message', 'confirmLabel', 'cancelLabel', 'cta', 'empty', 'help', 'helper', 'aria', 'unitLabel', 'blurb', 'detail', 'question', 'answer', 'name']);
 const CALLS = new Set(['toast', 'alert']);
 const hasWords = (s) => /[A-Za-z]{2,}/.test(s) && !/^[a-z0-9_.:/#-]+$/.test(s) && !/^(https?:|\/|#|var\(|rgba?\(|[a-z]+-[a-z-]+$)/.test(s);

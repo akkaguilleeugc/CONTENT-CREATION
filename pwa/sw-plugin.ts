@@ -5,7 +5,7 @@ import { join, relative, sep } from 'node:path';
 import type { Plugin } from 'vite';
 
 // Public files the installed app needs offline. Large or rarely-used files are fetched on demand instead.
-const PUBLIC_INCLUDE = [/^fonts\//, /^icons\/(icon|maskable|apple-touch|favicon|badge)/, /^brand\/kroopy-(logo|symbol)\.png$/, /^manifest\.webmanifest$/, /^favicon\.ico$/];
+const PUBLIC_INCLUDE = [/^fonts\//, /^icons\/(icon|maskable|apple-touch|favicon|badge)/, /^brand\/kroopy-(logo|logo-white|symbol)\.png$/, /^manifest\.webmanifest$/, /^favicon\.ico$/];
 
 function walk(dir: string, root = dir): string[] {
   return readdirSync(dir).flatMap((name) => {
