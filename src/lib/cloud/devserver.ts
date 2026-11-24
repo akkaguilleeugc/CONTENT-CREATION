@@ -28,6 +28,7 @@ export function createDevBackend(base: string): CloudBackend {
   }
   return {
     kind: 'dev',
+    realtime: true,
     async currentUser() {
       return session?.user ?? null;
     },

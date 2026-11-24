@@ -15,7 +15,8 @@ import { confirmDialog, toast } from '@/lib/ui';
 import { cn, downloadBlob, fmtBytes, uid } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { LANG, LANGS, setLang } from '@/lib/i18n';
-import { cloudConfigured, syncLabel, useSync } from '@/lib/sync';
+import { syncLabel, useSync } from '@/lib/sync';
+import { disablePush, enablePush, testPush, usePush } from '@/lib/push';
 
 import { $t } from '@/lib/i18n';
 const SECTIONS = [
@@ -35,7 +36,7 @@ const SECTIONS = [
 
 function AccountSummary() {
   const { user, status, pending } = useSync();
-  if (!cloudConfigured || status === 'unconfigured')
+  if (status === 'unconfigured')
     return <p className="subtle" style={{ fontSize: 13 }}>{$t('KROOPY keeps working on this device. Sync turns on once the KROOPY cloud is connected to this site.')}</p>;
   return (
     <div className="row between wrap gap-12">
@@ -44,6 +45,73 @@ function AccountSummary() {
         <div className="subtle" style={{ fontSize: 13 }}>{user ? syncLabel(status, pending) : $t('Your data is only on this device.')}</div>
       </div>
       <Link to="/account" className="btn btn--primary">{user ? $t('Manage account') : $t('Sign in or create account')}</Link>
+    </div>
+  );
+}
+
+/** Push notifications for this device — reminders arrive even when KROOPY is closed. */
+function PushRow() {
+  const { support, enabled, busy, available, permission } = usePush();
+  const { user, status } = useSync();
+  const [testing, setTesting] = useState(false);
+  if (!available || status === 'unconfigured') return null;
+  let note: ReactNode;
+  let action: ReactNode = null;
+  if (support === 'needs-install') note = $t('On iPhone and iPad: in Safari tap Share → Add to Home Screen, open KROOPY from its icon, then turn this on there (iOS 16.4 or later).');
+  else if (support === 'unsupported') note = $t('This browser can’t receive notifications. Try Chrome, Edge, Firefox or Safari.');
+  else if (!user) {
+    note = $t('Sign in so KROOPY knows where to send your reminders.');
+    action = <Link to="/account" className="btn btn--sm">{$t('Sign in')}</Link>;
+  } else if (permission === 'denied') note = $t('Notifications are blocked for KROOPY. Allow them in your browser or phone settings, then come back.');
+  else {
+    note = enabled ? $t('On — reminders reach this device even when KROOPY is closed.') : $t('Get reminders for tasks, events, habits and posts on this device, even when KROOPY is closed.');
+    action = (
+      <div className="row gap-8">
+        {enabled && (
+          <Button
+            size="sm"
+            variant="ghost"
+            loading={testing}
+            onClick={async () => {
+              setTesting(true);
+              try {
+                const n = await testPush();
+                toast(n ? $t('Test sent — it should arrive in a few seconds') : $t('Could not reach this device'), { tone: n ? 'success' : 'error' });
+              } catch (e) {
+                toast($t('Could not send a test'), { tone: 'error', description: (e as Error).message });
+              } finally {
+                setTesting(false);
+              }
+            }}
+          >
+            {$t('Send a test')}
+          </Button>
+        )}
+        <Switch
+          checked={enabled}
+          disabled={busy}
+          label={$t('Push notifications on this device')}
+          onChange={async (v) => {
+            if (!v) {
+              await disablePush();
+              return toast($t('Push notifications off on this device'));
+            }
+            const r = await enablePush();
+            if (r === 'ok') toast($t('Push notifications on'), { tone: 'success', description: $t('Reminders will reach this device even when KROOPY is closed.') });
+            else if (r === 'denied') toast($t('Permission not granted'), { tone: 'info' });
+            else if (r === 'error') toast($t('Could not turn on notifications'), { tone: 'error', description: $t('Check your connection and try again.') });
+          }}
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="setting-row">
+      <div>
+        <b>{$t('Push notifications on this device')}</b>
+        <span className="push-row__status">{note}</span>
+      </div>
+      {action}
     </div>
   );
 }
@@ -235,7 +303,8 @@ export default function SettingsPage() {
             </div>
           </Section>
 
-          <Section id="notifications" title={$t("Notifications")} desc={$t("Reminders for tasks, events, habits and scheduled posts fire while KROOPY is open.")}>
+          <Section id="notifications" title={$t("Notifications")} desc={$t('Reminders for tasks, events, habits and scheduled posts — on screen while KROOPY is open, and on your phone even when it’s closed.')}>
+            <PushRow />
             <div className="setting-row">
               <div>
                 <b>{$t("Browser notifications")}</b>

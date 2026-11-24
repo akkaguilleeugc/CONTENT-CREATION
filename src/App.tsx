@@ -11,7 +11,8 @@ import { ModalHost } from '@/features/ModalHost';
 import { startReminders } from '@/features/reminders';
 import { startAchievements } from '@/lib/celebrate';
 import { LANG, LANGS, setLang } from '@/lib/i18n';
-import { cloudConfigured, initSync } from '@/lib/sync';
+import { initPush } from '@/lib/push';
+import { initSync, useSync } from '@/lib/sync';
 import { useBrandFontRegistry } from '@/lib/brandFonts';
 import { setBadge } from '@/lib/pwa';
 import { buildSample } from '@/lib/sample';
@@ -145,6 +146,7 @@ const PUBLIC_ROUTES = ['/privacy', '/terms', '/cookies', '/support', '/account']
 function Welcome() {
   const loc = useLocation();
   const navigate = useNavigate();
+  const syncStatus = useSync((s) => s.status);
   const onboarded = useStore((s) => s.settings.onboarded);
   const hydrated = useStore((s) => s.hydrated);
   const settings = useStore((s) => s.settings);
@@ -192,7 +194,7 @@ function Welcome() {
             {$t("Explore with sample data")}
           </Button>
         </div>
-        {cloudConfigured && (
+        {syncStatus !== 'unconfigured' && (
           <p className="subtle welcome__signin">
             {$t('Already use KROOPY on another device?')}{' '}
             <button
@@ -369,7 +371,9 @@ export default function App() {
   useEffect(() => (hydrated ? startReminders() : undefined), [hydrated]);
   useEffect(() => (hydrated ? startAchievements() : undefined), [hydrated]);
   useEffect(() => {
-    if (hydrated) void initSync();
+    if (!hydrated) return;
+    void initSync();
+    initPush();
   }, [hydrated]);
   if (!hydrated)
     return (

@@ -34,6 +34,7 @@ export function createSupabaseBackend(url: string, anonKey: string): CloudBacken
 
   return {
     kind: 'supabase',
+    realtime: true,
     async currentUser() {
       const { data } = await sb.auth.getSession();
       return toUser(data.session?.user);

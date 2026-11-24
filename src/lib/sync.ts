@@ -7,13 +7,15 @@
 
    • every local change (insert, edit, delete) is queued in an outbox
      that survives reloads and offline periods, then pushed;
-   • changes from your other devices arrive live (Realtime) and on
-     every return to the app, ordered by the server clock;
+   • changes from your other devices arrive within seconds (live, or
+     a quick poll while you use the app) and on every return to it,
+     ordered by the server clock;
    • the latest write wins; deletions travel as tombstones;
-   • uploaded files go to private Storage and download on demand.
+   • uploaded files go to private storage and download on demand.
 
-   Without a configured backend (no VITE_SUPABASE_URL) the app simply
-   keeps working on this device only.
+   The cloud is KROOPY's own (/api, deployed with the app). When the
+   site has no cloud (e.g. a plain static host) the app simply keeps
+   working on this device only.
    ────────────────────────────────────────────────────────────── */
 import { create } from 'zustand';
 import { CloudError, type CloudBackend, type CloudUser, type SyncRow } from './cloud/backend';
@@ -36,9 +38,13 @@ interface SyncState {
   error: string | null;
   /** The person opened a password-reset link: ask for a new password. */
   recovery: boolean;
+  /** Which cloud answers (decides how passwords are recovered). */
+  kind: CloudBackend['kind'] | null;
+  /** A recovery key to show once (right after creating the account or a new key). */
+  recoveryKey: string | null;
 }
 
-export const useSync = create<SyncState>(() => ({ status: 'loading', user: null, lastSyncAt: null, pending: 0, live: false, error: null, recovery: false }));
+export const useSync = create<SyncState>(() => ({ status: 'loading', user: null, lastSyncAt: null, pending: 0, live: false, error: null, recovery: false, kind: null, recoveryKey: null }));
 
 const ARRAYS = ['ideas', 'projects', 'tasks', 'habits', 'habitLogs', 'goals', 'goalProgress', 'timeLogs', 'events', 'analytics', 'assets', 'folders', 'palettes', 'colors', 'combos', 'references', 'brandFonts'] as const;
 type ArrayKey = (typeof ARRAYS)[number];
@@ -62,7 +68,7 @@ const ls = {
     }
   },
 };
-const DEVICE = (() => {
+export const DEVICE = (() => {
   let d = ls.get('kroopy:device');
   if (!d) {
     d = uid();
@@ -71,16 +77,15 @@ const DEVICE = (() => {
   return d;
 })();
 
-/* ── backend (lazy: the cloud code only loads when it's configured) ── */
+/* ── backend (lazy: the cloud code loads after the app is on screen) ── */
 let backendP: Promise<CloudBackend | null> | null = null;
-export const cloudConfigured = !!(import.meta.env.VITE_SYNC_DEV_URL || (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY));
-function backend(): Promise<CloudBackend | null> {
+export function backend(): Promise<CloudBackend | null> {
   if (!backendP)
     backendP = (async () => {
       if (import.meta.env.VITE_SYNC_DEV_URL) return (await import('./cloud/devserver')).createDevBackend(import.meta.env.VITE_SYNC_DEV_URL);
       if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
         return (await import('./cloud/supabase')).createSupabaseBackend(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
-      return null;
+      return (await import('./cloud/netlify')).createNetlifyBackend(import.meta.env.VITE_CLOUD_URL || '/api');
     })();
   return backendP;
 }
@@ -141,6 +146,15 @@ function watchLocal() {
   });
 }
 
+/* Settings travel between devices, except what belongs to one device: once you've been welcomed on a
+   device, another device's copy can't bring the welcome screen back. */
+function mergeSingle(id: string, remote: unknown, local: unknown) {
+  if (id !== 'settings' || !remote || typeof remote !== 'object') return remote;
+  const r = remote as Record<string, unknown>;
+  const l = (local || {}) as Record<string, unknown>;
+  return { ...r, onboarded: !!(l.onboarded || r.onboarded) };
+}
+
 /* ── apply rows from the cloud ── */
 function apply(rows: SyncRow[], opts: { force?: boolean } = {}) {
   if (!rows.length) return 0;
@@ -152,9 +166,12 @@ function apply(rows: SyncRow[], opts: { force?: boolean } = {}) {
     if (!opts.force && r.device === DEVICE) continue;
     if (!opts.force && outbox.has(`${r.collection}:${r.id}`)) continue; // a newer local edit is on its way up
     if (r.collection === '_single') {
-      if ((r.id === 'brand' || r.id === 'settings') && !r.deleted && r.data && JSON.stringify(s[r.id]) !== JSON.stringify(r.data)) {
-        patch[r.id] = r.data;
-        changed++;
+      if ((r.id === 'brand' || r.id === 'settings') && !r.deleted && r.data) {
+        const next = mergeSingle(r.id, r.data, s[r.id]);
+        if (JSON.stringify(s[r.id]) !== JSON.stringify(next)) {
+          patch[r.id] = next;
+          changed++;
+        }
       }
       continue;
     }
@@ -274,6 +291,8 @@ async function pullNow() {
 }
 
 function fail(e: unknown) {
+  // The session ended (password changed elsewhere, account deleted): the auth listener signs out.
+  if (e instanceof CloudError && e.code === 'session_expired') return void (!useSync.getState().user && useSync.setState({ status: 'signed-out', error: null }));
   const offline = !navigator.onLine || (e instanceof CloudError && e.code === 'network');
   useSync.setState({ status: offline ? 'offline' : 'error', error: offline ? null : e instanceof Error ? e.message : String(e) });
   if (!offline) console.warn('[kroopy] sync error', e);
@@ -339,7 +358,7 @@ async function startSession(user: CloudUser) {
         const db: Partial<DB> = {};
         for (const c of ARRAYS) (db as Record<string, unknown>)[c] = [];
         for (const r of alive) {
-          if (r.collection === '_single') (db as Record<string, unknown>)[r.id] = r.data;
+          if (r.collection === '_single') (db as Record<string, unknown>)[r.id] = mergeSingle(r.id, r.data, useStore.getState()[r.id as 'settings']);
           else if ((ARRAYS as readonly string[]).includes(r.collection)) ((db as Record<string, unknown[]>)[r.collection] as unknown[]).push(r.data);
         }
         for (const c of ARRAYS) ((db as Record<string, Rec[]>)[c] as Rec[]).reverse();
@@ -386,15 +405,18 @@ async function startSession(user: CloudUser) {
   window.addEventListener('online', onOnline);
   window.addEventListener('offline', onOffline);
   document.addEventListener('visibilitychange', onVisible);
-  const timer = setInterval(() => document.visibilityState === 'visible' && void pullNow(), 60_000);
+  const stopPolling = be.realtime ? null : startPolling();
+  const timer = be.realtime ? setInterval(() => document.visibilityState === 'visible' && void pullNow(), 60_000) : null;
+  if (!be.realtime) useSync.setState({ live: true });
   stop = () => {
     unwatch();
     unsub();
+    stopPolling?.();
     setRemoteFileSource(null);
     window.removeEventListener('online', onOnline);
     window.removeEventListener('offline', onOffline);
     document.removeEventListener('visibilitychange', onVisible);
-    clearInterval(timer);
+    if (timer) clearInterval(timer);
   };
   if (!navigator.onLine) useSync.setState({ status: 'offline' });
   else useSync.setState({ status: outbox.size ? 'syncing' : 'synced', lastSyncAt: Date.now() });
@@ -407,16 +429,78 @@ function stopSession() {
   if (pushTimer) clearTimeout(pushTimer);
 }
 
+/* ── polling (clouds without a live channel) ──
+   Every 3 s while you're using KROOPY, every 8 s while it sits open in front of you, every 45 s in a
+   background window, never while hidden — and right away whenever you come back to it. So a goal
+   ticked on the phone shows on the laptop by the time you look at it, without wasting requests. */
+const ACTIVE = 3_000;
+const IDLE = 8_000;
+const BLURRED = 45_000;
+function startPolling() {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let dueAt = 0;
+  let lastInput = Date.now();
+  const interval = () => {
+    if (document.visibilityState !== 'visible') return 0;
+    if (!document.hasFocus()) return BLURRED;
+    return Date.now() - lastInput < 90_000 ? ACTIVE : IDLE;
+  };
+  const schedule = (ms = interval()) => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    if (!ms) return;
+    dueAt = Date.now() + ms;
+    timer = setTimeout(tick, ms);
+  };
+  const tick = async () => {
+    timer = null;
+    if (!useSync.getState().user) return;
+    await pullNow();
+    schedule();
+  };
+  const onInput = () => {
+    lastInput = Date.now();
+    if (!timer || dueAt - Date.now() > ACTIVE) schedule(ACTIVE); // waking up from idle: tighten the loop
+  };
+  const onFocus = () => {
+    lastInput = Date.now();
+    void pullNow();
+    schedule();
+  };
+  const onVisibility = () => schedule();
+  window.addEventListener('pointerdown', onInput, { passive: true });
+  window.addEventListener('keydown', onInput);
+  window.addEventListener('focus', onFocus);
+  document.addEventListener('visibilitychange', onVisibility);
+  schedule();
+  return () => {
+    if (timer) clearTimeout(timer);
+    window.removeEventListener('pointerdown', onInput);
+    window.removeEventListener('keydown', onInput);
+    window.removeEventListener('focus', onFocus);
+    document.removeEventListener('visibilitychange', onVisibility);
+  };
+}
+
 /* ── public API ── */
 export async function initSync() {
   const be = await backend();
   if (!be) return void useSync.setState({ status: 'unconfigured' });
+  useSync.setState({ kind: be.kind });
+  if (be.available) {
+    const hasSession = !!(await be.currentUser().catch(() => null));
+    // Signed-in devices start straight away (they work offline); others check the cloud is there first.
+    const ok = hasSession || !navigator.onLine ? true : await be.available();
+    if (ok === false) return void useSync.setState({ status: 'unconfigured' });
+  }
   be.onAuthChange((event, user) => {
     if (event === 'PASSWORD_RECOVERY') useSync.setState({ recovery: true });
     if (event === 'SIGNED_IN' && user && useSync.getState().user?.id !== user.id) void startSession(user);
-    if (event === 'SIGNED_OUT' && useSync.getState().user) {
+    if ((event === 'SIGNED_OUT' || event === 'SESSION_EXPIRED') && useSync.getState().user) {
       stopSession();
-      useSync.setState({ user: null, status: 'signed-out', live: false });
+      useSync.setState({ user: null, status: 'signed-out', live: false, recoveryKey: null });
+      if (event === 'SESSION_EXPIRED')
+        toast($t('You were signed out'), { tone: 'info', description: $t('Your password changed on another device or the session ended. Sign in again to keep syncing — everything stays on this device.') });
     }
   });
   const user = await be.currentUser().catch(() => null);
@@ -428,7 +512,8 @@ export async function signUp(email: string, password: string) {
   const be = await backend();
   if (!be) throw new CloudError('Cloud sync is not configured', 'unknown');
   const res = await be.signUp(email.trim(), password);
-  if (res.user) await startSession(res.user);
+  if (res.recoveryKey) useSync.setState({ recoveryKey: res.recoveryKey });
+  if (res.user && useSync.getState().user?.id !== res.user.id) await startSession(res.user);
   return res;
 }
 
@@ -444,7 +529,25 @@ export async function signOut() {
   const be = await backend();
   stopSession();
   await be?.signOut().catch(() => undefined);
-  useSync.setState({ user: null, status: 'signed-out', live: false });
+  useSync.setState({ user: null, status: 'signed-out', live: false, recoveryKey: null });
+}
+
+/** Forgotten password (KROOPY cloud): email + recovery key + a new password. Signs this device in. */
+export async function resetPassword(email: string, recoveryKey: string, password: string) {
+  const be = await backend();
+  if (!be?.resetWithRecoveryKey) throw new CloudError('Not supported', 'unknown');
+  const user = await be.resetWithRecoveryKey(email.trim(), recoveryKey, password);
+  if (useSync.getState().user?.id !== user.id) await startSession(user);
+  return user;
+}
+
+/** Replaces the recovery key; the new one is shown once. */
+export async function createRecoveryKey() {
+  const be = await backend();
+  if (!be?.newRecoveryKey) throw new CloudError('Not supported', 'unknown');
+  const key = await be.newRecoveryKey();
+  useSync.setState({ recoveryKey: key });
+  return key;
 }
 
 export async function sendPasswordReset(email: string) {
@@ -470,7 +573,7 @@ export async function deleteAccount(wipeLocal: boolean) {
   ls.set('kroopy:sync-owner', null);
   outbox.clear();
   saveOutbox();
-  useSync.setState({ user: null, status: 'signed-out', live: false });
+  useSync.setState({ user: null, status: 'signed-out', live: false, recoveryKey: null });
   if (wipeLocal) await useStore.getState().resetAll();
 }
 

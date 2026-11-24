@@ -76,7 +76,9 @@ src/
   features/     formularios globales, assets (subida/preview), recordatorios
   pages/        una página por sección (lazy-loaded)
   styles/       tokens + base + ui + layout + pages
-supabase/migrations/0001_init.sql   esquema relacional + RLS + bucket privado
+netlify/functions/                  la nube de KROOPY: api.mts (/api/*) y push-cron.mts (recordatorios)
+netlify/server/                     cuentas, almacenamiento (Netlify Blobs), Web Push
+supabase/migrations/0001_init.sql   esquema relacional + RLS + bucket privado (alternativa opcional)
 landing/ (public/landing)           landing page de marca
 motion/                             vídeo de 15 s y vídeo de lanzamiento de 80 s (fuente HTML + render)
 ```
@@ -85,7 +87,7 @@ motion/                             vídeo de 15 s y vídeo de lanzamiento de 80
 
 Local-first y real: todos los registros se guardan en **IndexedDB** (con respaldo a `localStorage` si IndexedDB no está disponible) con guardado diferido de 250 ms, flush al ocultar la pestaña y sincronización entre pestañas (`BroadcastChannel`). Los archivos se guardan como blobs en un almacén IndexedDB separado. *Ajustes → Data & backup* exporta/importa una copia JSON completa (registros + archivos).
 
-La UI solo habla con dos interfaces (`DataAdapter` y `FileAdapter` en `src/lib/persistence.ts`). Con una cuenta, `src/lib/sync.ts` mantiene esa copia local sincronizada con la nube (ver *Cuenta y sincronización entre dispositivos*). `supabase/migrations/0001_init.sql` y `0002_brand_kit.sql` describen además un esquema relacional completo con RLS, útil para informes o integraciones futuras; la sincronización usa `0003_sync.sql`.
+La UI solo habla con dos interfaces (`DataAdapter` y `FileAdapter` en `src/lib/persistence.ts`). Con una cuenta, `src/lib/sync.ts` mantiene esa copia local sincronizada con la nube de KROOPY (ver *Cuenta y sincronización entre dispositivos*). `supabase/migrations/` describe además un esquema relacional con RLS para quien prefiera Supabase.
 
 ### Integraciones de plataformas
 
@@ -93,19 +95,28 @@ No se simula ninguna API. `analytics_records.source` y `content_publications.ext
 
 ## Cuenta y sincronización entre dispositivos
 
-KROOPY sigue siendo *local-first* (funciona sin cuenta y sin conexión), pero con una cuenta (correo + contraseña) el portátil y el móvil comparten los mismos datos: completas una tarea en el móvil y en segundos aparece completada en el ordenador; si un dispositivo estaba sin conexión, sus cambios esperan en una cola y se envían al reconectar.
+KROOPY sigue siendo *local-first* (funciona sin cuenta y sin conexión), pero con una cuenta (correo + contraseña) el portátil, el móvil y la tablet comparten los mismos datos: marcas un objetivo o una tarea en el móvil y en 1–4 segundos aparece en el ordenador, sin recargar. Si un dispositivo estaba sin conexión, sus cambios esperan en una cola y se envían al reconectar.
 
-- **Motor:** `src/lib/sync.ts` — detecta cada alta, cambio o borrado local, lo guarda en una cola persistente y lo sube; descarga lo que cambió desde la última vez (ordenado por el reloj del servidor), recibe los cambios de otros dispositivos en directo (Realtime) y sincroniza los archivos subidos (Storage privado, una carpeta por usuario). Gana la última escritura; los borrados viajan como «lápidas».
-- **Pantalla:** `/account` (iniciar sesión, crear cuenta, recuperar contraseña, estado de sincronización, cerrar sesión y **eliminar cuenta**).
-- **Pruebas:** `node scripts/sync-dev-server.cjs` + `VITE_SYNC_DEV_URL=http://127.0.0.1:8787 npm run dev` simula la nube en local; con dos navegadores (portátil e iPhone) se comprobó: alta, inicio de sesión, tarea completada en el móvil → visible en el portátil (~0,5 s), cambios sin conexión, borrados y estado idéntico tras recargar.
+**No hay nada que configurar.** La nube es de KROOPY y se despliega con la propia app (mismo sitio de Netlify): sin claves, sin cuentas de terceros, sin variables de entorno.
 
-**Activarla (≈5 minutos, plan gratuito de Supabase):**
+- **Servidor:** `netlify/functions/api.mts` (`/api/*`) + `netlify/server/` — cuentas (contraseñas con *scrypt*, tokens firmados con HMAC, bloqueo tras 10 intentos fallidos), sincronización, archivos (en partes de 4 MB, cualquier tamaño) y notificaciones. Datos en **Netlify Blobs**, que se crean solos: `kroopy-users`, `kroopy-data` (todo lo de una cuenta, JSON comprimido), `kroopy-files`, `kroopy-push`, `kroopy-config` (clave de firma y claves VAPID, generadas la primera vez). Cada escritura es condicional (ETag) y se reintenta si otro dispositivo escribió a la vez: nunca se pisan cambios.
+- **Motor en la app:** `src/lib/sync.ts` + `src/lib/cloud/netlify.ts` — detecta cada alta, cambio o borrado local, lo guarda en una cola persistente y lo sube; descarga lo nuevo desde la última vez (ordenado por el reloj del servidor). Sin canal en directo, consulta cada 3 s mientras usas la app, cada 8 s si está abierta delante de ti, cada 45 s en segundo plano, nunca con la pestaña oculta, y al instante cuando vuelves a ella. Gana la última escritura; los borrados viajan como «lápidas».
+- **Contraseña olvidada:** la nube no envía emails, así que al crear la cuenta se muestra una **clave de recuperación** (`XXXXX-XXXXX-XXXXX-XXXXX`, copiar/descargar). Con email + clave se pone una contraseña nueva; desde un dispositivo con la sesión iniciada también se puede cambiar la contraseña o generar otra clave (*Cuenta → Contraseña y clave de recuperación*). Cambiar la contraseña cierra la sesión en los demás dispositivos.
+- **Pantalla:** `/account` (iniciar sesión, crear cuenta, recuperar contraseña, estado, sincronizar ahora, cerrar sesión y **eliminar cuenta**, que borra cuenta, datos y archivos de la nube).
+- **Alternativa:** si defines `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (ver `.env.example` y `supabase/migrations/0003_sync.sql`), la app usa Supabase en su lugar.
 
-1. Crea un proyecto en [supabase.com](https://supabase.com) (región UE recomendada).
-2. SQL Editor → pega y ejecuta `supabase/migrations/0003_sync.sql` (tabla con RLS, Realtime, bucket privado y función de borrado de cuenta).
-3. Authentication → URL configuration → añade `https://kroopy.netlify.app` (y tu dominio) como Site URL / Redirect URL.
-4. En Netlify → Site settings → Environment variables: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (Project Settings → API; usa la *anon key*, nunca la *service_role*). Ver `.env.example`.
-5. Vuelve a desplegar. En la app aparecerá *Cuenta y sincronización* lista para usar.
+### Notificaciones en el móvil
+
+Los recordatorios de tareas, eventos, hábitos y publicaciones programadas llegan al móvil (y al ordenador) **aunque KROOPY esté cerrado**, con Web Push estándar:
+
+1. *Ajustes → Notificaciones → Notificaciones push en este dispositivo* (con la sesión iniciada). En **iPhone/iPad** primero hay que añadir KROOPY a la pantalla de inicio (Safari → Compartir → Añadir a pantalla de inicio, iOS 16.4 o posterior) y activarlo desde el icono.
+2. Cada dispositivo con sesión mantiene en la nube la lista de recordatorios de los próximos 14 días (`src/lib/push.ts`, mismo planificador que los avisos dentro de la app: `src/features/reminders.ts`).
+3. `netlify/functions/push-cron.mts` se ejecuta cada 2 minutos y envía lo que toca (cifrado, firmado con VAPID). Cada recordatorio se envía una sola vez y lleva la misma etiqueta que el aviso dentro de la app, así que nunca sale duplicado.
+4. *Enviar prueba* comprueba todo el camino.
+
+**Desarrollo local de la nube:** `netlify dev` (sirve la app y las funciones; los Blobs son locales) o, para recarga en caliente, `netlify dev` en el puerto 8888 y `KROOPY_API_PROXY=http://localhost:8888 npm run dev`.
+
+**Pruebas realizadas:** 35 comprobaciones de la API (alta, login, contraseña incorrecta, sincronización, borrados, paginación, 20 escrituras simultáneas desde dos dispositivos sin perder ninguna, archivo de 5 MB en partes, clave de recuperación, cierre de sesión en otros dispositivos, bloqueo por intentos, borrado de cuenta); 18 con tres navegadores (portátil, iPhone, tablet: tarea completada en el móvil → portátil en ~3,5 s, objetivo en ~1,7 s, cambios sin conexión, borrados, recuperación con la clave); 14 de notificaciones (activar en el móvil, prueba, recordatorio creado en el portátil entregado al móvil por el envío programado, cifrado aes128gcm + VAPID, sin duplicados, el service worker lo muestra, desactivar).
 
 ## Idiomas
 

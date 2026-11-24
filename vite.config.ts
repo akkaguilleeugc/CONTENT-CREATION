@@ -21,6 +21,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  // Local development with the cloud functions: run `netlify dev` (port 8888) and start Vite with
+  // KROOPY_API_PROXY=http://localhost:8888 so /api reaches them.
+  server: process.env.KROOPY_API_PROXY ? { proxy: { '/api': { target: process.env.KROOPY_API_PROXY, changeOrigin: true } } } : undefined,
   build: {
     target: 'es2022',
     chunkSizeWarningLimit: 900,

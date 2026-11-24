@@ -25,8 +25,10 @@ Launch screen → background `#0B0F14` with the OO symbol.
 
 Add to `Info.plist`: `ITSAppUsesNonExemptEncryption` = `NO` (the app only uses standard HTTPS).
 
-Supabase → Authentication → URL configuration: add `capacitor://localhost` and `https://kroopy.netlify.app` to the
-redirect URLs so confirmation and password-reset emails open the app.
+Inside the native shell the app is served from `capacitor://localhost`, so build it with
+`VITE_CLOUD_URL=https://kroopy.netlify.app/api` (your site's address) to reach the KROOPY cloud, and allow that origin
+in the API (CORS) before submitting. Reminders inside the native app should use local notifications
+(`@capacitor/local-notifications`) or APNs; Web Push covers the Home Screen web app.
 
 ## 3. App Store Connect — listing
 

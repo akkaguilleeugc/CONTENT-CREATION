@@ -32,6 +32,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // third-party (e.g. landing video) goes straight to the network
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/.netlify/')) return; // the cloud: always live, never cached
 
   // App navigations: serve the cached shell instantly (the SPA router takes over), refresh it in the background.
   if (req.mode === 'navigate' && !url.pathname.startsWith('/landing')) {
@@ -72,6 +73,28 @@ self.addEventListener('fetch', (event) => {
       }
     })(),
   );
+});
+
+// Push notifications from the KROOPY cloud (reminders delivered while the app is closed).
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : '' };
+  }
+  const title = data.title || 'KROOPY';
+  const options = {
+    body: data.body || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/badge-96.png',
+    data: { url: data.url || '/' },
+  };
+  if (data.tag) {
+    options.tag = data.tag; // same tag as the in-app reminder: shown once
+    options.renotify = true;
+  }
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 // Reminder notifications open (or focus) the app on the right screen.

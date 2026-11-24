@@ -20,12 +20,14 @@ const EN: Docs = {
       ['What we store', [
         'Content you create: ideas, videos and their scripts, shots and checklists, tasks, events, habits, goals, time logs, statistics you enter, Brand Kit items and the files you upload.',
         'Preferences: profile name and handle, language, theme, categories, platforms and similar settings.',
-        `If you create an account: your email address and a securely hashed password (managed by our authentication provider), plus a random device identifier used to sync your devices.`,
+        `If you create an account: your email address, your password and recovery key stored only as secure hashes (never in readable form), plus a random device identifier used to sync your devices.`,
+        'If you turn on push notifications on a device: the push address your browser or phone gives us for it, and the titles and times of your upcoming reminders, so they can be delivered.',
         'We do not collect contacts, location, advertising identifiers or analytics, and we do not use tracking pixels or third-party trackers.',
       ]],
       ['Where it is stored', [
         `Without an account, everything stays on your device (browser storage). It never leaves it.`,
-        'With an account, a copy is stored in our cloud database and file storage, provided by Supabase (our processor), so your devices can sync. Each row is locked to your account; nobody else can read it.',
+        'With an account, a copy is stored in our cloud storage, run on our hosting provider Netlify (our processor), so your devices can sync. Your data is kept separately for your account and is only released to your signed-in devices.',
+        'Push notifications travel through the push service of your browser or phone (for example Apple, Google, Mozilla or Microsoft), encrypted so that the service can’t read them.',
         'The app itself is served by our hosting provider, which may keep short-lived technical logs (such as IP addresses) for security.',
       ]],
       ['Why (legal basis)', [
@@ -42,7 +44,7 @@ const EN: Docs = {
         `To exercise any right, write to ${mail}. If you think we handle your data unlawfully, you can complain to your data protection authority (in ${C.en}, the AEPD).`,
       ]],
       ['International transfers', ['Our providers may process data outside your country. When they do, they rely on appropriate safeguards such as the European Commission’s Standard Contractual Clauses.']],
-      ['Security', ['Connections are encrypted (HTTPS/TLS), passwords are hashed by the authentication provider, and database access rules restrict every row to its owner.']],
+      ['Security', ['Connections are encrypted (HTTPS/TLS), passwords and recovery keys are stored only as salted hashes (scrypt), sign-ins are protected against repeated guessing, and every request is checked against the account it belongs to.']],
       ['Children', ['KROOPY is not directed to children under 16, and we do not knowingly collect their data.']],
       ['Changes', ['If this policy changes in a meaningful way, we will tell you in the app before the change applies.']],
     ],
@@ -95,12 +97,14 @@ const ES: Docs = {
       ['Qué guardamos', [
         'El contenido que creas: ideas, vídeos con sus guiones, planos y checklists, tareas, eventos, hábitos, objetivos, registros de tiempo, estadísticas que introduces, elementos del Brand Kit y los archivos que subes.',
         'Preferencias: nombre y usuario del perfil, idioma, tema, categorías, plataformas y ajustes similares.',
-        'Si creas una cuenta: tu correo electrónico y una contraseña cifrada de forma segura (gestionada por nuestro proveedor de autenticación), y un identificador aleatorio de dispositivo para sincronizar tus dispositivos.',
+        'Si creas una cuenta: tu correo electrónico, tu contraseña y tu clave de recuperación guardadas solo como hash seguro (nunca en forma legible) y un identificador aleatorio de dispositivo para sincronizar tus dispositivos.',
+        'Si activas las notificaciones push en un dispositivo: la dirección push que tu navegador o móvil nos da para él y los títulos y horas de tus próximos recordatorios, para poder entregarlos.',
         'No recopilamos contactos, ubicación, identificadores publicitarios ni analítica, y no usamos píxeles de seguimiento ni rastreadores de terceros.',
       ]],
       ['Dónde se guarda', [
         'Sin cuenta, todo se queda en tu dispositivo (almacenamiento del navegador). Nunca sale de él.',
-        'Con cuenta, se guarda una copia en nuestra base de datos y almacenamiento de archivos en la nube, prestados por Supabase (encargado del tratamiento), para que tus dispositivos se sincronicen. Cada registro está bloqueado a tu cuenta; nadie más puede leerlo.',
+        'Con cuenta, se guarda una copia en nuestro almacenamiento en la nube, alojado en nuestro proveedor Netlify (encargado del tratamiento), para que tus dispositivos se sincronicen. Tus datos se guardan separados por cuenta y solo se entregan a tus dispositivos con la sesión iniciada.',
+        'Las notificaciones push viajan por el servicio push de tu navegador o móvil (por ejemplo Apple, Google, Mozilla o Microsoft), cifradas para que ese servicio no pueda leerlas.',
         'La aplicación la sirve nuestro proveedor de alojamiento, que puede conservar registros técnicos breves (como direcciones IP) por seguridad.',
       ]],
       ['Para qué (base legal)', [
@@ -117,7 +121,7 @@ const ES: Docs = {
         `Para ejercer cualquier derecho, escribe a ${mail}. Si crees que tratamos tus datos de forma ilícita, puedes reclamar ante la autoridad de protección de datos (en ${C.es}, la AEPD).`,
       ]],
       ['Transferencias internacionales', ['Nuestros proveedores pueden tratar datos fuera de tu país. Cuando lo hacen, se basan en garantías adecuadas como las Cláusulas Contractuales Tipo de la Comisión Europea.']],
-      ['Seguridad', ['Las conexiones están cifradas (HTTPS/TLS), el proveedor de autenticación guarda las contraseñas cifradas y las reglas de acceso a la base de datos limitan cada registro a su propietario.']],
+      ['Seguridad', ['Las conexiones están cifradas (HTTPS/TLS), las contraseñas y claves de recuperación se guardan solo como hash con sal (scrypt), el inicio de sesión está protegido contra intentos repetidos y cada petición se comprueba contra la cuenta a la que pertenece.']],
       ['Menores', ['KROOPY no está dirigido a menores de 16 años y no recopilamos sus datos de forma consciente.']],
       ['Cambios', ['Si esta política cambia de forma relevante, te lo diremos en la app antes de que se aplique.']],
     ],
@@ -170,12 +174,14 @@ const PT: Docs = {
       ['O que guardamos', [
         'O conteúdo que você cria: ideias, vídeos com roteiros, planos e checklists, tarefas, eventos, hábitos, metas, registros de tempo, estatísticas que você informa, itens do Brand Kit e os arquivos que você envia.',
         'Preferências: nome e usuário do perfil, idioma, tema, categorias, plataformas e ajustes semelhantes.',
-        'Se você criar uma conta: seu e-mail e uma senha protegida por hash (gerenciada pelo nosso provedor de autenticação), além de um identificador aleatório de dispositivo usado para sincronizar seus aparelhos.',
+        'Se você criar uma conta: seu e-mail, sua senha e sua chave de recuperação guardadas só como hash seguro (nunca de forma legível), além de um identificador aleatório de dispositivo usado para sincronizar seus aparelhos.',
+        'Se você ativar as notificações push em um dispositivo: o endereço push que o navegador ou celular nos fornece para ele e os títulos e horários dos seus próximos lembretes, para que possam ser entregues.',
         'Não coletamos contatos, localização, identificadores de publicidade nem análises, e não usamos pixels de rastreamento nem rastreadores de terceiros.',
       ]],
       ['Onde fica armazenado', [
         'Sem conta, tudo fica no seu dispositivo (armazenamento do navegador). Nunca sai dele.',
-        'Com conta, uma cópia fica no nosso banco de dados e armazenamento de arquivos na nuvem, fornecidos pelo Supabase (operador), para que seus dispositivos sincronizem. Cada registro fica vinculado à sua conta; ninguém mais pode lê-lo.',
+        'Com conta, uma cópia fica no nosso armazenamento na nuvem, hospedado no nosso provedor Netlify (operador), para que seus dispositivos sincronizem. Seus dados ficam separados por conta e só são entregues aos seus dispositivos conectados.',
+        'As notificações push passam pelo serviço push do seu navegador ou celular (por exemplo Apple, Google, Mozilla ou Microsoft), criptografadas para que esse serviço não possa lê-las.',
         'O app é servido pelo nosso provedor de hospedagem, que pode manter registros técnicos breves (como endereços IP) por segurança.',
       ]],
       ['Para quê (base legal)', [
@@ -192,7 +198,7 @@ const PT: Docs = {
         `Para exercer qualquer direito, escreva para ${mail}. Se achar que tratamos seus dados de forma ilegal, você pode reclamar à autoridade de proteção de dados (no Brasil, a ANPD).`,
       ]],
       ['Transferências internacionais', ['Nossos provedores podem tratar dados fora do seu país. Quando isso acontece, eles se baseiam em garantias adequadas, como as Cláusulas Contratuais Padrão.']],
-      ['Segurança', ['As conexões são criptografadas (HTTPS/TLS), as senhas são protegidas por hash pelo provedor de autenticação e as regras de acesso ao banco limitam cada registro ao seu dono.']],
+      ['Segurança', ['As conexões são criptografadas (HTTPS/TLS), senhas e chaves de recuperação são guardadas só como hash com salt (scrypt), o login é protegido contra tentativas repetidas e cada requisição é verificada contra a conta a que pertence.']],
       ['Crianças', ['O KROOPY não é direcionado a menores de 16 anos, e não coletamos dados deles conscientemente.']],
       ['Alterações', ['Se esta política mudar de forma relevante, avisaremos no app antes que a mudança se aplique.']],
     ],
