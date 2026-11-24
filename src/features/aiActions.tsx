@@ -31,9 +31,15 @@ type TaskIn = { title: string; description?: string; dueDate?: string; dueTime?:
 type EventIn = { title: string; date: string; startTime?: string; endTime?: string; type?: EventType; notes?: string };
 type VideoIn = { title: string; description?: string; hook?: string; body?: string; cta?: string; caption?: string; publishDate?: string };
 
-/** Carries out a confirmed action on this device; returns what the assistant is told. */
-export function runAction(name: ActionName, input: Record<string, unknown>) {
+const LIST_KEY: Partial<Record<ActionName, 'ideas' | 'tasks' | 'events'>> = { save_ideas: 'ideas', create_tasks: 'tasks', add_events: 'events' };
+
+/** Carries out a confirmed action on this device (only the items the person kept); returns what the assistant is told. */
+export function runAction(name: ActionName, raw: Record<string, unknown>, keep?: boolean[]) {
   const st = useStore.getState();
+  const key = LIST_KEY[name];
+  const all = key ? ((raw[key] as unknown[]) ?? []) : [];
+  const input = key && keep ? { ...raw, [key]: all.filter((_, i) => keep[i] !== false) } : raw;
+  const skipped = key ? all.length - ((input[key] as unknown[]) ?? []).length : 0;
   const created: { id: string; title: string }[] = [];
   if (name === 'save_ideas') {
     for (const i of (input.ideas as IdeaIn[]) ?? []) {
@@ -58,7 +64,7 @@ export function runAction(name: ActionName, input: Record<string, unknown>) {
     const r = st.insert('projects', p);
     created.push({ id: r.id, title: r.title });
   }
-  return { done: true, created: created.length, items: created };
+  return { done: true, created: created.length, items: created, ...(skipped ? { skippedByPerson: skipped } : {}) };
 }
 
 const ICON: Record<ActionName, ReactNode> = { save_ideas: <Lightbulb />, create_tasks: <ListChecks />, add_events: <CalendarPlus />, create_video: <Clapperboard /> };
@@ -92,6 +98,10 @@ export function ActionCard({ part, onAnswer }: { part: ToolPart; onAnswer: (outp
   const name = toolName(part) as ActionName;
   const input = part.input ?? {};
   const [busy, setBusy] = useState(false);
+  const items = rowsOf(name, input);
+  const [keep, setKeep] = useState<boolean[]>(() => items.map(() => true));
+  const multi = !!LIST_KEY[name] && items.length > 1;
+  const chosen = keep.filter(Boolean).length;
   if (part.state === 'input-streaming') return <div className="ai-card ai-card--loading">{ICON[name]} {$t('Preparing…')}</div>;
   const answered = part.state === 'output-available' || part.state === 'output-error';
   const cancelled = answered && (part.state === 'output-error' || !!part.output?.cancelled);
@@ -102,8 +112,13 @@ export function ActionCard({ part, onAnswer }: { part: ToolPart; onAnswer: (outp
         <b>{headline(name, input)}</b>
       </div>
       <ul className="ai-card__list">
-        {rowsOf(name, input).map((r, i) => (
-          <li key={i}>
+        {items.map((r, i) => (
+          <li key={i} className={cn(multi && !answered && 'ai-card__item--pick', (answered ? !cancelled && Array.isArray(part.output?.kept) && !(part.output!.kept as number[]).includes(i) : !keep[i]) && 'ai-card__item--off')}>
+            {multi && !answered && (
+              <label className="ai-card__pick">
+                <input type="checkbox" checked={keep[i] !== false} onChange={(e) => setKeep((k) => k.map((v, j) => (j === i ? e.target.checked : v)))} aria-label={r.title} />
+              </label>
+            )}
             <span className="ai-card__title">{r.title}</span>
             {r.meta && <span className="ai-card__meta">{r.meta}</span>}
             {r.detail && <span className="ai-card__detail">{r.detail.length > 160 ? `${r.detail.slice(0, 157)}…` : r.detail}</span>}
@@ -117,10 +132,11 @@ export function ActionCard({ part, onAnswer }: { part: ToolPart; onAnswer: (outp
             size="sm"
             icon={<Check />}
             loading={busy}
+            disabled={chosen === 0}
             onClick={() => {
               setBusy(true);
               try {
-                const out = runAction(name, input);
+                const out = { ...runAction(name, input, multi ? keep : undefined), ...(multi ? { kept: keep.flatMap((k, j) => (k ? [j] : [])) } : {}) };
                 onAnswer(out);
                 toast($t('Done'), { tone: 'success', description: headline(name, input) });
               } catch (e) {
@@ -128,7 +144,7 @@ export function ActionCard({ part, onAnswer }: { part: ToolPart; onAnswer: (outp
               }
             }}
           >
-            {$t('Confirm')}
+            {multi && chosen < items.length ? $t('Confirm {n}', { n: chosen }) : $t('Confirm')}
           </Button>
           <Button size="sm" variant="ghost" icon={<X />} disabled={busy} onClick={() => onAnswer({ cancelled: true })}>
             {$t('Cancel')}

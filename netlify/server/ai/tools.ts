@@ -14,7 +14,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import type { DataState } from '../store';
-import type { ConvMeta } from './history';
+import { getConversation, type ConvMeta } from './history';
 import { addMemory, type Memory } from './memory';
 
 type Rec = Record<string, unknown> & { id: string; title?: string; demo?: boolean; updatedAt?: number };
@@ -122,9 +122,19 @@ export function buildTools(env: ToolEnv) {
     }),
 
     get_details: tool({
-      description: 'Full details of one item found with search_kroopy (an idea, a video with its script, a task, an event or a goal).',
-      inputSchema: z.object({ kind: z.enum(['idea', 'video', 'task', 'event', 'goal']), id: z.string().max(80) }),
+      description: 'Full details of one item found with search_kroopy: an idea, a video with its script, a task, an event, a goal, or a past conversation (its messages).',
+      inputSchema: z.object({ kind: z.enum(['idea', 'video', 'task', 'event', 'goal', 'conversation']), id: z.string().max(80) }),
       execute: async ({ kind, id }) => {
+        if (kind === 'conversation') {
+          const conv = await getConversation(env.uid, id).catch(() => null);
+          if (!conv) return { error: 'Not found' };
+          type M = { role: string; parts?: { type: string; text?: string }[] };
+          const messages = (conv.messages as M[])
+            .map((m) => ({ role: m.role, text: str((m.parts ?? []).map((p) => (p.type === 'text' ? p.text ?? '' : '')).join(' '), 1200) }))
+            .filter((m) => m.text)
+            .slice(-16);
+          return { title: conv.title, date: new Date(conv.updated).toISOString().slice(0, 10), messages };
+        }
         const r = rows(env.state, COLLECTION[kind]).find((x) => x.id === id);
         if (!r) return { error: 'Not found' };
         if (kind === 'goal') {

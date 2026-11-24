@@ -123,6 +123,12 @@ function summarize(tool: string, input: Record<string, unknown>) {
       return String(input.text ?? '');
     case 'search_kroopy':
       return Array.isArray(input.queries) ? input.queries.join(' / ') : '';
+    case 'get_schedule':
+      return `${String(input.from ?? '')} → ${String(input.to ?? '')}`;
+    case 'get_stats':
+      return input.from || input.to ? `${String(input.from ?? '…')} → ${String(input.to ?? '…')}` : '';
+    case 'get_details':
+      return String(input.kind ?? '');
     default:
       return tool.replace(/_/g, ' ');
   }
