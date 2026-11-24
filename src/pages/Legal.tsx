@@ -28,6 +28,7 @@ const EN: Docs = {
         `Without an account, everything stays on your device (browser storage). It never leaves it.`,
         'With an account, a copy is stored in our cloud storage, run on our hosting provider Netlify (our processor), so your devices can sync. Your data is kept separately for your account and is only released to your signed-in devices.',
         'Push notifications travel through the push service of your browser or phone (for example Apple, Google, Mozilla or Microsoft), encrypted so that the service can’t read them.',
+        'If you use KROOPY AI: your messages and a short summary of your KROOPY data (ideas, calendar, tasks, goals, statistics you entered) are sent to OpenAI (our processor) to write the answer. OpenAI does not use them to train its models and keeps them for up to 30 days only to prevent abuse. Your conversations are saved in your account, and you can delete them at any time.',
         'The app itself is served by our hosting provider, which may keep short-lived technical logs (such as IP addresses) for security.',
       ]],
       ['Why (legal basis)', [
@@ -105,6 +106,7 @@ const ES: Docs = {
         'Sin cuenta, todo se queda en tu dispositivo (almacenamiento del navegador). Nunca sale de él.',
         'Con cuenta, se guarda una copia en nuestro almacenamiento en la nube, alojado en nuestro proveedor Netlify (encargado del tratamiento), para que tus dispositivos se sincronicen. Tus datos se guardan separados por cuenta y solo se entregan a tus dispositivos con la sesión iniciada.',
         'Las notificaciones push viajan por el servicio push de tu navegador o móvil (por ejemplo Apple, Google, Mozilla o Microsoft), cifradas para que ese servicio no pueda leerlas.',
+        'Si usas KROOPY AI: tus mensajes y un breve resumen de tus datos de KROOPY (ideas, calendario, tareas, objetivos, estadísticas que introduces) se envían a OpenAI (encargado del tratamiento) para redactar la respuesta. OpenAI no los usa para entrenar sus modelos y los conserva un máximo de 30 días solo para prevenir abusos. Tus conversaciones se guardan en tu cuenta y puedes borrarlas cuando quieras.',
         'La aplicación la sirve nuestro proveedor de alojamiento, que puede conservar registros técnicos breves (como direcciones IP) por seguridad.',
       ]],
       ['Para qué (base legal)', [
@@ -182,6 +184,7 @@ const PT: Docs = {
         'Sem conta, tudo fica no seu dispositivo (armazenamento do navegador). Nunca sai dele.',
         'Com conta, uma cópia fica no nosso armazenamento na nuvem, hospedado no nosso provedor Netlify (operador), para que seus dispositivos sincronizem. Seus dados ficam separados por conta e só são entregues aos seus dispositivos conectados.',
         'As notificações push passam pelo serviço push do seu navegador ou celular (por exemplo Apple, Google, Mozilla ou Microsoft), criptografadas para que esse serviço não possa lê-las.',
+        'Se você usar o KROOPY AI: suas mensagens e um breve resumo dos seus dados no KROOPY (ideias, calendário, tarefas, metas, estatísticas que você informa) são enviados à OpenAI (operador) para escrever a resposta. A OpenAI não os usa para treinar seus modelos e os guarda por no máximo 30 dias apenas para prevenir abusos. Suas conversas ficam salvas na sua conta e você pode excluí-las quando quiser.',
         'O app é servido pelo nosso provedor de hospedagem, que pode manter registros técnicos breves (como endereços IP) por segurança.',
       ]],
       ['Para quê (base legal)', [

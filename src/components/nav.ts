@@ -8,6 +8,7 @@ import {
   ListChecks,
   Palette,
   Settings,
+  Sparkles,
   Target,
   type LucideIcon,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ export interface NavItem {
 
 export const NAV: NavItem[] = [
   { to: '/', label: $t("Overview"), icon: LayoutDashboard, group: 'workspace', key: 'o' },
+  { to: '/ai', label: 'KROOPY AI', icon: Sparkles, group: 'workspace', key: 'k' },
   { to: '/ideas', label: $t("My Ideas"), icon: Lightbulb, group: 'workspace', key: 'i' },
   { to: '/studio', label: $t("Content Studio"), icon: Clapperboard, group: 'workspace', key: 's' },
   { to: '/calendar', label: $t("Calendar"), icon: CalendarDays, group: 'workspace', key: 'c' },

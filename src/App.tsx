@@ -36,6 +36,7 @@ const SettingsPage = lazy(() => import('@/pages/Settings'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const AccountPage = lazy(() => import('@/pages/Account'));
 const LegalPage = lazy(() => import('@/pages/Legal'));
+const AiPage = lazy(() => import('@/pages/Ai'));
 
 function PageSkeleton() {
   return (
@@ -337,6 +338,7 @@ function Routed() {
         <div key={location.pathname.split('/').slice(0, 2).join('/')} className="page-enter">
           <Routes location={location}>
             <Route path="/" element={<Overview />} />
+            <Route path="/ai" element={<AiPage />} />
             <Route path="/ideas" element={<Ideas />} />
             <Route path="/studio" element={<Studio />} />
             <Route path="/studio/:id" element={<Workspace />} />

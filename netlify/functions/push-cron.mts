@@ -3,9 +3,10 @@
    don't matter here). Each account's devices keep its list of upcoming reminders up to date. */
 import type { Config, Context } from '@netlify/functions';
 import { EARLY, LATE, type PushRecord, sendAll, subjectFor, updatePush } from '../server/push';
-import { pushStore } from '../server/store';
+import { pushStore, scopeStores } from '../server/store';
 
 export default async (_req: Request, ctx: Context) => {
+  scopeStores(ctx.deploy?.context);
   const store = pushStore();
   const now = Date.now();
   const { blobs } = await store.list();

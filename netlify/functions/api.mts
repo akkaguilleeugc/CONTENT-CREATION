@@ -36,7 +36,7 @@ import {
 } from '../server/auth';
 import { HttpError, body, fail, json } from '../server/http';
 import { LATE, type PushItem, type PushSub, sendAll, subjectFor, updatePush, vapid } from '../server/push';
-import { createState, dataStore, deletePrefix, emptyState, filesStore, pushStore, readState, updateState, usersStore } from '../server/store';
+import { aiStore, createState, dataStore, deletePrefix, emptyState, filesStore, pushStore, readState, scopeStores, updateState, usersStore } from '../server/store';
 
 const PART_MAX = 4_000_000; // bytes per file part (function payloads are capped at 6 MB, base64 adds a third)
 
@@ -221,6 +221,7 @@ async function deleteAccount(s: Session) {
   const account = await loadAccount(s.uid);
   await deletePrefix(filesStore(), `${s.uid}/`);
   await pushStore().delete(s.uid);
+  await deletePrefix(aiStore(), `${s.uid}/`); // KROOPY AI conversations, memory and usage
   await dataStore().delete(s.uid);
   await usersStore().delete(emailKey(account.email));
   await usersStore().delete(accountKey(s.uid));
@@ -277,6 +278,7 @@ async function testPush(req: Request, s: Session, ctx: Context) {
 
 /* ── router ── */
 export default async (req: Request, ctx: Context) => {
+  scopeStores(ctx.deploy?.context);
   const url = new URL(req.url);
   const path = url.pathname.replace(/^\/api/, '').replace(/\/+$/, '') || '/';
   const m = req.method;
@@ -310,4 +312,4 @@ export default async (req: Request, ctx: Context) => {
   }
 };
 
-export const config: Config = { path: '/api/*' };
+export const config: Config = { path: '/api/*', excludedPath: ['/api/ai', '/api/ai/*'] };

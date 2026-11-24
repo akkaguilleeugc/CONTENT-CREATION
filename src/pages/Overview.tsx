@@ -95,7 +95,7 @@ export default function Overview() {
   return (
     <div className="page overview">
       <header className="ov-head">
-        <Mascot className="ov-head__mascot" size={84} followPointer settleAfterMs={9000} />
+        <Mascot className="ov-head__mascot" size={84} followPointer settleAfterMs={9000} label={$t('Talk to KROOPY AI')} onClick={() => setTimeout(() => navigate('/ai'), 380)} />
         <div className="ov-head__text">
           <div className="eyebrow">{format(now, 'EEEE · d MMMM yyyy')}</div>
           <h1 className="ov-greet">

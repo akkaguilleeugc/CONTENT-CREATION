@@ -17,12 +17,19 @@ import { getStore, type Store } from '@netlify/blobs';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { HttpError, sleep } from './http';
 
-const open = (name: string): Store => getStore({ name, consistency: 'strong' });
+/* Branch deploys and deploy previews get stores of their own: tests on a preview link never read or
+   change the real accounts of kroopy.es. Production and local development use the plain names. */
+let suffix = '';
+export function scopeStores(deployContext: string | undefined) {
+  suffix = !deployContext || deployContext === 'production' || deployContext === 'dev' ? '' : '-preview';
+}
+const open = (name: string): Store => getStore({ name: name + suffix, consistency: 'strong' });
 export const configStore = () => open('kroopy-config');
 export const usersStore = () => open('kroopy-users');
 export const dataStore = () => open('kroopy-data');
 export const filesStore = () => open('kroopy-files');
 export const pushStore = () => open('kroopy-push');
+export const aiStore = () => open('kroopy-ai');
 
 /* ── one person's synced records ── */
 export interface StoredRow {

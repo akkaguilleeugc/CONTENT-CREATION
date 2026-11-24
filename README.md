@@ -122,7 +122,15 @@ Los recordatorios de tareas, eventos, hábitos y publicaciones programadas llega
 
 Personaje original (`src/assets/kroo.avatar.json`) dibujado con [`@bible-strong/avatar-react`](https://www.npmjs.com/package/@bible-strong/avatar-react) (MIT): `src/components/Mascot.tsx` (carga diferida del motor en `MascotRenderer.tsx`). Está en la bienvenida y en el Overview; sigue al puntero, rebota al tocarlo y se queda quieto con «reducir movimiento». Estados del catálogo listos para el chat: `thinking`, `streaming`, `writing`, `celebrate`, `failed`…
 
-## KROOPY AI — plan
+## KROOPY AI
+
+Chat en `/ai` (menú lateral y Kroo en el Overview): respuestas en streaming, detener, copiar, regenerar, historial por cuenta (sincronizado entre dispositivos), «Pensar a fondo», y botones *Guardar como idea* / *Crear tarea*. Conoce tus ideas, vídeos en producción, calendario, tareas, objetivos y estadísticas (resumen leído en el servidor, solo de tu cuenta; los datos de ejemplo se excluyen).
+
+- **Servidor:** `netlify/functions/ai.mts` (`/api/ai/*`) con [AI SDK](https://ai-sdk.dev) `streamText` + `@ai-sdk/openai`. Capa de modelos en `netlify/server/ai/models.ts` (rol → modelo: *chat* = GPT‑6 Terra, *deep* = GPT‑6 Sol; elige la versión más nueva disponible para la clave). Historial y consumo en `netlify/server/ai/history.ts`; contexto del espacio de trabajo en `workspace.ts`.
+- **Clave:** `OPENAI_API_KEY` en las variables de entorno de Netlify (ámbito *Functions*). Sin clave, la página lo explica en vez de fallar.
+- **Gasto:** límites por cuenta (por defecto 0,50 $/día y 6 $/mes, estimados) + el límite duro del proyecto en OpenAI.
+- **Pruebas sin clave:** `KROOPY_AI_MOCK=1 netlify dev` usa un modelo falso (solo en local; nunca en un sitio desplegado).
+- **Vistas previas aisladas:** los despliegues de rama usan almacenes `*-preview`, separados de las cuentas reales de kroopy.es.
 
 Auditoría, decisiones y etapas: [`docs/KROOPY_AI_PLAN.md`](docs/KROOPY_AI_PLAN.md).
 

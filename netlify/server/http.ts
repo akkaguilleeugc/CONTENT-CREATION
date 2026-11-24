@@ -14,6 +14,7 @@ export type ErrorCode =
   | 'not_found'
   | 'busy'
   | 'push_unavailable'
+  | 'ai_unavailable'
   | 'unknown';
 
 export class HttpError extends Error {

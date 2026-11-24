@@ -12,5 +12,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["functions/*.mts", "server/*.ts"]
+  "include": ["functions/*.mts", "server/*.ts", "server/ai/*.ts"]
 }
