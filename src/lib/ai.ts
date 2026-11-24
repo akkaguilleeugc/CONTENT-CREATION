@@ -54,3 +54,20 @@ export function aiErrorText(e: Error | undefined) {
   }
   return e.message;
 }
+
+/* ── memory ── */
+export interface AiMemory {
+  id: string;
+  text: string;
+  kind: 'preference' | 'decision' | 'fact' | 'goal';
+  created: number;
+}
+export interface AiActivity {
+  at: number;
+  tool: string;
+  summary: string;
+  status: 'done' | 'cancelled' | 'proposed' | 'error';
+}
+export const loadMemories = () => call<{ memories: AiMemory[]; activity: AiActivity[] }>('/memories');
+export const forgetMemory = (id: string) => call(`/memories/${encodeURIComponent(id)}`, { method: 'DELETE' });
+export const forgetAllMemories = () => call('/memories', { method: 'DELETE' });

@@ -4,16 +4,23 @@
    <uid>/usage/<YYYY-MM> spend per day: tokens, estimated USD, messages, models */
 import { HttpError } from '../http';
 import { aiStore, updateJSON } from '../store';
+import { logActivity, type Activity } from './memory';
 
 export interface ConvMeta {
   id: string;
   title: string;
   created: number;
   updated: number;
+  /** a few lines of the conversation, for search */
+  digest?: string;
 }
 export interface Conversation extends ConvMeta {
   messages: unknown[];
+  /** tool calls already written to the activity log */
+  logged?: string[];
 }
+type Part = { type: string; text?: string; toolCallId?: string; state?: string; input?: Record<string, unknown>; output?: Record<string, unknown>; errorText?: string };
+type Msg = { role: string; parts?: Part[] };
 interface Usage {
   days: Record<string, { usd: number; input: number; output: number; messages: number }>;
   usd: number;
@@ -38,18 +45,23 @@ export async function getConversation(uid: string, id: string): Promise<Conversa
 export async function saveConversation(uid: string, id: string, messages: unknown[], titleHint: string) {
   const prev = await getConversation(uid, id);
   const now = Date.now();
+  const logged = new Set(prev?.logged ?? []);
+  const activity = newActivity(messages as Msg[], logged);
   const conv: Conversation = {
     id,
     title: prev?.title || titleFrom(titleHint),
     created: prev?.created ?? now,
     updated: now,
+    digest: digestOf(messages as Msg[]),
     messages: messages.slice(-MAX_MESSAGES),
+    logged: [...logged].slice(-500),
   };
   await aiStore().setJSON(`${uid}/conv/${id}`, conv);
   await updateJSON<ConvMeta[], void>(aiStore(), `${uid}/index`, () => [], (list) => {
     const rest = list.filter((c) => c.id !== id);
-    list.splice(0, list.length, { id, title: conv.title, created: conv.created, updated: now }, ...rest.slice(0, 499));
+    list.splice(0, list.length, { id, title: conv.title, created: conv.created, updated: now, digest: conv.digest }, ...rest.slice(0, 499));
   });
+  await logActivity(uid, activity);
 }
 
 export async function renameConversation(uid: string, id: string, title: string) {
@@ -68,6 +80,52 @@ export async function deleteConversation(uid: string, id: string) {
     const keep = list.filter((c) => c.id !== id);
     list.splice(0, list.length, ...keep);
   });
+}
+
+const textOf = (m: Msg | undefined) => (m?.parts ?? []).map((p) => (p.type === 'text' ? p.text ?? '' : '')).join(' ').replace(/\s+/g, ' ').trim();
+
+/** The person's first messages and the latest answer, short — enough to find the conversation again. */
+function digestOf(messages: Msg[]) {
+  const mine = messages.filter((m) => m.role === 'user').slice(0, 4).map(textOf).join(' · ');
+  const last = textOf([...messages].reverse().find((m) => m.role === 'assistant'));
+  return `${mine.slice(0, 500)} — ${last.slice(0, 400)}`;
+}
+
+/** Tool calls that finished since the last save, as activity entries (each logged once). */
+function newActivity(messages: Msg[], logged: Set<string>): Activity[] {
+  const out: Activity[] = [];
+  for (const m of messages) {
+    if (m.role !== 'assistant') continue;
+    for (const p of m.parts ?? []) {
+      if (!p.type.startsWith('tool-') || !p.toolCallId || logged.has(p.toolCallId)) continue;
+      if (p.state !== 'output-available' && p.state !== 'output-error') continue;
+      logged.add(p.toolCallId);
+      const tool = p.type.slice(5);
+      const cancelled = p.state === 'output-error' || !!p.output?.cancelled;
+      out.push({ at: Date.now(), tool, summary: summarize(tool, p.input ?? {}), status: p.state === 'output-error' ? 'error' : cancelled ? 'cancelled' : 'done' });
+    }
+  }
+  return out;
+}
+
+function summarize(tool: string, input: Record<string, unknown>) {
+  const titles = (list: unknown) => (Array.isArray(list) ? list.map((x) => String((x as { title?: string }).title ?? '')).filter(Boolean).slice(0, 5).join(', ') : '');
+  switch (tool) {
+    case 'save_ideas':
+      return titles(input.ideas);
+    case 'create_tasks':
+      return titles(input.tasks);
+    case 'add_events':
+      return titles(input.events);
+    case 'create_video':
+      return String(input.title ?? '');
+    case 'remember':
+      return String(input.text ?? '');
+    case 'search_kroopy':
+      return Array.isArray(input.queries) ? input.queries.join(' / ') : '';
+    default:
+      return tool.replace(/_/g, ' ');
+  }
 }
 
 function titleFrom(text: string) {

@@ -129,7 +129,11 @@ Chat en `/ai` (menú lateral y Kroo en el Overview): respuestas en streaming, de
 - **Servidor:** `netlify/functions/ai.mts` (`/api/ai/*`) con [AI SDK](https://ai-sdk.dev) `streamText` + `@ai-sdk/openai`. Capa de modelos en `netlify/server/ai/models.ts` (rol → modelo: *chat* = GPT‑6 Terra, *deep* = GPT‑6 Sol; elige la versión más nueva disponible para la clave). Historial y consumo en `netlify/server/ai/history.ts`; contexto del espacio de trabajo en `workspace.ts`.
 - **Clave:** `OPENAI_API_KEY` en las variables de entorno de Netlify (ámbito *Functions*). Sin clave, la página lo explica en vez de fallar.
 - **Gasto:** límites por cuenta (por defecto 0,50 $/día y 6 $/mes, estimados) + el límite duro del proyecto en OpenAI.
-- **Pruebas sin clave:** `KROOPY_AI_MOCK=1 netlify dev` usa un modelo falso (solo en local; nunca en un sitio desplegado).
+- **Memoria:** `remember` guarda decisiones, preferencias y datos que le pides recordar (`netlify/server/ai/memory.ts`); los 25 más recientes van siempre en el contexto y el resto se busca. Botón **Memoria**: verla, borrar uno o todo, exportar, y el **historial de actividad** (búsquedas, recuerdos, acciones confirmadas o canceladas).
+- **Búsqueda:** `search_kroopy` busca en ideas, vídeos (guiones), tareas, calendario, objetivos, estadísticas, memoria y conversaciones anteriores, sin tildes ni mayúsculas, con raíces de palabras y varias formulaciones a la vez (la IA prueba sinónimos). Búsqueda semántica con embeddings: preparada para más adelante, con tu autorización.
+- **Consultas:** `get_schedule` (agenda entre fechas), `get_stats` (tus estadísticas por plataforma, mejores y peores; indica periodo y que son datos introducidos a mano), `get_details`.
+- **Acciones con confirmación:** `save_ideas`, `create_tasks`, `add_events`, `create_video` (vídeo en Studio con hook, cuerpo, CTA y caption). La IA las propone; la app muestra una tarjeta con lo que se va a crear y **solo al pulsar Confirmar** lo crea en tu dispositivo (igual que a mano, así se sincroniza con todos). Mientras una tarjeta espera, el chat queda en pausa.
+- **Pruebas sin clave:** `KROOPY_AI_MOCK=1 netlify dev` usa un modelo falso (solo en local; nunca en un sitio desplegado) que también ensaya las herramientas.
 - **Vistas previas aisladas:** los despliegues de rama usan almacenes `*-preview`, separados de las cuentas reales de kroopy.es.
 
 Auditoría, decisiones y etapas: [`docs/KROOPY_AI_PLAN.md`](docs/KROOPY_AI_PLAN.md).

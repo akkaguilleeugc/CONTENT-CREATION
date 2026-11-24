@@ -164,8 +164,8 @@ exportar y borrar todo (cuenta, memoria, conversaciones) · política de privaci
 | 1 | Auditoría y arquitectura | ✅ Este documento | ✅ Elegido: **OpenAI** |
 | 2 | KROOPY AI v1 | ✅ Función de IA (OpenAI GPT‑6 Terra / Sol), capa de modelos, límites de gasto, registro de costes | ✅ Clave de OpenAI en Netlify · falta la prueba real |
 | 3 | Chat | ✅ Página KROOPY AI con Kroo, streaming, detener, copiar, regenerar, historial, sugerencias, móvil | Probarla en la copia de pruebas |
-| 4 | Memoria | Herramientas de lectura de tus datos, memoria persistente, pantalla para verla/borrarla | — |
-| 5 | Acciones | Guardar ideas, guiones, tareas, eventos con confirmación + historial | — |
+| 4 | Memoria | ✅ Búsqueda en tus datos y conversaciones, agenda, estadísticas, memoria persistente, pantalla Memoria + actividad | Probarla en la copia de pruebas |
+| 5 | Acciones | ✅ Ideas, tareas, eventos y vídeos con guion, siempre con tarjeta de confirmación + historial | Probarla en la copia de pruebas |
 | 6 | Instagram | OAuth, métricas, histórico | Crear app en Meta (te guío) |
 | 7 | YouTube | OAuth, Analytics, histórico | Proyecto en Google Cloud (te guío) |
 | 8 | TikTok | OAuth, Display API, solicitud de revisión | App en TikTok Developers (te guío) |
