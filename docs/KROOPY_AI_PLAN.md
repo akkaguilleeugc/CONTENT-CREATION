@@ -63,7 +63,20 @@ Versiones comprobadas en npm: `ai` 7.0.181 · `@ai-sdk/react` 4.0.186 (compatibl
 - **Capa de modelos** (`netlify/server/ai/models.ts`): el chat pide «rápido» o «potente» y la capa decide el modelo;
   cambiar de proveedor = cambiar una línea de configuración.
 
-### 2.3 Proveedor inicial: Google Gemini (mejor calidad/precio)
+### 2.3 Proveedor elegido: OpenAI (ChatGPT)
+
+Elegido por ti el 24-11-2026. Conexión directa con tu clave (`OPENAI_API_KEY`, solo en el servidor), crédito
+prepago de 5 $ sin recarga automática + límite duro mensual de 8 $ en OpenAI, y límites propios de KROOPY por cuenta.
+| Uso | Modelo | Precio por 1M tokens (entrada / salida) |
+|---|---|---|
+| Conversación | GPT‑6 Terra (`gpt-6.1-terra`) | $1 / $5 |
+| «Pensar a fondo» | GPT‑6 Sol (`gpt-6.2-sol`) | $2 / $10 |
+| Tareas rápidas (más adelante) | GPT‑6 Luna (`gpt-6-luna`) | $0.10 / $0.50 |
+
+OpenAI no usa los datos de la API para entrenar (por defecto) y los guarda un máximo de 30 días para prevenir abusos;
+KROOPY además pide `store: false`. Mensaje típico ≈ 0,007 $ con Terra → 30 mensajes/día ≈ 6 $/mes como máximo realista.
+
+### Alternativa estudiada: Google Gemini
 | Uso | Modelo (estable) | Precio por 1M tokens (entrada / salida) |
 |---|---|---|
 | Rápido (captions, ideas, la mayoría de mensajes) | `gemini-3.5-flash-lite` | $0.30 / $2.50 |
@@ -147,10 +160,10 @@ exportar y borrar todo (cuenta, memoria, conversaciones) · política de privaci
 ## 5. Plan por etapas
 | # | Etapa | Lo hago yo | Necesito de ti |
 |---|---|---|---|
-| 0 | Producción protegida | Preparar rama de pruebas | Cambiar en Netlify la rama de producción (te guío) y darme permiso para crear la rama `main` |
-| 1 | Auditoría y arquitectura | ✅ Este documento | Elegir proveedor |
-| 2 | KROOPY AI v1 | Función de IA, capa de modelos, cuotas, registro de costes | **Una clave de Gemini** (te guío paso a paso) |
-| 3 | Chat | Página KROOPY AI con Kroo (piensa, escribe, celebra), streaming, detener, copiar, regenerar, historial, sugerencias, móvil | — |
+| 0 | Producción protegida | ✅ Rama `main` = kroopy.es; esta rama = copia de pruebas gratuita con datos separados | ✅ Hecho |
+| 1 | Auditoría y arquitectura | ✅ Este documento | ✅ Elegido: **OpenAI** |
+| 2 | KROOPY AI v1 | ✅ Función de IA (OpenAI GPT‑6 Terra / Sol), capa de modelos, límites de gasto, registro de costes | ✅ Clave de OpenAI en Netlify · falta la prueba real |
+| 3 | Chat | ✅ Página KROOPY AI con Kroo, streaming, detener, copiar, regenerar, historial, sugerencias, móvil | Probarla en la copia de pruebas |
 | 4 | Memoria | Herramientas de lectura de tus datos, memoria persistente, pantalla para verla/borrarla | — |
 | 5 | Acciones | Guardar ideas, guiones, tareas, eventos con confirmación + historial | — |
 | 6 | Instagram | OAuth, métricas, histórico | Crear app en Meta (te guío) |
