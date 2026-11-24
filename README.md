@@ -78,7 +78,7 @@ src/
   styles/       tokens + base + ui + layout + pages
 supabase/migrations/0001_init.sql   esquema relacional + RLS + bucket privado
 landing/ (public/landing)           landing page de marca
-motion/                             vídeo de 15 s (fuente HTML + render)
+motion/                             vídeo de 15 s y vídeo de lanzamiento de 80 s (fuente HTML + render)
 ```
 
 ### Persistencia
@@ -121,6 +121,25 @@ node motion/render.cjs
 ```
 
 Guion: 0–2 s palabras cinéticas (Ideas · Scripts · Shoots · Stats) → 2–4 s del caos al sistema (las 9 etapas encajan sobre el degradado de marca) → 4–7 s el producto en 3D (KPIs, tarjeta que avanza por el pipeline, anillo de progreso) → 7–10 s seis cortes a ritmo (Plan · Script · Shoot · Track · Measure · Grow) → 10–12,5 s *drop*: curva de crecimiento exponencial con partículas → 12,5–15 s cierre con la landing y el sello del logo.
+
+## Vídeo de lanzamiento de 80 s — `motion/kroopy-launch/`
+
+1080×1920 · 60 fps · 120 BPM (160 tiempos). La interfaz real de KROOPY reconstruida como capas vectoriales (con los iconos Lucide de la app y los datos de ejemplo reales), conducida por un cursor con clics y arrastres reales y una cámara tipo *screen studio*. El objeto conductor es el botón lima **+ (Crear)**: idea → cursor de texto → botón *Capture idea* → tarjeta → punto final → *Convert to content* → tarjeta del Kanban → etapa actual → *Published* → evento del calendario → casilla de tarea → hábito de hoy → *Start focus* → + de la barra → logo OO.
+
+| Archivo | Qué es |
+|---|---|
+| `motion/out/kroopy-launch-80s.mp4` | Render final (H.264 + AAC, −14 LUFS) |
+| `motion/kroopy-launch/src.html` | Composición: todo se calcula a partir del tiempo dentro de `window.seek(t)` (muelles y easing exponencial como funciones del tiempo, desenfoque direccional según la velocidad) + banda sonora con Web Audio (`OfflineAudioContext`) |
+| `motion/kroopy-launch/kroopy-launch.html` | El mismo archivo con fuente, logo e iconos incrustados (`?t=12.5` muestra un instante, `?play` lo reproduce) |
+| `motion/kroopy-launch/render.cjs` | Audio → WAV, fotogramas por tiempo para revisión, y render a 60 fps con 3 subfotogramas por fotograma mezclados con `tmix` |
+
+```bash
+cd motion/kroopy-launch
+node build.cjs              # src.html → kroopy-launch.html
+node render.cjs audio       # ../out/kroopy-soundtrack.wav
+node render.cjs beats       # un fotograma por tiempo, para revisar
+node render.cjs video 4     # 4 procesos en paralelo → ../out/kroopy-launch-80s.mp4
+```
 
 ## Atajos
 

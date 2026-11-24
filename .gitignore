@@ -8,3 +8,5 @@ motion/.cache
 *.tsbuildinfo
 motion/out/*.wav
 motion/out/*.silent.mp4
+motion/out/kroopy-part*.mp4
+motion/out/kroopy-parts.txt
