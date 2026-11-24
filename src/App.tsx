@@ -9,6 +9,7 @@ import { resolveTheme, Shell } from '@/components/Shell';
 import { Button, Field, Input } from '@/components/ui';
 import { ModalHost } from '@/features/ModalHost';
 import { startReminders } from '@/features/reminders';
+import { startAchievements } from '@/lib/celebrate';
 import { useBrandFontRegistry } from '@/lib/brandFonts';
 import { setBadge } from '@/lib/pwa';
 import { buildSample } from '@/lib/sample';
@@ -292,6 +293,7 @@ export default function App() {
   const hydrated = useStore((s) => s.hydrated);
   useTheme();
   useEffect(() => (hydrated ? startReminders() : undefined), [hydrated]);
+  useEffect(() => (hydrated ? startAchievements() : undefined), [hydrated]);
   if (!hydrated)
     return (
       <div className="boot">

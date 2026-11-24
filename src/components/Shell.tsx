@@ -17,6 +17,7 @@ import { snapshot, useStore } from '@/lib/store';
 import { useUI } from '@/lib/ui';
 import { cn, initials, todayStr } from '@/lib/utils';
 import { BrandMark, Wordmark } from './brand';
+import { CustomCursor, PointerGlow } from './PointerFX';
 import { GlassSurface } from './Glass';
 import { NAV, NAV_GROUPS, titleFor } from './nav';
 import { Modal, Popover, usePopover } from './overlay';
@@ -147,7 +148,7 @@ function Sidebar() {
       <Link to="/" className="sidebar__brand" aria-label="KROOPY home">
         <BrandMark />
         <span className="brand-word">
-          <Wordmark height={20} plate="ice" />
+          <Wordmark height={25} plate="none" tone="auto" />
           <span className="brand-word__product">
             Creator<em>studio</em>
           </span>
@@ -275,6 +276,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const collapsed = useStore((s) => s.settings.sidebarCollapsed);
   return (
     <div className={cn('app', collapsed && 'app--collapsed')}>
+      <PointerGlow />
       <Sidebar />
       <Topbar />
       <main className="app__main" id="main">
@@ -282,6 +284,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </main>
       <BottomNav />
       <MoreSheet />
+      <CustomCursor />
     </div>
   );
 }

@@ -101,8 +101,11 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 5px;
 }
+.wordmark--auto .wordmark__on-light { display: none; }
+[data-theme='light'] .wordmark--auto .wordmark__on-dark { display: none; }
+[data-theme='light'] .wordmark--auto .wordmark__on-light { display: block; }
 .brand-word__plate {
   display: inline-flex;
   align-items: center;

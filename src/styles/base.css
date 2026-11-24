@@ -317,3 +317,121 @@ textarea::placeholder {
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Pointer ambience + custom cursor (src/components/PointerFX.tsx) ── */
+.app {
+  position: relative;
+  isolation: isolate;
+}
+.pointer-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.pointer-glow__a,
+.pointer-glow__b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.pointer-glow__a {
+  width: 1200px;
+  height: 1200px;
+  background: radial-gradient(closest-side, rgba(47, 91, 255, 0.24), rgba(47, 91, 255, 0.07) 55%, transparent);
+}
+.pointer-glow__b {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(closest-side, rgba(212, 245, 60, 0.13), transparent);
+}
+[data-theme='light'] .pointer-glow__a {
+  background: radial-gradient(closest-side, rgba(47, 91, 255, 0.1), transparent);
+}
+[data-theme='light'] .pointer-glow__b {
+  background: radial-gradient(closest-side, rgba(187, 239, 31, 0.16), transparent);
+}
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.cursor-dot {
+  width: 10px;
+  height: 10px;
+  background: #fafafa;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: opacity 0.2s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+.cursor-ring--hover,
+.cursor-ring--press {
+  border-color: var(--lime);
+  background: rgba(212, 245, 60, 0.07);
+}
+[data-theme='light'] .cursor-ring {
+  border-color: rgba(11, 15, 20, 0.4);
+}
+[data-theme='light'] .cursor-ring--hover,
+[data-theme='light'] .cursor-ring--press {
+  border-color: var(--royal);
+  background: rgba(47, 91, 255, 0.06);
+}
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+html.has-cursor :is(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='button']):not([type='submit']), textarea, [contenteditable='true']) {
+  cursor: text !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pointer-glow,
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
+  }
+}
+
+/* ── Achievement bursts (src/lib/celebrate.ts) ── */
+.burst {
+  position: fixed;
+  z-index: 2147482000;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.burst__ring,
+.burst__spark,
+.burst__word {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+}
+.burst__ring {
+  border-radius: 50%;
+  border: 2px solid var(--lime);
+  box-shadow: 0 0 0 1px rgba(212, 245, 60, 0.15);
+}
+.burst__spark {
+  display: block;
+  border-radius: 50%;
+}
+.burst__word {
+  font-size: 22px;
+  line-height: 1;
+}
