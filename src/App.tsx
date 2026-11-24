@@ -175,7 +175,7 @@ function Welcome() {
         </div>
         <div className="welcome__hero">
           <Mascot className="welcome__mascot" size={112} state="excited" />
-          <Wordmark height={34} plate="lime" />
+          <Wordmark className="welcome__wordmark" height={46} plate="none" tone="white" />
           <span className="accent-script welcome__script">{$t("create · ship · grow")}</span>
         </div>
         <div className="form-grid">

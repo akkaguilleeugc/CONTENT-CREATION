@@ -176,6 +176,18 @@
   right: 22px;
   bottom: 14px;
 }
+@media (max-width: 480px) {
+  .welcome__wordmark {
+    height: 34px !important;
+  }
+  .welcome__mascot {
+    top: 10px;
+    bottom: auto;
+    right: 10px;
+    transform: scale(0.72);
+    transform-origin: top right;
+  }
+}
 .welcome__hero {
   position: relative;
   display: flex;

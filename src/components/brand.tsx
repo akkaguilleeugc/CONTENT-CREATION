@@ -12,7 +12,14 @@ export function BrandMark({ className, size }: { className?: string; size?: numb
 
 /** The KROOPY horizontal logotype (original artwork). On a plate, or bare: `tone="auto"` is white on the dark
  *  theme and the original black on the light theme. */
-export function Wordmark({ height = 22, plate = 'ice', tone = 'black', className }: { height?: number; plate?: 'ice' | 'lime' | 'white' | 'none'; tone?: 'black' | 'auto'; className?: string }) {
+export function Wordmark({ height = 22, plate = 'ice', tone = 'black', className }: { height?: number; plate?: 'ice' | 'lime' | 'white' | 'none'; tone?: 'black' | 'auto' | 'white'; className?: string }) {
+  // always white, no plate: for surfaces that are dark in both themes (e.g. the welcome hero)
+  if (tone === 'white')
+    return (
+      <span className={cn('wordmark', className)} style={{ display: 'inline-flex', alignItems: 'center', height }}>
+        <img src="/brand/kroopy-logo-white.png" alt={$t("KROOPY")} style={{ height: '100%', width: 'auto' }} draggable={false} />
+      </span>
+    );
   if (tone === 'auto')
     return (
       <span className={cn('wordmark wordmark--auto', className)} style={{ display: 'inline-flex', alignItems: 'center', height }}>
