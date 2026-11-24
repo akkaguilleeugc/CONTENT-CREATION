@@ -292,7 +292,8 @@ export type AssetType =
   | 'template'
   | 'graphic'
   | 'document'
-  | 'reference';
+  | 'reference'
+  | 'font';
 
 export interface AssetFolder {
   id: ID;
@@ -332,6 +333,35 @@ export interface VisualReference extends Entity {
   tags: string[];
 }
 
+/** Your own brand (not the app's): filled in entirely by you in the Brand Kit. */
+export interface BrandProfile {
+  name: string;
+  tagline: string;
+  description: string;
+  /** Tone-of-voice keywords. */
+  voice: string[];
+  logoAssetId?: ID;
+  symbolAssetId?: ID;
+  /** Colour behind the logo in previews. */
+  logoBackground: string;
+  doList: string[];
+  dontList: string[];
+  updatedAt?: Timestamp;
+}
+
+export type FontRole = 'display' | 'text' | 'accent' | 'other';
+export interface BrandFont extends Entity {
+  name: string;
+  /** CSS family used to render it: the uploaded file is registered under this name. */
+  family: string;
+  role: FontRole;
+  usage: string;
+  /** Uploaded font file in the Asset Library (otf / ttf / woff / woff2). */
+  assetId?: ID;
+  sample: string;
+  order: number;
+}
+
 /* ── Settings ──────────────────────────────────────────────── */
 export type ThemePref = 'dark' | 'light' | 'system';
 
@@ -351,6 +381,8 @@ export interface Settings {
   sidebarCollapsed: boolean;
   notifications: boolean;
   onboarded: boolean;
+  /** Apple-style liquid glass (liquid-glass-react) on floating surfaces. */
+  liquidGlass: boolean;
 }
 
 export interface DB {
@@ -371,10 +403,12 @@ export interface DB {
   colors: BrandColor[];
   combos: ColorCombo[];
   references: VisualReference[];
+  brandFonts: BrandFont[];
+  brand: BrandProfile;
   settings: Settings;
   /** Reminder keys already delivered, so each fires once. */
   firedReminders: Record<string, number>;
 }
 
-export type Collection = Exclude<keyof DB, 'version' | 'settings' | 'firedReminders'>;
+export type Collection = Exclude<keyof DB, 'version' | 'settings' | 'firedReminders' | 'brand'>;
 export type RecordOf<C extends Collection> = DB[C][number];

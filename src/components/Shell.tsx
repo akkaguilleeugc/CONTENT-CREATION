@@ -17,6 +17,7 @@ import { snapshot, useStore } from '@/lib/store';
 import { useUI } from '@/lib/ui';
 import { cn, initials, todayStr } from '@/lib/utils';
 import { BrandMark, Wordmark } from './brand';
+import { GlassSurface } from './Glass';
 import { NAV, NAV_GROUPS, titleFor } from './nav';
 import { Modal, Popover, usePopover } from './overlay';
 import { Button } from './ui';
@@ -194,7 +195,7 @@ function Topbar() {
   const loc = useLocation();
   const { setPalette, setMore } = useUI();
   return (
-    <header className="topbar">
+    <GlassSurface as="header" radius={22} tone="chrome" className="topbar">
       <Link to="/" aria-label="Home">
         <BrandMark />
       </Link>
@@ -202,7 +203,7 @@ function Topbar() {
       <Button variant="ghost" iconOnly icon={<Search />} onClick={() => setPalette(true)} aria-label="Search" />
       <NotificationsButton />
       <Button variant="ghost" iconOnly icon={<MenuIcon />} onClick={() => setMore(true)} aria-label="More sections" />
-    </header>
+    </GlassSurface>
   );
 }
 
@@ -222,7 +223,7 @@ function BottomNav() {
   const Cal = NAV.find((n) => n.to === '/calendar')!.icon;
   const inMore = !PRIMARY_MOBILE.some((p) => isActive(p));
   return (
-    <nav className="bottomnav" aria-label="Primary">
+    <GlassSurface as="nav" radius={30} tone="chrome" className="bottomnav" aria-label="Primary">
       {tab('/', 'Home', <Home />)}
       {tab('/studio', 'Studio', <Studio />)}
       <button className="bottomnav__fab" onClick={() => setQuick(true)} aria-label="Create">
@@ -233,7 +234,7 @@ function BottomNav() {
         <MenuIcon />
         More
       </button>
-    </nav>
+    </GlassSurface>
   );
 }
 

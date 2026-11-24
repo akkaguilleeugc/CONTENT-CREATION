@@ -1,0 +1,105 @@
+/* ═══════════════ Liquid glass (liquid-glass-react) ═══════════════
+   Loaded before ui.css so component classes (.modal, .bottomnav…) can override position/z-index. */
+.lg-host {
+  position: relative;
+  z-index: 0; /* own stacking context so the glass layer can sit behind the content */
+  border-radius: var(--lg-radius);
+}
+.lg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  visibility: hidden;
+}
+.lg-layer--ready {
+  visibility: visible;
+}
+.lg-sizer {
+  display: block;
+}
+/* The library's inner wrapper is inline-flex; make it a block so it matches the host size exactly. */
+.lg-layer .glass {
+  display: flex !important;
+}
+/* The library's rim / hover / over-light layers use mix-blend-mode. Blending isolates the nearest
+   stacking context, which makes the backdrop-filter sample an empty group instead of the page
+   (no frost, no refraction). Hide them and draw an equivalent rim with normal blending below. */
+.lg-layer > span:not(.lg-tint),
+.lg-layer > div.bg-black,
+.lg-layer > div[style*='mix-blend-mode'] {
+  display: none !important;
+}
+.lg-layer .pointer-events-none {
+  pointer-events: none;
+}
+/* Brand tint between the glass and the content, for legibility. */
+.lg-tint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--lg-tint);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+}
+/* Specular rim that follows the pointer (replaces the library's blended border). */
+.lg-tint::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.25px;
+  background: linear-gradient(
+    var(--lg-angle, 135deg),
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, var(--lg-rim-a, 0.32)) 32%,
+    rgba(255, 255, 255, 0.06) 55%,
+    rgba(255, 255, 255, var(--lg-rim-b, 0.5)) 85%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.75;
+}
+[data-theme='light'] .lg-tint::before {
+  opacity: 1;
+  background: linear-gradient(
+    var(--lg-angle, 135deg),
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.95) 32%,
+    rgba(11, 26, 92, 0.1) 60%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+}
+:root,
+[data-theme='dark'] {
+  --lg-tint-chrome: rgba(11, 15, 20, 0.34);
+  --lg-tint-sheet: rgba(13, 18, 25, 0.6);
+  --lg-tint-lens: rgba(23, 30, 41, 0.36);
+}
+[data-theme='light'] {
+  --lg-tint-chrome: rgba(255, 255, 255, 0.42);
+  --lg-tint-sheet: rgba(255, 255, 255, 0.7);
+  --lg-tint-lens: rgba(255, 255, 255, 0.4);
+}
+.lg-chrome {
+  --lg-tint: var(--lg-tint-chrome);
+}
+.lg-sheet {
+  --lg-tint: var(--lg-tint-sheet);
+}
+.lg-lens {
+  --lg-tint: var(--lg-tint-lens);
+}
+/* When the glass is on, the host's own fill, border and blur step aside. */
+.lg-on {
+  background: transparent !important;
+  border-color: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}

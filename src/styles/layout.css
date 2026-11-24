@@ -31,8 +31,8 @@
   .app__main,
   .app--collapsed .app__main {
     margin-left: 0;
-    padding-top: calc(var(--topbar-h) + env(safe-area-inset-top));
-    padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom));
+    padding-top: calc(var(--topbar-h) + 8px + env(safe-area-inset-top));
+    padding-bottom: calc(var(--bottomnav-h) + 18px + env(safe-area-inset-bottom));
   }
   .page {
     padding: 18px 16px 40px;
@@ -419,23 +419,27 @@
   display: none;
 }
 @media (max-width: 767px) {
+  /* Floating liquid-glass bars (iOS style): content scrolls underneath and is refracted. */
   .topbar {
     position: fixed;
     z-index: 60;
-    inset: 0 0 auto 0;
-    height: calc(var(--topbar-h) + env(safe-area-inset-top));
-    padding: env(safe-area-inset-top) 12px 0 14px;
+    left: 10px;
+    right: 10px;
+    top: calc(8px + env(safe-area-inset-top));
+    height: var(--topbar-h);
+    padding: 0 8px 0 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
+    border-radius: 22px;
     background: var(--glass);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border-bottom: 1px solid var(--border);
+    border: 1px solid var(--border);
   }
   .topbar .brand-mark {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     padding: 8px 6px;
     border-radius: 10px;
   }
@@ -452,16 +456,19 @@
   .bottomnav {
     position: fixed;
     z-index: 60;
-    inset: auto 0 0 0;
-    height: calc(var(--bottomnav-h) + env(safe-area-inset-bottom));
-    padding: 0 8px env(safe-area-inset-bottom);
+    left: 12px;
+    right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    height: var(--bottomnav-h);
+    padding: 0 6px;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
+    border-radius: 30px;
     background: var(--glass);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
-    border-top: 1px solid var(--border);
+    border: 1px solid var(--border);
   }
   .bottomnav__item {
     position: relative;
@@ -501,9 +508,9 @@
   }
   .bottomnav__fab {
     justify-self: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 18px;
+    width: 54px;
+    height: 54px;
+    border-radius: 22px;
     display: grid;
     place-items: center;
     background: var(--lime);
@@ -641,7 +648,16 @@
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   overflow: hidden;
-  animation: scale-in 220ms var(--ease-out) both;
+  animation: glass-in 280ms var(--ease-spring) both;
+}
+/* Let the palette's liquid glass refract the real page instead of a blurred scrim. */
+.palette-root > .modal-backdrop {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(3, 5, 8, 0.42);
+}
+[data-theme='light'] .palette-root > .modal-backdrop {
+  background: rgba(11, 15, 20, 0.18);
 }
 .palette__input {
   display: flex;

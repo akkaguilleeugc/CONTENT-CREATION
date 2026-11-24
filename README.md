@@ -26,15 +26,31 @@ La primera vez aparece una bienvenida: empieza con el espacio vacío o carga **d
 | **Tasks** | My Day, Upcoming, All Tasks (reordenable por arrastre), Completed; subtareas, recurrencia (diaria, laborables, semanal, mensual), recordatorios, categorías, prioridad, vínculo a vídeos. |
 | **Trackers** | Hábitos configurables (diario, laborables, días concretos, X por semana) con racha, % de cumplimiento y mapa de calor de 26 semanas; objetivos diarios → anuales con progreso **automático** (vídeos publicados/producidos, tareas, ideas, check-ins, horas, seguidores) o manual; productividad con temporizador de foco, horas, días productivos. |
 | **Analytics** | Registro manual por publicación (views, likes, comentarios, compartidos, guardados, alcance, seguidores), engagement calculado, evolución temporal, por plataforma, mensual, formatos, top posts, comparador de hasta 3 publicaciones, filtros por plataforma/fecha/categoría/formato, comparación con el periodo anterior. |
-| **Brand Kit** | Guías (logo, superficies aprobadas, normas do/don't, paleta, degradado, jerarquía tipográfica, lenguaje gráfico), gestor de colores y paletas (copiar HEX/RGB, contraste WCAG), combinaciones, tipografías con previsualización en vivo, moodboard de referencias, assets de marca. |
+| **Brand Kit** | **Tu marca, no la de la app**: empieza vacío y se construye con lo que subes. Asistente de 4 pasos (nombre e historia, logo, colores, tipografías), logo principal + símbolo + variantes (vista previa sobre tus colores), gestor de paletas y colores (copiar HEX/RGB, contraste WCAG), combinaciones, **tipografías propias** (subes .otf/.ttf/.woff/.woff2 y se renderizan de verdad con la API FontFace, o usas una instalada), jerarquía tipográfica, reglas *do / don't* editables, moodboard de referencias y assets de marca. |
 | **Asset Library** | Subida por arrastre a cualquier parte de la página, carpetas, etiquetas, tipos, grid/lista, previsualización (imagen, vídeo, audio, PDF), descarga, renombrar, vincular a vídeos manteniendo las relaciones. |
 | **Global** | Command palette (`⌘/Ctrl K`), creación rápida (`N`), atajos `G + letra`, notificaciones calculadas, recordatorios (toast + notificación del navegador), tema claro/oscuro/sistema, toasts con *deshacer*, confirmaciones, estados vacíos, skeletons, `prefers-reduced-motion`. |
 
-## Identidad visual
+## Identidad visual de la app
 
-- **Colores** (`src/styles/tokens.css`): Ink `#0B0F14`, Navy `#0B1A5C`, Royal `#2F5BFF`, Lime `#D4F53C`, White; secundarios Ice `#EFF8FF`, Neon Lime `#BBEF1F`, Dark `#0D0303`, Hot Pink `#FF0055` (solo acentos: el "punto" rosa de los títulos, la línea de *ahora*).
-- **Tipografías**: `public/fonts/Coolvetica-Regular.otf` (titulares, números) y `public/fonts/212-Baby-Girl.otf` (acentos decorativos) cargadas con `@font-face`; Inter (auto-alojada vía `@fontsource-variable/inter`) para la interfaz.
-- **Logo**: los archivos originales de `O.zip` están intactos en `public/brand/original/1.png` (logotipo) y `2.png` (símbolo). Para la web se usan copias recortadas al borde transparente y reducidas proporcionalmente (`public/brand/kroopy-logo.png`, `kroopy-symbol.png`) — misma forma, mismo color, mismas proporciones. Como el arte es negro, siempre se presenta sobre placas lima, hielo o blancas.
+La interfaz de Creator OS usa la identidad KROOPY (la marca de la herramienta). **El Brand Kit y la Asset Library son solo para tu marca**: no traen nada precargado. Si vienes de la versión anterior, la migración v2 elimina automáticamente los colores, combinaciones y logos KROOPY que se habían sembrado ahí y conserva todo lo que añadiste tú.
+
+- **Colores de la app** (`src/styles/tokens.css`): Ink `#0B0F14`, Navy `#0B1A5C`, Royal `#2F5BFF`, Lime `#D4F53C`, White; secundarios Ice `#EFF8FF`, Neon Lime `#BBEF1F`, Dark `#0D0303`, Hot Pink `#FF0055`.
+- **Tipografías de la app**: Coolvetica (titulares) y 212 Baby Girl (acentos) en `public/fonts/`; Inter para la interfaz.
+- **Logo de la app**: originales intactos en `public/brand/original/`; copias web recortadas en `public/brand/`.
+
+## Liquid glass — [`liquid-glass-react`](https://github.com/rdev/liquid-glass-react)
+
+Instalado desde npm (`liquid-glass-react@1.1.1`, el mismo código que el repositorio; el repo no incluye `dist/`, así que la versión publicada es la que trae el build) y aplicado con un envoltorio propio, `src/components/Glass.tsx` (`GlassSurface`), en las superficies flotantes:
+
+- diálogos y hojas inferiores, menús y popovers, toasts, paleta de comandos;
+- barras flotantes superior e inferior en móvil (estilo iOS);
+- tarjetas arrastradas en el Kanban y chips del calendario (lente sobre el contenido).
+
+Detalles de integración:
+- El vidrio de la librería (mapa de desplazamiento SVG + aberración cromática + blur/saturación) se monta **detrás** del contenido real, que sigue en flujo normal, y se dimensiona con un `ResizeObserver`.
+- Sus capas de borde usan `mix-blend-mode`, que aísla el contexto de apilamiento y deja el `backdrop-filter` sin nada que refractar; se ocultan y el borde especular se redibuja con mezcla normal y sigue al puntero.
+- Sin elasticidad (el contenido no se desplaza), animaciones de entrada solo con `transform` (una opacidad < 1 en un ancestro anula la refracción) y tinte de marca para legibilidad en tema claro y oscuro.
+- *Ajustes → Apariencia → Liquid glass* lo desactiva (vuelve a vidrio esmerilado CSS). Efecto completo en navegadores Chromium; Safari y Firefox muestran solo el esmerilado (limitación de la librería).
 
 ## Arquitectura
 
@@ -56,7 +72,7 @@ Local-first y real: todos los registros se guardan en **IndexedDB** (con respald
 
 La UI solo habla con dos interfaces (`DataAdapter` y `FileAdapter` en `src/lib/persistence.ts`). Para pasar a **Supabase**:
 
-1. `supabase db push` con `supabase/migrations/0001_init.sql` (tablas, enums, índices, triggers `updated_at`, RLS por `user_id = auth.uid()` y bucket privado `assets` con carpeta por usuario).
+1. `supabase db push` con `supabase/migrations/` — `0001_init.sql` (tablas, enums, índices, triggers `updated_at`, RLS por `user_id = auth.uid()` y bucket privado `assets` con carpeta por usuario) y `0002_brand_kit.sql` (perfil de tu marca y tipografías propias).
 2. Implementar `DataAdapter`/`FileAdapter` con `@supabase/supabase-js` usando solo la *anon key* pública (las claves secretas nunca van al cliente) y Supabase Auth.
 
 ### Integraciones de plataformas

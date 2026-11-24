@@ -13,6 +13,7 @@ import {
 import { CalendarDays, CheckSquare, ChevronLeft, ChevronRight, Clapperboard, Filter, Plus, Scissors, Send, Video } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GlassSurface } from '@/components/Glass';
 import { collision, useBoardSensors } from '@/components/Kanban';
 import { EmptyState, Popover, usePopover } from '@/components/overlay';
 import { Button, ChipToggle, PageHeader, Segmented } from '@/components/ui';
@@ -222,7 +223,13 @@ export default function CalendarPage() {
         )}
         {(view === 'week' || view === 'day') && <TimeGrid days={view === 'week' ? Array.from({ length: 7 }, (_, i) => addDays(range[0], i)) : [cursor]} byDate={byDate} onOpen={openItem} />}
         {view === 'agenda' && <Agenda byDate={byDate} onOpen={openItem} />}
-        <DragOverlay dropAnimation={null}>{dragItem ? <Chip item={dragItem} overlay /> : null}</DragOverlay>
+        <DragOverlay dropAnimation={null}>
+          {dragItem ? (
+            <GlassSurface radius={8} tone="lens" className="cal-glass">
+              <Chip item={dragItem} overlay />
+            </GlassSurface>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

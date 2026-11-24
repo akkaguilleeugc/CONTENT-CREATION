@@ -177,6 +177,13 @@ export default function SettingsPage() {
               <Segmented label="Theme" value={settings.theme} onChange={(theme) => setSettings({ theme })} options={[{ value: 'dark', label: 'Dark' }, { value: 'light', label: 'Light' }, { value: 'system', label: 'System' }]} />
             </div>
             <div className="setting-row">
+              <div>
+                <b>Liquid glass</b>
+                <span>Apple-style refraction (liquid-glass-react) on dialogs, menus, toasts, the command palette, dragged cards and the mobile bars. Full effect in Chromium browsers; Safari and Firefox show frosted glass only. Turn off on slower devices.</span>
+              </div>
+              <Switch checked={settings.liquidGlass !== false} onChange={(v) => setSettings({ liquidGlass: v })} label="Liquid glass" />
+            </div>
+            <div className="setting-row">
               <div><b>Collapsed sidebar</b><span>Icons only, with tooltips.</span></div>
               <Switch checked={settings.sidebarCollapsed} onChange={(v) => setSettings({ sidebarCollapsed: v })} label="Collapsed sidebar" />
             </div>

@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import { dismissToast, useUI } from '@/lib/ui';
 import { cn } from '@/lib/utils';
+import { GlassSurface } from './Glass';
 import { Button } from './ui';
 
 /* Body scroll lock shared by every overlay. */
@@ -48,7 +49,7 @@ export function Modal({
   size?: 'sm' | 'md' | 'lg' | 'xl';
   initialFocus?: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   useScrollLock(open);
   useEffect(() => {
     if (!open) return;
@@ -89,7 +90,7 @@ export function Modal({
   return createPortal(
     <div className="modal-root">
       <div className="modal-backdrop" onClick={onClose} />
-      <div ref={ref} className={cn('modal', size !== 'md' && `modal--${size}`)} role="dialog" aria-modal="true" tabIndex={-1}>
+      <GlassSurface ref={ref as React.Ref<HTMLElement>} radius={28} tone="sheet" className={cn('modal', size !== 'md' && `modal--${size}`)} role="dialog" aria-modal="true" tabIndex={-1}>
         <div className="modal__grab" />
         <div className="modal__head">
           <div style={{ minWidth: 0 }}>
@@ -100,7 +101,7 @@ export function Modal({
         </div>
         <div className="modal__body">{children}</div>
         {footer && <div className="modal__foot">{footer}</div>}
-      </div>
+      </GlassSurface>
     </div>,
     document.body,
   );
@@ -129,7 +130,7 @@ export function Popover({
   width?: number;
   className?: string;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
   useLayoutEffect(() => {
@@ -179,8 +180,10 @@ export function Popover({
 
   if (!anchor) return null;
   return createPortal(
-    <div
-      ref={ref}
+    <GlassSurface
+      ref={ref as React.Ref<HTMLElement>}
+      radius={14}
+      tone="sheet"
       className={cn('popover', className)}
       style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999, width, visibility: pos ? 'visible' : 'hidden' }}
       role="menu"
@@ -194,7 +197,7 @@ export function Popover({
       }}
     >
       {children}
-    </div>,
+    </GlassSurface>,
     document.body,
   );
 }
@@ -253,7 +256,7 @@ export function Toaster() {
   return createPortal(
     <div className="toasts" aria-live="polite">
       {toasts.map((t) => (
-        <div key={t.id} className={cn('toast', `toast--${t.tone}`)} role="status">
+        <GlassSurface key={t.id} radius={14} tone="sheet" className={cn('toast', `toast--${t.tone}`)} role="status">
           <span className="toast__icon">{t.tone === 'success' ? <Check /> : t.tone === 'error' ? <AlertTriangle /> : <Info />}</span>
           <div className="grow">
             <div className="toast__title">{t.title}</div>
@@ -273,7 +276,7 @@ export function Toaster() {
           <button className="btn btn--ghost btn--sm btn--icon" onClick={() => dismissToast(t.id)} aria-label="Dismiss" style={{ ['--btn-h' as string]: '24px' }}>
             <X />
           </button>
-        </div>
+        </GlassSurface>
       ))}
     </div>,
     document.body,

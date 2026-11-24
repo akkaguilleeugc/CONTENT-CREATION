@@ -5,6 +5,7 @@ import App from './App';
 import { initStore, useStore } from './lib/store';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/glass.css';
 import './styles/ui.css';
 import './styles/layout.css';
 import './styles/pages.css';

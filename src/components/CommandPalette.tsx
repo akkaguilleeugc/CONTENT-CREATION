@@ -21,6 +21,7 @@ import { openModal, useUI } from '@/lib/ui';
 import { cn, fmtDate, matches } from '@/lib/utils';
 import { QUICK_ACTIONS } from './actions';
 import { NAV } from './nav';
+import { GlassSurface } from './Glass';
 import { Modal } from './overlay';
 import { MOD, resolveTheme } from './Shell';
 
@@ -136,7 +137,7 @@ export function CommandPalette() {
   return createPortal(
     <div className="palette-root" onKeyDown={(e) => e.key === 'Escape' && setPalette(false)}>
       <div className="modal-backdrop" onClick={() => setPalette(false)} />
-      <div className="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+      <GlassSurface radius={20} tone="sheet" className="palette" role="dialog" aria-modal="true" aria-label="Command palette">
         <div className="palette__input">
           <Search />
           <input
@@ -208,7 +209,7 @@ export function CommandPalette() {
             <span className="kbd">N</span> quick create <ArrowRight size={11} />
           </span>
         </div>
-      </div>
+      </GlassSurface>
     </div>,
     document.body,
   );

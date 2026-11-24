@@ -164,6 +164,14 @@ export const ASSET_TYPES: { id: AssetType; label: string }[] = [
   { id: 'graphic', label: 'Graphics' },
   { id: 'document', label: 'Documents' },
   { id: 'reference', label: 'References' },
+  { id: 'font', label: 'Fonts' },
+];
+
+export const FONT_ROLES: { id: import('./types').FontRole; label: string; hint: string }[] = [
+  { id: 'display', label: 'Display', hint: 'Headlines, titles, big numbers' },
+  { id: 'text', label: 'Text', hint: 'Body copy, UI, captions' },
+  { id: 'accent', label: 'Accent', hint: 'Decorative phrases and details' },
+  { id: 'other', label: 'Other', hint: 'Anything else' },
 ];
 
 export const REFERENCE_KINDS: { id: ReferenceKind; label: string }[] = [

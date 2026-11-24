@@ -16,7 +16,8 @@ import type {
   Goal,
   Habit,
   Idea,
-  Palette,
+  BrandFont,
+  BrandProfile,
   Settings,
   Task,
   TimeLog,
@@ -186,87 +187,31 @@ export function defaultSettings(): Settings {
     sidebarCollapsed: false,
     notifications: false,
     onboarded: false,
+    liquidGlass: true,
   };
 }
 
-export const PRIMARY_PALETTE_ID = 'palette-primary';
-export const SECONDARY_PALETTE_ID = 'palette-secondary';
+/* Records that version 1 pre-seeded with the app's own (KROOPY) identity.
+   The Brand Kit now belongs entirely to the user, so these are removed on upgrade. */
+const LEGACY_SEED = {
+  palettes: ['palette-primary', 'palette-secondary'],
+  colors: ['color-ink', 'color-navy', 'color-royal-blue', 'color-lime', 'color-white', 'color-ice', 'color-neon-lime', 'color-dark', 'color-hot-pink'],
+  combos: ['combo-signature', 'combo-cta', 'combo-click', 'combo-neon'],
+  assets: ['asset-kroopy-logo', 'asset-kroopy-symbol'],
+};
 
-function brandPalettes(): { palettes: Palette[]; colors: BrandColor[]; combos: ColorCombo[] } {
-  const palettes: Palette[] = [
-    { id: PRIMARY_PALETTE_ID, name: 'Primary', description: 'Everyday interface and brand colours.', order: 0 },
-    {
-      id: SECONDARY_PALETTE_ID,
-      name: 'Secondary · Neon Luxury',
-      description: 'Campaigns, highlights and creative moments. Use sparingly.',
-      order: 1,
-    },
-  ];
-  const c = (paletteId: string, name: string, hex: string, role: string, order: number): BrandColor => ({
-    ...newColor({ paletteId, name, hex, role, order }),
-    id: `color-${name.toLowerCase().replace(/\s+/g, '-')}`,
-  });
-  const colors = [
-    c(PRIMARY_PALETTE_ID, 'Ink', BRAND.ink, 'Base · dark theme background', 0),
-    c(PRIMARY_PALETTE_ID, 'Navy', BRAND.navy, 'Depth · secondary surfaces', 1),
-    c(PRIMARY_PALETTE_ID, 'Royal Blue', BRAND.royal, 'Primary · actions, selection, navigation', 2),
-    c(PRIMARY_PALETTE_ID, 'Lime', BRAND.lime, 'The accent · progress, positives, highlights', 3),
-    c(PRIMARY_PALETTE_ID, 'White', BRAND.white, 'Text + light surfaces', 4),
-    c(SECONDARY_PALETTE_ID, 'Ice', BRAND.ice, 'Light theme surfaces', 0),
-    c(SECONDARY_PALETTE_ID, 'Neon Lime', BRAND.neonLime, 'Glow & campaign highlights', 1),
-    c(SECONDARY_PALETTE_ID, 'Dark', BRAND.dark, 'Deep campaign backgrounds', 2),
-    c(SECONDARY_PALETTE_ID, 'Hot Pink', BRAND.pink, 'Creative accents only', 3),
-  ];
-  const combos: ColorCombo[] = [
-    { ...newCombo({ name: 'Signature', background: BRAND.ink, foreground: BRAND.white, accent: BRAND.lime, note: 'Default dark UI.' }), id: 'combo-signature' },
-    { ...newCombo({ name: 'Call to action', background: BRAND.royal, foreground: BRAND.white, accent: BRAND.lime, note: 'Primary buttons and links.' }), id: 'combo-cta' },
-    { ...newCombo({ name: 'The click', background: BRAND.lime, foreground: BRAND.ink, note: 'Highlights, progress, special actions.' }), id: 'combo-click' },
-    { ...newCombo({ name: 'Neon luxury', background: BRAND.dark, foreground: BRAND.ice, accent: BRAND.pink, note: 'Campaigns & creative drops.' }), id: 'combo-neon' },
-  ];
-  return { palettes, colors, combos };
+export function emptyBrand(): BrandProfile {
+  return { name: '', tagline: '', description: '', voice: [], logoBackground: '#FFFFFF', doList: [], dontList: [] };
 }
 
-function systemAssets(): Asset[] {
-  return [
-    {
-      ...newAsset({
-        name: 'KROOPY — logotype (horizontal)',
-        type: 'logo',
-        mime: 'image/png',
-        size: 315249,
-        src: '/brand/kroopy-logo.png',
-        width: 5613,
-        height: 1362,
-        brand: true,
-        system: true,
-        tags: ['logo', 'primary'],
-        note: 'Original file: /brand/original/1.png (untouched). Black artwork on transparent — place on light or lime backgrounds.',
-      }),
-      id: 'asset-kroopy-logo',
-    },
-    {
-      ...newAsset({
-        name: 'KROOPY — symbol',
-        type: 'logo',
-        mime: 'image/png',
-        size: 297113,
-        src: '/brand/kroopy-symbol.png',
-        width: 3983,
-        height: 2807,
-        brand: true,
-        system: true,
-        tags: ['logo', 'symbol'],
-        note: 'Original file: /brand/original/2.png (untouched). Use when space is compact (avatars, app icon, favicon).',
-      }),
-      id: 'asset-kroopy-symbol',
-    },
-  ];
+export function newBrandFont(p: Partial<BrandFont> = {}): BrandFont {
+  const id = uid();
+  return { ...base(), id, name: '', family: `brand-font-${id.slice(0, 8)}`, role: 'display', usage: '', sample: '', order: Date.now(), ...p };
 }
 
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export function freshDB(): DB {
-  const { palettes, colors, combos } = brandPalettes();
   return {
     version: DB_VERSION,
     ideas: [],
@@ -279,12 +224,14 @@ export function freshDB(): DB {
     timeLogs: [],
     events: [],
     analytics: [],
-    assets: systemAssets(),
+    assets: [],
     folders: [],
-    palettes,
-    colors,
-    combos,
+    palettes: [],
+    colors: [],
+    combos: [],
     references: [],
+    brandFonts: [],
+    brand: emptyBrand(),
     settings: defaultSettings(),
     firedReminders: {},
   };
@@ -297,8 +244,20 @@ export function migrate(raw: Partial<DB>): DB {
   db.settings = { ...fresh.settings, ...(raw.settings ?? {}) };
   db.settings.profile = { ...fresh.settings.profile, ...(raw.settings?.profile ?? {}) };
   if (!db.settings.platforms?.length) db.settings.platforms = fresh.settings.platforms;
-  // System brand assets always exist.
-  for (const a of fresh.assets) if (!db.assets.some((x) => x.id === a.id)) db.assets.unshift(a);
+  db.brand = { ...emptyBrand(), ...(raw.brand ?? {}) };
+  db.brandFonts = raw.brandFonts ?? [];
+
+  if ((raw.version ?? 1) < 2) {
+    // v1 → v2: the Brand Kit is the user's own brand — drop the app-identity seed, keep everything the user added.
+    const seeded = (ids: string[]) => new Set(ids);
+    const colorIds = seeded(LEGACY_SEED.colors);
+    db.colors = db.colors.filter((c) => !colorIds.has(c.id));
+    db.palettes = db.palettes.filter((p) => !LEGACY_SEED.palettes.includes(p.id) || db.colors.some((c) => c.paletteId === p.id));
+    db.combos = db.combos.filter((c) => !LEGACY_SEED.combos.includes(c.id));
+    db.assets = db.assets.filter((a) => !LEGACY_SEED.assets.includes(a.id));
+    db.references = db.references.map((r) => (r.assetId && LEGACY_SEED.assets.includes(r.assetId) ? { ...r, assetId: undefined } : r));
+    db.projects = db.projects.map((p) => ({ ...p, assetIds: p.assetIds.filter((id) => !LEGACY_SEED.assets.includes(id)) }));
+  }
   db.version = DB_VERSION;
   return db;
 }

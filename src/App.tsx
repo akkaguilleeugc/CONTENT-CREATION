@@ -9,6 +9,7 @@ import { resolveTheme, Shell } from '@/components/Shell';
 import { Button, Field, Input } from '@/components/ui';
 import { ModalHost } from '@/features/ModalHost';
 import { startReminders } from '@/features/reminders';
+import { useBrandFontRegistry } from '@/lib/brandFonts';
 import { buildSample } from '@/lib/sample';
 import { useStore } from '@/lib/store';
 import { toast, useUI } from '@/lib/ui';
@@ -180,6 +181,7 @@ function Welcome() {
 
 function Routed() {
   useShortcuts();
+  useBrandFontRegistry();
   const location = useLocation();
   return (
     <Shell>

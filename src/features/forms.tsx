@@ -10,8 +10,11 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox, ChipToggle, Field, Input, Segmented, Select, TagInput, Textarea, Button } from '@/components/ui';
 import { Modal } from '@/components/overlay';
+import { Dropzone, uploadFiles } from '@/features/assets';
+import { isFontFile } from '@/lib/brandFonts';
 import {
   EVENT_TYPES,
+  FONT_ROLES,
   FORMATS,
   GOAL_METRICS,
   GOAL_PERIODS,
@@ -27,6 +30,7 @@ import {
   WORK_ACTIVITIES,
 } from '@/lib/constants';
 import {
+  newBrandFont,
   newAnalytics,
   newColor,
   newCombo,
@@ -43,6 +47,7 @@ import { goalValue } from '@/lib/metrics';
 import { snapshot, useStore } from '@/lib/store';
 import { useShallow } from 'zustand/react/shallow';
 import type {
+  BrandFont,
   AnalyticsRecord,
   CalendarEvent,
   ContentProject,
@@ -1060,10 +1065,16 @@ export function PaletteModal({ id }: { id?: string }) {
   const store = useStore.getState();
   const save = () => {
     if (!name.trim()) return setErr('Name the palette.');
-    if (existing) store.update('palettes', existing.id, { name: name.trim(), description });
-    else store.insert('palettes', { id: uid(), name: name.trim(), description, order: Date.now() });
-    closeModal();
-    toast(existing ? 'Palette updated' : 'Palette created');
+    if (existing) {
+      store.update('palettes', existing.id, { name: name.trim(), description });
+      closeModal();
+      toast('Palette updated');
+    } else {
+      const id = uid();
+      store.insert('palettes', { id, name: name.trim(), description, order: Date.now() });
+      toast('Palette created', { description: 'Now add its first colour.' });
+      openModal({ kind: 'color', paletteId: id });
+    }
   };
   return (
     <Modal
@@ -1106,7 +1117,9 @@ export function PaletteModal({ id }: { id?: string }) {
 export function ComboModal({ id }: { id?: string }) {
   const existing = useStore((s) => (id ? s.combos.find((c) => c.id === id) : undefined));
   const colors = useStore((s) => s.colors);
-  const { v, set, errors, setErrors } = useFormState(existing ?? newCombo());
+  const { v, set, errors, setErrors } = useFormState(
+    existing ?? (colors.length ? newCombo({ background: colors[0]!.hex, foreground: colors[1]?.hex ?? readableOn(colors[0]!.hex) }) : newCombo()),
+  );
   const store = useStore.getState();
   const ratio = contrastRatio(v.background, v.foreground);
   const save = () => {
@@ -1260,3 +1273,170 @@ export function ReferenceModal({ id }: { id?: string }) {
   );
 }
 
+
+/* ════════════════════════ Your brand ════════════════════════ */
+export function BrandProfileModal() {
+  const brand = useStore((s) => s.brand);
+  const [v, setV] = useState(brand);
+  const set = <K extends keyof typeof v>(k: K, val: (typeof v)[K]) => setV((p) => ({ ...p, [k]: val }));
+  const save = () => {
+    useStore.getState().setBrand({ ...v, name: v.name.trim(), tagline: v.tagline.trim() });
+    closeModal();
+    toast('Brand updated');
+  };
+  return (
+    <Modal
+      open
+      onClose={closeModal}
+      size="lg"
+      title="Your brand"
+      description="Everything here is yours — the Brand Kit is built from what you enter."
+      footer={
+        <Foot>
+          <Button onClick={closeModal}>Cancel</Button>
+          <Button variant="primary" onClick={save}>
+            Save brand
+          </Button>
+        </Foot>
+      }
+    >
+      <form className="form" onSubmit={(e) => (e.preventDefault(), save())}>
+        <div className="form-grid">
+          <Field label="Brand name">
+            <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder="Your brand" autoFocus />
+          </Field>
+          <Field label="Tagline">
+            <Input value={v.tagline} onChange={(e) => set('tagline', e.target.value)} placeholder="One line that sums it up" />
+          </Field>
+          <Field label="Description" className="span-2">
+            <Textarea autoGrow value={v.description} onChange={(e) => set('description', e.target.value)} placeholder="What the brand stands for, who it speaks to, how it should feel…" />
+          </Field>
+          <Field label="Tone of voice" className="span-2" hint="Keywords — e.g. bold, warm, playful.">
+            <TagInput value={v.voice} onChange={(t) => set('voice', t)} placeholder="Add a keyword…" />
+          </Field>
+          <Field label="Logo preview background" className="span-2" hint="The surface your logo is shown on in the Brand Kit.">
+            <div className="row">
+              <input type="color" value={isHex(v.logoBackground) ? normalizeHex(v.logoBackground) : '#FFFFFF'} onChange={(e) => set('logoBackground', e.target.value.toUpperCase())} aria-label="Logo background" />
+              <Input value={v.logoBackground} onChange={(e) => set('logoBackground', e.target.value)} className="mono" style={{ maxWidth: 160 }} />
+              <BrandColorPicks onPick={(hex) => set('logoBackground', hex)} />
+            </div>
+          </Field>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function BrandColorPicks({ onPick }: { onPick: (hex: string) => void }) {
+  const colors = useStore((s) => s.colors);
+  if (!colors.length) return null;
+  return (
+    <div className="chips">
+      {colors.slice(0, 10).map((c) => (
+        <button key={c.id} type="button" className="swatch-btn" style={{ background: c.hex }} title={`${c.name} ${c.hex}`} aria-label={`Use ${c.name}`} onClick={() => onPick(c.hex)} />
+      ))}
+    </div>
+  );
+}
+
+export function BrandFontModal({ id }: { id?: string }) {
+  const existing = useStore((s) => (id ? s.brandFonts.find((f) => f.id === id) : undefined));
+  const asset = useStore((s) => (existing?.assetId ? s.assets.find((a) => a.id === existing.assetId) : undefined));
+  const [v, setV] = useState<BrandFont>(existing ?? newBrandFont());
+  const [file, setFile] = useState<File | null>(null);
+  const [source, setSource] = useState<'file' | 'installed'>(existing && !existing.assetId ? 'installed' : 'file');
+  const [err, setErr] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const set = <K extends keyof BrandFont>(k: K, val: BrandFont[K]) => setV((p) => ({ ...p, [k]: val }));
+  const store = useStore.getState();
+
+  const save = async () => {
+    const e: Record<string, string> = {};
+    if (!v.name.trim()) e.name = 'Name the font.';
+    if (source === 'file' && !file && !asset) e.file = 'Upload the font file (.otf, .ttf, .woff or .woff2).';
+    if (source === 'installed' && !v.family.trim()) e.family = 'Enter the font family name exactly as installed.';
+    if (Object.keys(e).length) return setErr(e);
+    setBusy(true);
+    let rec: BrandFont = { ...v, name: v.name.trim() };
+    if (source === 'file' && file) {
+      const [a] = await uploadFiles([file], { type: 'font', brand: true, tags: ['font'] });
+      if (!a) return setBusy(false);
+      rec = { ...rec, assetId: a.id, family: existing?.assetId ? `brand-font-${uid().slice(0, 8)}` : rec.family };
+    }
+    if (source === 'installed') rec = { ...rec, assetId: undefined, family: v.family.trim() };
+    if (existing) store.update('brandFonts', existing.id, rec);
+    else store.insert('brandFonts', rec);
+    setBusy(false);
+    closeModal();
+    toast(existing ? 'Font updated' : 'Font added', { description: rec.name });
+  };
+
+  return (
+    <Modal
+      open
+      onClose={closeModal}
+      title={existing ? 'Edit font' : 'Add a brand font'}
+      description="Upload your font files — they are stored privately and used to render every specimen."
+      footer={
+        <Foot
+          onDelete={
+            existing
+              ? async () => {
+                  if (await confirmDelete(existing.name)) {
+                    store.remove('brandFonts', existing.id);
+                    closeModal();
+                    toast('Font removed', { description: 'The file stays in your Asset Library.' });
+                  }
+                }
+              : undefined
+          }
+        >
+          <Button onClick={closeModal}>Cancel</Button>
+          <Button variant="primary" loading={busy} onClick={save}>
+            {existing ? 'Save font' : 'Add font'}
+          </Button>
+        </Foot>
+      }
+    >
+      <form className="form" onSubmit={(e) => (e.preventDefault(), void save())}>
+        <div className="form-grid">
+          <Field label="Name" required error={err.name}>
+            <Input value={v.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Brand Sans Bold" autoFocus invalid={!!err.name} />
+          </Field>
+          <Field label="Role">
+            <Select value={v.role} onChange={(e) => set('role', e.target.value as BrandFont['role'])} options={FONT_ROLES.map((r) => ({ value: r.id, label: `${r.label} — ${r.hint}` }))} />
+          </Field>
+        </div>
+        <Field label="Source">
+          <Segmented
+            label="Font source"
+            value={source}
+            onChange={setSource}
+            options={[
+              { value: 'file', label: 'Upload file' },
+              { value: 'installed', label: 'Installed on this device' },
+            ]}
+          />
+        </Field>
+        {source === 'file' ? (
+          <Field label="Font file" error={err.file} hint={asset && !file ? `Current file: ${asset.name}` : undefined}>
+            <Dropzone accept=".otf,.ttf,.woff,.woff2,font/*" onFiles={(f) => setFile(f.find((x) => isFontFile(x)) ?? null)}>
+              <span className="dropzone__title">{file ? file.name : asset ? 'Drop a file to replace it' : 'Drop a font file or click to browse'}</span>
+              <span className="dropzone__sub">.otf · .ttf · .woff · .woff2</span>
+            </Dropzone>
+          </Field>
+        ) : (
+          <Field label="CSS family name" error={err.family} hint="Exactly as installed, e.g. Helvetica Neue.">
+            <Input value={v.family.startsWith('brand-font-') ? '' : v.family} onChange={(e) => set('family', e.target.value)} invalid={!!err.family} />
+          </Field>
+        )}
+        <Field label="Usage">
+          <Textarea value={v.usage} onChange={(e) => set('usage', e.target.value)} placeholder="Where and how to use it — sizes, weights, do’s and don’ts." style={{ minHeight: 70 }} />
+        </Field>
+        <Field label="Specimen text">
+          <Input value={v.sample} onChange={(e) => set('sample', e.target.value)} placeholder="A phrase that shows off the font" />
+        </Field>
+      </form>
+    </Modal>
+  );
+}

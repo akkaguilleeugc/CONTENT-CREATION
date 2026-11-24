@@ -1,6 +1,8 @@
 import { useUI } from '@/lib/ui';
 import { AssetModal, UploadModal } from './assets';
 import {
+  BrandFontModal,
+  BrandProfileModal,
   ColorModal,
   ComboModal,
   EventModal,
@@ -52,5 +54,9 @@ export function ModalHost() {
       return <ComboModal key={key} id={m.id} />;
     case 'palette':
       return <PaletteModal key={key} id={m.id} />;
+    case 'brand':
+      return <BrandProfileModal key={key} />;
+    case 'font':
+      return <BrandFontModal key={key} id={m.id} />;
   }
 }

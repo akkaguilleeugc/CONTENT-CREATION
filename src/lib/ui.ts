@@ -24,7 +24,9 @@ export type ModalSpec =
   | { kind: 'reference'; id?: string }
   | { kind: 'color'; id?: string; paletteId?: string }
   | { kind: 'combo'; id?: string }
-  | { kind: 'palette'; id?: string };
+  | { kind: 'palette'; id?: string }
+  | { kind: 'brand' }
+  | { kind: 'font'; id?: string };
 
 export interface Toast {
   id: string;

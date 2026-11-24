@@ -15,6 +15,7 @@ import {
 } from '@dnd-kit/core';
 import { useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { GlassSurface } from './Glass';
 
 export interface KanbanColumn {
   id: string;
@@ -119,7 +120,11 @@ export function KanbanBoard<T extends { id: string }>({
         })}
       </div>
       <DragOverlay dropAnimation={{ duration: 220, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }}>
-        {active ? <div className="kcard kcard--overlay">{renderCard(active)}</div> : null}
+        {active ? (
+          <GlassSurface radius={14} tone="lens" className="kcard kcard--overlay">
+            {renderCard(active)}
+          </GlassSurface>
+        ) : null}
       </DragOverlay>
     </DndContext>
   );

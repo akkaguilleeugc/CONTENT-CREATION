@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { freshDB, migrate, newProject, newTask } from './factories';
 import { announceSave, forgetFileUrl, localData, localFiles, onRemoteSave } from './persistence';
 import type {
+  BrandProfile,
   Collection,
   ContentProject,
   DB,
@@ -20,6 +21,7 @@ interface Actions {
   update<C extends Collection>(c: C, id: string, patch: Partial<RecordOf<C>>): void;
   remove<C extends Collection>(c: C, id: string): void;
   setSettings(patch: Partial<Settings>): void;
+  setBrand(patch: Partial<BrandProfile>): void;
 
   convertIdea(ideaId: string): ContentProject | null;
   duplicateIdea(ideaId: string): void;
@@ -103,6 +105,9 @@ export const useStore = create<Store>()((set, get) => {
     },
     setSettings(patch) {
       commit((s) => ({ settings: { ...s.settings, ...patch } }));
+    },
+    setBrand(patch) {
+      commit((s) => ({ brand: { ...s.brand, ...patch, updatedAt: nowISO() } }));
     },
 
     convertIdea(ideaId) {
@@ -280,6 +285,12 @@ export const useStore = create<Store>()((set, get) => {
             : p,
         ),
         references: s.references.map((r) => (r.assetId === id ? { ...r, assetId: undefined } : r)),
+        brandFonts: s.brandFonts.map((f) => (f.assetId === id ? { ...f, assetId: undefined } : f)),
+        brand: {
+          ...s.brand,
+          logoAssetId: s.brand.logoAssetId === id ? undefined : s.brand.logoAssetId,
+          symbolAssetId: s.brand.symbolAssetId === id ? undefined : s.brand.symbolAssetId,
+        },
         settings:
           s.settings.profile.avatarAssetId === id
             ? { ...s.settings, profile: { ...s.settings.profile, avatarAssetId: undefined } }
@@ -383,7 +394,7 @@ export const useStore = create<Store>()((set, get) => {
 /* ── Hydration + save loop ─────────────────────────────────── */
 const DATA_KEYS: (keyof DB)[] = [
   'version', 'ideas', 'projects', 'tasks', 'habits', 'habitLogs', 'goals', 'goalProgress', 'timeLogs',
-  'events', 'analytics', 'assets', 'folders', 'palettes', 'colors', 'combos', 'references', 'settings', 'firedReminders',
+  'events', 'analytics', 'assets', 'folders', 'palettes', 'colors', 'combos', 'references', 'brandFonts', 'brand', 'settings', 'firedReminders',
 ];
 
 export function snapshot(s: Store = useStore.getState()): DB {

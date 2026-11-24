@@ -1,5 +1,6 @@
-import { Download, FileAudio, FileText, FileVideo, ImageIcon, Trash2, UploadCloud } from 'lucide-react';
-import { useRef, useState, type ReactNode } from 'react';
+import { Download, FileAudio, FileText, FileVideo, ImageIcon, Trash2, Type, UploadCloud } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { isFontFile, previewFamily } from '@/lib/brandFonts';
 import { ChipToggle, Field, Input, Select, Switch, TagInput, Textarea, Button } from '@/components/ui';
 import { Modal } from '@/components/overlay';
 import { ASSET_TYPES } from '@/lib/constants';
@@ -14,6 +15,7 @@ import { cn, downloadBlob, fmtBytes, fmtDate, imageSize, uid } from '@/lib/utils
 const MAX_BYTES = 200 * 1024 * 1024;
 
 export function guessType(file: File): AssetType {
+  if (isFontFile(file)) return 'font';
   if (file.type.startsWith('image/')) return 'image';
   if (file.type.startsWith('video/')) return 'video';
   if (file.type.startsWith('audio/')) return 'audio';
@@ -40,12 +42,13 @@ export async function uploadFiles(files: File[], defaults: Partial<Asset> & { pr
     const dims = await imageSize(file);
     const { projectId, ...rest } = defaults;
     const baseType = guessType(file);
-    const type = rest.type && (baseType === 'image' || rest.type === 'document' || rest.type === baseType) ? rest.type : baseType;
+    // A requested type wins for images (logo, cover…) and documents; fonts, video and audio keep their real kind.
+    const type = rest.type && baseType !== 'font' && (baseType === 'image' || rest.type === 'document' || rest.type === baseType) ? rest.type : baseType;
     const asset = newAsset({
       ...rest,
       type,
       name: file.name.replace(/\.[^.]+$/, ''),
-      mime: file.type || 'application/octet-stream',
+      mime: file.type || (baseType === 'font' ? `font/${file.name.split('.').pop()?.toLowerCase()}` : 'application/octet-stream'),
       size: file.size,
       blobKey,
       width: dims?.width,
@@ -73,6 +76,7 @@ export async function downloadAsset(a: Asset) {
 }
 
 export function TypeIcon({ a }: { a: Pick<Asset, 'mime' | 'type'> }) {
+  if (a.type === 'font' || a.mime.startsWith('font/')) return <Type />;
   if (a.mime.startsWith('video/')) return <FileVideo />;
   if (a.mime.startsWith('audio/')) return <FileAudio />;
   if (a.mime.startsWith('image/')) return <ImageIcon />;
@@ -89,6 +93,8 @@ export function AssetThumb({ asset, className, style, fit = 'cover' }: { asset?:
     <div className={cn('thumb', isLogo && 'thumb--logo', className)} style={style}>
       {asset && url && isImage ? (
         <img src={url} alt={asset.name} loading="lazy" style={{ objectFit: isLogo ? 'contain' : fit, padding: isLogo ? '18%' : undefined }} />
+      ) : asset && asset.type === 'font' ? (
+        <FontThumb asset={asset} />
       ) : asset && url && isVideo ? (
         <video src={url} muted playsInline preload="metadata" />
       ) : asset ? (
@@ -98,6 +104,30 @@ export function AssetThumb({ asset, className, style, fit = 'cover' }: { asset?:
       )}
     </div>
   );
+}
+
+function FontSample({ asset }: { asset: Asset }) {
+  const [family, setFamily] = useState<string | null>(null);
+  useEffect(() => void previewFamily(asset).then(setFamily), [asset]);
+  return (
+    <div style={{ fontFamily: family ? `"${family}"` : undefined, fontSize: 22, textAlign: 'center', lineHeight: 1.4 }}>
+      ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      <br />
+      abcdefghijklmnopqrstuvwxyz 0123456789
+    </div>
+  );
+}
+
+function FontThumb({ asset, size = 44 }: { asset: Asset; size?: number }) {
+  const [family, setFamily] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    previewFamily(asset).then((f) => alive && setFamily(f));
+    return () => {
+      alive = false;
+    };
+  }, [asset]);
+  return <span style={{ fontFamily: family ? `"${family}"` : undefined, fontSize: size, lineHeight: 1 }}>Aa</span>;
 }
 
 /* ════════════════════════ Upload dialog ════════════════════════ */
@@ -139,7 +169,7 @@ export function Dropzone({ onFiles, accept, children, compact }: { onFiles: (f: 
         <>
           <UploadCloud />
           <div className="dropzone__title">Drop files here or click to browse</div>
-          <div className="dropzone__sub">Images, video, audio and documents · up to 200 MB each · stored privately in this browser</div>
+          <div className="dropzone__sub">Images, video, audio, fonts and documents · up to 200 MB each · stored privately in this browser</div>
         </>
       )}
     </div>
@@ -289,7 +319,13 @@ export function AssetModal({ id }: { id: string }) {
             </div>
           )}
           {url && asset.mime === 'application/pdf' && <iframe src={url} title={asset.name} />}
-          {(!url || (!/^(image|video|audio)\//.test(asset.mime) && asset.mime !== 'application/pdf')) && (
+          {asset.type === 'font' && (
+            <div className="col" style={{ alignItems: 'center', gap: 14, padding: 24, color: 'var(--text)' }}>
+              <FontThumb asset={asset} size={120} />
+              <FontSample asset={asset} />
+            </div>
+          )}
+          {asset.type !== 'font' && (!url || (!/^(image|video|audio)\//.test(asset.mime) && asset.mime !== 'application/pdf')) && (
             <div className="col" style={{ alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>
               <FileText size={40} />
               No inline preview for this file type — download to open it.
