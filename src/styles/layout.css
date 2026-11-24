@@ -848,3 +848,181 @@
   background: var(--pink);
   box-shadow: 0 0 0 2px var(--bg);
 }
+
+/* ═══════════════ Installed-app comfort ═══════════════ */
+/* Touch devices and phones: 16px text in fields so iOS never zooms in when you tap one. */
+@media (pointer: coarse), (max-width: 767px) {
+  .input,
+  .textarea,
+  .select,
+  .tag-input input,
+  .quick-add input,
+  .palette__input input,
+  .checklist__input {
+    font-size: 16px !important; /* below 16px iOS zooms the page on focus */
+  }
+  .input--sm,
+  .select--sm {
+    font-size: 16px !important; /* below 16px iOS zooms the page on focus */
+    height: 38px;
+  }
+}
+/* Native feel: no text selection or callouts on chrome, no rubber-band scroll in the installed app. */
+.btn,
+.nav__item,
+.bottomnav,
+.topbar,
+.tab,
+.seg__btn,
+.chip,
+.kcard,
+.cal-chip,
+.menu__item {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+html.standalone,
+html.standalone body {
+  overscroll-behavior-y: none;
+}
+/* Respect the notch / Dynamic Island and the home indicator on tablets and landscape phones too. */
+.sidebar {
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  padding-left: max(12px, env(safe-area-inset-left));
+}
+@media (min-width: 768px) {
+  .app__main {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+/* While typing on a phone, the tab bar steps aside so the keyboard has room. */
+@media (max-width: 767px) {
+  body.kb-open .bottomnav {
+    transform: translateY(calc(100% + 30px));
+    pointer-events: none;
+  }
+  .bottomnav {
+    transition: transform 280ms var(--ease-out);
+  }
+  .modal__drag {
+    touch-action: none;
+    cursor: grab;
+  }
+  .modal--dragging {
+    transition: none;
+  }
+  .modal:not(.modal--dragging) {
+    transition: transform 320ms var(--ease-out);
+  }
+}
+
+/* Install card */
+.install {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.install b {
+  display: block;
+  font-size: 14px;
+}
+.install span {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.install .badge {
+  margin-left: auto;
+  color: var(--positive-text);
+}
+.install--steps {
+  flex-direction: column;
+  align-items: stretch;
+}
+.install__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  counter-reset: step;
+}
+.install__list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.install .install__text {
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.install__list li b {
+  display: inline;
+  font-size: inherit;
+  color: var(--text);
+}
+.install__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--accent-soft);
+  color: var(--accent-text) !important;
+}
+.install__icon svg {
+  width: 17px;
+  height: 17px;
+}
+.install-hint {
+  position: relative;
+  margin-bottom: 16px;
+}
+.install-hint .install {
+  padding-right: 44px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(47, 91, 255, 0.22), transparent 60%),
+    var(--surface-2);
+}
+.install-hint__x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+}
+.app-perks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.app-perks li {
+  font-size: 12.5px;
+  color: var(--text-3);
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.app-perks b {
+  display: block;
+  color: var(--text);
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+@media (max-width: 560px) {
+  .app-perks {
+    grid-template-columns: 1fr;
+  }
+}

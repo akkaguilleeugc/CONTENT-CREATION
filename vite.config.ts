@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
+import { serviceWorker } from './pwa/sw-plugin';
 
 /** Serve the static landing page (public/landing/index.html) at /landing in dev and preview. */
 function landingRoute(): Plugin {
@@ -16,7 +17,7 @@ function landingRoute(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), landingRoute()],
+  plugins: [react(), landingRoute(), serviceWorker()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

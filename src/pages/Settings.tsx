@@ -1,6 +1,7 @@
-import { Bell, Database, Download, Keyboard, Layers, ListChecks, Palette, Plug, Plus, RotateCcw, Sparkles, Trash2, Upload, User, X } from 'lucide-react';
+import { Smartphone, Bell, Database, Download, Keyboard, Layers, ListChecks, Palette, Plug, Plus, RotateCcw, Sparkles, Trash2, Upload, User, X } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BrandMark, Wordmark } from '@/components/brand';
+import { InstallGuide } from '@/components/Install';
 import { MOD, Avatar } from '@/components/Shell';
 import { Button, Field, Input, Segmented, Switch, Textarea } from '@/components/ui';
 import { uploadFiles } from '@/features/assets';
@@ -14,6 +15,7 @@ import { confirmDialog, toast } from '@/lib/ui';
 import { cn, downloadBlob, fmtBytes, uid } from '@/lib/utils';
 
 const SECTIONS = [
+  { id: 'app', label: 'App', icon: Smartphone },
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -81,7 +83,7 @@ export default function SettingsPage() {
         files[a.blobKey] = await blobToDataUrl(b);
       }
       const payload = { app: 'creator-os', version: db.version, exportedAt: new Date().toISOString(), db, files };
-      downloadBlob(new Blob([JSON.stringify(payload)], { type: 'application/json' }), `creator-os-backup-${new Date().toISOString().slice(0, 10)}.json`);
+      downloadBlob(new Blob([JSON.stringify(payload)], { type: 'application/json' }), `kroopy-backup-${new Date().toISOString().slice(0, 10)}.json`);
       toast('Backup downloaded', { description: `${Object.keys(files).length} files included` });
     } catch (e) {
       console.error(e);
@@ -94,7 +96,7 @@ export default function SettingsPage() {
   const importData = async (file: File) => {
     try {
       const json = JSON.parse(await file.text());
-      if (json?.app !== 'creator-os' || !json.db) throw new Error('Not a Creator OS backup');
+      if (json?.app !== 'creator-os' || !json.db) throw new Error('Not a KROOPY backup');
       if (!(await confirmDialog({ title: 'Replace all data with this backup?', description: `Backup from ${new Date(json.exportedAt).toLocaleString()}. Your current data will be overwritten.`, confirmLabel: 'Restore backup' }))) return;
       setBusy(true);
       for (const [key, url] of Object.entries(json.files ?? {})) {
@@ -137,6 +139,16 @@ export default function SettingsPage() {
           ))}
         </nav>
         <div className="settings__content">
+          <Section id="app" title="KROOPY on your phone" desc="Install it from the browser to get the KROOPY icon on your home screen, a full-screen app, offline access, a task badge, shortcuts and notifications.">
+            <InstallGuide />
+            <ul className="app-perks">
+              <li><b>Offline</b> Everything is stored on this device — the installed app opens instantly without a connection.</li>
+              <li><b>Shortcuts</b> Long-press the icon for New idea, New video, New task and Calendar.</li>
+              <li><b>Share to KROOPY</b> On Android, share a TikTok, reel or link from any app and it lands as a new idea.</li>
+              <li><b>Badge</b> The icon shows how many tasks are due today or overdue (after allowing notifications).</li>
+            </ul>
+          </Section>
+
           <Section id="profile" title="Profile">
             <div className="row gap-16" style={{ marginBottom: 16 }}>
               <Avatar size={64} />
@@ -193,11 +205,11 @@ export default function SettingsPage() {
             </div>
           </Section>
 
-          <Section id="notifications" title="Notifications" desc="Reminders for tasks, events, habits and scheduled posts fire while Creator OS is open.">
+          <Section id="notifications" title="Notifications" desc="Reminders for tasks, events, habits and scheduled posts fire while KROOPY is open.">
             <div className="setting-row">
               <div>
                 <b>Browser notifications</b>
-                <span>{perm === 'granted' ? 'Permission granted.' : perm === 'denied' ? 'Blocked in your browser settings.' : perm === 'unsupported' ? 'Not supported in this browser.' : 'In-app toasts are always on.'}</span>
+                <span>{perm === 'granted' ? 'Permission granted — reminders also show as system notifications and the icon shows a task badge.' : perm === 'denied' ? 'Blocked in your browser settings.' : perm === 'unsupported' ? 'On iPhone, add KROOPY to your Home Screen first — notifications work in the installed app.' : 'In-app toasts are always on.'}</span>
               </div>
               {perm === 'granted' ? (
                 <Switch checked={settings.notifications} onChange={(v) => setSettings({ notifications: v })} label="Browser notifications" />
@@ -244,7 +256,7 @@ export default function SettingsPage() {
             </div>
           </Section>
 
-          <Section id="integrations" title="Integrations" desc="No platform is connected. Creator OS never simulates API data — statistics are entered manually until an official integration is configured.">
+          <Section id="integrations" title="Integrations" desc="No platform is connected. KROOPY never simulates API data — statistics are entered manually until an official integration is configured.">
             <div className="integrations">
               {[
                 { name: 'TikTok', api: 'TikTok Display API / Research API', color: '#FF0055' },
@@ -277,7 +289,7 @@ export default function SettingsPage() {
               <Button size="sm" icon={<Download />} loading={busy} onClick={exportData}>Export</Button>
             </div>
             <div className="setting-row">
-              <div><b>Import backup</b><span>Replaces current data with a Creator OS backup file.</span></div>
+              <div><b>Import backup</b><span>Replaces current data with a KROOPY backup file.</span></div>
               <Button size="sm" icon={<Upload />} disabled={busy} onClick={() => importRef.current?.click()}>Import</Button>
               <input ref={importRef} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void importData(f); }} />
             </div>
@@ -296,7 +308,7 @@ export default function SettingsPage() {
                 variant="danger"
                 icon={<RotateCcw />}
                 onClick={async () => {
-                  if (!(await confirmDialog({ title: 'Reset Creator OS?', description: 'All ideas, videos, tasks, trackers, analytics and files will be deleted from this device.', confirmLabel: 'Reset everything' }))) return;
+                  if (!(await confirmDialog({ title: 'Reset KROOPY?', description: 'All ideas, videos, tasks, trackers, analytics and files will be deleted from this device.', confirmLabel: 'Reset everything' }))) return;
                   for (const a of assets) if (a.blobKey) await localFiles.remove(a.blobKey);
                   await store.resetAll();
                   toast('Workspace reset');
@@ -334,7 +346,7 @@ export default function SettingsPage() {
             <BrandMark size={44} />
             <div className="grow">
               <Wordmark height={20} />
-              <p className="subtle" style={{ fontSize: 12, marginTop: 6 }}>Creator OS 1.0 · local-first (IndexedDB) · Supabase-ready schema</p>
+              <p className="subtle" style={{ fontSize: 12, marginTop: 6 }}>KROOPY 1.0 · local-first (IndexedDB) · works offline · Supabase-ready schema</p>
             </div>
             <span className={cn('accent-script')} style={{ color: 'var(--positive-text)', fontSize: 22 }}>made to create</span>
           </div>

@@ -3,17 +3,18 @@ import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-ro
 import { QUICK_ACTIONS } from '@/components/actions';
 import { BrandMark, Wordmark } from '@/components/brand';
 import { CommandPalette, QuickCreate } from '@/components/CommandPalette';
-import { NAV } from '@/components/nav';
+import { NAV, titleFor } from '@/components/nav';
 import { ConfirmHost, Modal, Skeleton, Toaster } from '@/components/overlay';
 import { resolveTheme, Shell } from '@/components/Shell';
 import { Button, Field, Input } from '@/components/ui';
 import { ModalHost } from '@/features/ModalHost';
 import { startReminders } from '@/features/reminders';
 import { useBrandFontRegistry } from '@/lib/brandFonts';
+import { setBadge } from '@/lib/pwa';
 import { buildSample } from '@/lib/sample';
 import { useStore } from '@/lib/store';
-import { toast, useUI } from '@/lib/ui';
-import { isTypingTarget } from '@/lib/utils';
+import { openModal, toast, useUI } from '@/lib/ui';
+import { isTypingTarget, todayStr } from '@/lib/utils';
 
 const Overview = lazy(() => import('@/pages/Overview'));
 const Ideas = lazy(() => import('@/pages/Ideas'));
@@ -146,10 +147,10 @@ function Welcome() {
     if (withSample) {
       st.loadSample(buildSample(settings));
       toast('Sample data loaded', { description: 'Remove it any time from Settings → Data.' });
-    } else toast('Your Creator OS is ready', { description: 'Press N to create anything.' });
+    } else toast('KROOPY is ready', { description: 'Press N to create anything.' });
   };
   return (
-    <Modal open onClose={() => finish(false)} title={<span className="row gap-12"><BrandMark size={36} /> Welcome to Creator OS</span>} description="Your private operating system for ideas, production, publishing and growth." size="md">
+    <Modal open onClose={() => finish(false)} title={<span className="row gap-12"><BrandMark size={36} /> Welcome to KROOPY</span>} description="Your private operating system for ideas, production, publishing and growth." size="md">
       <div className="welcome">
         <div className="welcome__hero">
           <Wordmark height={34} plate="lime" />
@@ -179,9 +180,81 @@ function Welcome() {
   );
 }
 
+/** Home-screen shortcuts open straight into an action: /?action=idea|video|task|event. */
+function useLaunchActions() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const action = params.get('action');
+    if (!action && !params.has('source')) return;
+    const kinds = { idea: 'idea', video: 'project', task: 'task', event: 'event' } as const;
+    if (action && action in kinds) openModal({ kind: kinds[action as keyof typeof kinds] });
+    navigate(location.pathname, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
+/** Android share sheet → KROOPY: whatever you share (a TikTok, a reel, an article) becomes an idea. */
+function ShareTarget() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const text = params.get('text') ?? '';
+    const url = params.get('url') || text.match(/https?:\/\/\S+/)?.[0] || '';
+    const description = text.replace(url, '').trim();
+    let host = '';
+    try {
+      host = url ? new URL(url).hostname.replace(/^www\./, '') : '';
+    } catch {
+      /* not a URL */
+    }
+    const title = (params.get('title') || description.split('\n')[0] || (host ? `Idea from ${host}` : 'Shared idea')).slice(0, 120);
+    navigate('/ideas', { replace: true });
+    openModal({ kind: 'idea', defaults: { title, description: description === title ? '' : description, reference: url } });
+  }, [navigate]);
+  return null;
+}
+
+/** Overdue + due-today tasks on the home-screen icon. */
+function useAppBadge() {
+  const tasks = useStore((s) => s.tasks);
+  useEffect(() => {
+    const today = todayStr();
+    setBadge(tasks.filter((t) => t.status !== 'done' && t.dueDate && t.dueDate <= today).length);
+  }, [tasks]);
+}
+
+/** Phones: track when the on-screen keyboard is likely open (a text field has focus). */
+function useKeyboardAware() {
+  useEffect(() => {
+    const isField = (el: EventTarget | null) => el instanceof HTMLElement && (el.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]), textarea, select') || el.isContentEditable);
+    const onIn = (e: FocusEvent) => isField(e.target) && document.body.classList.add('kb-open');
+    const onOut = () => setTimeout(() => !isField(document.activeElement) && document.body.classList.remove('kb-open'), 60);
+    document.addEventListener('focusin', onIn);
+    document.addEventListener('focusout', onOut);
+    return () => {
+      document.removeEventListener('focusin', onIn);
+      document.removeEventListener('focusout', onOut);
+    };
+  }, []);
+}
+
+function useDocumentTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const t = titleFor(pathname);
+    document.title = pathname === '/' || t === 'KROOPY' ? 'KROOPY' : `${t} · KROOPY`;
+  }, [pathname]);
+}
+
 function Routed() {
   useShortcuts();
   useBrandFontRegistry();
+  useLaunchActions();
+  useAppBadge();
+  useDocumentTitle();
+  useKeyboardAware();
   const location = useLocation();
   return (
     <Shell>
@@ -200,6 +273,7 @@ function Routed() {
             <Route path="/brand" element={<BrandKit />} />
             <Route path="/assets" element={<Assets />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/share" element={<ShareTarget />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

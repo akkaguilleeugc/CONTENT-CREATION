@@ -2,6 +2,7 @@ import '@fontsource-variable/inter';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { initPWA } from './lib/pwa';
 import { initStore, useStore } from './lib/store';
 import './styles/tokens.css';
 import './styles/base.css';
@@ -16,6 +17,8 @@ root.render(
     <App />
   </StrictMode>,
 );
+
+initPWA();
 
 initStore().catch((e) => {
   console.error('[creator-os] failed to load data', e);

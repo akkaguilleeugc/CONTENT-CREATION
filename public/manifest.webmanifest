@@ -1,0 +1,38 @@
+{
+  "id": "/",
+  "name": "KROOPY",
+  "short_name": "KROOPY",
+  "description": "Your creator OS — ideas, production, calendar, tasks, habits, goals, analytics and brand kit in one place. Works offline.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/?source=homescreen",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0F14",
+  "theme_color": "#0B0F14",
+  "categories": ["productivity", "business", "lifestyle"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/badge-96.png", "sizes": "96x96", "type": "image/png", "purpose": "monochrome" }
+  ],
+  "shortcuts": [
+    { "name": "New idea", "short_name": "Idea", "description": "Capture an idea", "url": "/?action=idea", "icons": [{ "src": "/icons/shortcut-idea.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "New video", "short_name": "Video", "description": "Start a video production", "url": "/?action=video", "icons": [{ "src": "/icons/shortcut-video.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "New task", "short_name": "Task", "description": "Add a task", "url": "/?action=task", "icons": [{ "src": "/icons/shortcut-task.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Calendar", "short_name": "Calendar", "description": "Open the editorial calendar", "url": "/calendar", "icons": [{ "src": "/icons/shortcut-calendar.png", "sizes": "192x192", "type": "image/png" }] }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  },
+  "screenshots": [
+    { "src": "/icons/screenshot-narrow.jpg", "sizes": "780x1688", "type": "image/jpeg", "form_factor": "narrow", "label": "Today, pipeline and weekly progress" },
+    { "src": "/icons/screenshot-wide.jpg", "sizes": "1440x900", "type": "image/jpeg", "form_factor": "wide", "label": "Overview on desktop" }
+  ]
+}

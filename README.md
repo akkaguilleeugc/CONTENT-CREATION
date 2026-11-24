@@ -1,4 +1,4 @@
-# Creator OS · KROOPY
+# KROOPY
 
 Sistema operativo personal para un creador de contenido: ideas, producción de vídeos, calendario editorial, tareas, hábitos, objetivos, analítica, identidad de marca y biblioteca de recursos — en una sola aplicación web privada, responsive y con persistencia real.
 
@@ -37,6 +37,21 @@ La interfaz de Creator OS usa la identidad KROOPY (la marca de la herramienta). 
 - **Colores de la app** (`src/styles/tokens.css`): Ink `#0B0F14`, Navy `#0B1A5C`, Royal `#2F5BFF`, Lime `#D4F53C`, White; secundarios Ice `#EFF8FF`, Neon Lime `#BBEF1F`, Dark `#0D0303`, Hot Pink `#FF0055`.
 - **Tipografías de la app**: Coolvetica (titulares) y 212 Baby Girl (acentos) en `public/fonts/`; Inter para la interfaz.
 - **Logo de la app**: originales intactos en `public/brand/original/`; copias web recortadas en `public/brand/`.
+
+## App en el móvil (Añadir a pantalla de inicio)
+
+KROOPY es una PWA instalable. En iPhone: **Safari → Compartir → Añadir a pantalla de inicio**; en Android/escritorio: botón **Instalar** (también en *Ajustes → App*).
+
+- **Nombre e icono**: aparece como **KROOPY** con el símbolo **OO** sobre la placa lima (`public/icons/`, generados desde `public/brand/original/2.png` sin alterarlo) y pantallas de arranque de marca para cada iPhone/iPad (`public/splash/`).
+- **Offline**: un service worker (generado en el build por `pwa/sw-plugin.ts`) precachea toda la app; abre al instante y funciona sin conexión. Las nuevas versiones se instalan en segundo plano y aparece un aviso **Actualizar**.
+- **Atajos** (mantener pulsado el icono): Nueva idea, Nuevo vídeo, Nueva tarea, Calendario.
+- **Compartir a KROOPY** (Android): comparte un TikTok, reel o enlace desde cualquier app y llega como idea nueva.
+- **Badge** en el icono con las tareas de hoy y vencidas; recordatorios como notificaciones del sistema (en iPhone, tras instalar la app y permitir notificaciones).
+- **Comodidad móvil**: campos a 16 px (sin zoom al escribir), hojas inferiores que se cierran deslizando hacia abajo, barra inferior que se aparta con el teclado, áreas seguras (notch / Dynamic Island), vibración háptica al completar (Android).
+
+Regenerar iconos, pantallas de arranque y capturas: `node scripts/generate-pwa-assets.cjs --screenshots` (con `npm run dev` en marcha).
+
+**Despliegue**: `netlify.toml` y `vercel.json` ya configuran build (`npm run build` → `dist`), cabeceras del service worker/manifest y la SPA. Si ya añadiste una versión anterior a tu pantalla de inicio, bórrala y vuelve a añadirla: iOS guarda el nombre y el icono del momento en que la añadiste.
 
 ## Liquid glass — [`liquid-glass-react`](https://github.com/rdev/liquid-glass-react)
 

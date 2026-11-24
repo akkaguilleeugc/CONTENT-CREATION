@@ -41,5 +41,5 @@ export const NAV_GROUPS: { id: NavItem['group']; label: string }[] = [
 
 export const titleFor = (path: string) => {
   if (path.startsWith('/studio/')) return 'Content Studio';
-  return NAV.find((n) => n.to === path)?.label ?? 'Creator OS';
+  return NAV.find((n) => n.to === path)?.label ?? 'KROOPY';
 };

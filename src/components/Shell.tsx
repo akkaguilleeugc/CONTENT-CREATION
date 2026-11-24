@@ -144,12 +144,12 @@ function Sidebar() {
       <button className="sidebar__collapse-floating" onClick={() => setSettings({ sidebarCollapsed: !collapsed })} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
         {collapsed ? <ChevronRight /> : <ChevronLeft />}
       </button>
-      <Link to="/" className="sidebar__brand" aria-label="Creator OS home">
+      <Link to="/" className="sidebar__brand" aria-label="KROOPY home">
         <BrandMark />
         <span className="brand-word">
           <Wordmark height={20} plate="ice" />
           <span className="brand-word__product">
-            Creator OS<em>studio</em>
+            Creator<em>studio</em>
           </span>
         </span>
       </Link>
@@ -244,7 +244,7 @@ function MoreSheet() {
   const counts = useNavCounts();
   const navigate = useNavigate();
   return (
-    <Modal open={moreOpen} onClose={() => setMore(false)} title="All sections" description="Everything in your Creator OS." initialFocus={false}>
+    <Modal open={moreOpen} onClose={() => setMore(false)} title="All sections" description="Everything in KROOPY." initialFocus={false}>
       <div className="more-grid">
         {NAV.filter((n) => !PRIMARY_MOBILE.includes(n.to)).map((n) => (
           <button

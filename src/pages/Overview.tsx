@@ -18,6 +18,7 @@ import {
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatedNumber, BarChart, ProgressBar, ProgressRing } from '@/components/charts';
+import { InstallHint } from '@/components/Install';
 import { EmptyState } from '@/components/overlay';
 import { Avatar, NotificationsButton } from '@/components/Shell';
 import { Button, Checkbox, PlatformBadges, PlatformDots } from '@/components/ui';
@@ -115,6 +116,8 @@ export default function Overview() {
           </Link>
         </div>
       </header>
+
+      <InstallHint />
 
       {hasDemo && (
         <div className="demo-banner">

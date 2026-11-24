@@ -86,18 +86,56 @@ export function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  // Phones: drag the sheet down by its handle/header to dismiss it, like a native bottom sheet.
+  const drag = useRef<{ y: number; t: number; id: number } | null>(null);
+  const [dy, setDy] = useState(0);
+  const sheetHandlers = {
+    onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => {
+      if (window.innerWidth > 640 || (e.target as HTMLElement).closest('button, a, input, select, textarea')) return;
+      drag.current = { y: e.clientY, t: performance.now(), id: e.pointerId };
+      e.currentTarget.setPointerCapture(e.pointerId);
+    },
+    onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => {
+      if (drag.current?.id === e.pointerId) setDy(Math.max(0, e.clientY - drag.current.y));
+    },
+    onPointerUp: (e: React.PointerEvent<HTMLDivElement>) => {
+      const d = drag.current;
+      if (!d || d.id !== e.pointerId) return;
+      drag.current = null;
+      const dist = Math.max(0, e.clientY - d.y);
+      const velocity = dist / Math.max(1, performance.now() - d.t);
+      if (dist > 120 || velocity > 0.7) onClose();
+      else setDy(0);
+    },
+    onPointerCancel: () => {
+      drag.current = null;
+      setDy(0);
+    },
+  };
+
   if (!open) return null;
   return createPortal(
     <div className="modal-root">
-      <div className="modal-backdrop" onClick={onClose} />
-      <GlassSurface ref={ref as React.Ref<HTMLElement>} radius={28} tone="sheet" className={cn('modal', size !== 'md' && `modal--${size}`)} role="dialog" aria-modal="true" tabIndex={-1}>
-        <div className="modal__grab" />
+      <div className="modal-backdrop" onClick={onClose} style={dy ? { opacity: Math.max(0.2, 1 - dy / 400) } : undefined} />
+      <GlassSurface
+        ref={ref as React.Ref<HTMLElement>}
+        radius={28}
+        tone="sheet"
+        className={cn('modal', size !== 'md' && `modal--${size}`, dy > 0 && 'modal--dragging')}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+        style={dy ? { transform: `translateY(${dy}px)`, animation: 'none' } : undefined}
+      >
+        <div className="modal__drag" {...sheetHandlers}>
+          <div className="modal__grab" />
         <div className="modal__head">
           <div style={{ minWidth: 0 }}>
             <h2 className="modal__title">{title}</h2>
             {description && <p className="modal__desc">{description}</p>}
           </div>
           <Button variant="ghost" iconOnly size="sm" icon={<X />} onClick={onClose} aria-label="Close" />
+        </div>
         </div>
         <div className="modal__body">{children}</div>
         {footer && <div className="modal__foot">{footer}</div>}

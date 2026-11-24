@@ -1,21 +1,15 @@
 /* In-app reminder engine: checks every 30 s while the app is open and fires each reminder once. */
 import { habitScheduledOn } from '@/lib/metrics';
 import { useStore } from '@/lib/store';
+import { systemNotify } from '@/lib/pwa';
 import { toast } from '@/lib/ui';
 import { dateTime, toDateStr } from '@/lib/utils';
 
 const WINDOW = 6 * 60 * 60 * 1000; // ignore reminders that are more than 6 h stale
 
-function notify(title: string, body: string) {
+function notify(title: string, body: string, url: string) {
   toast(title, { tone: 'info', description: body });
-  const { settings } = useStore.getState();
-  if (settings.notifications && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-    try {
-      new Notification(title, { body, icon: '/brand/kroopy-symbol.png', tag: title });
-    } catch {
-      /* some browsers only allow notifications from a service worker */
-    }
-  }
+  if (useStore.getState().settings.notifications) void systemNotify(title, body, url);
 }
 
 export function checkReminders(now = new Date()) {
@@ -32,7 +26,7 @@ export function checkReminders(now = new Date()) {
     const key = `task:${task.id}:${task.dueDate}:${task.dueTime ?? ''}:${task.reminder}`;
     if (due(key, fire)) {
       s.markReminder(key);
-      notify(`Reminder · ${task.title}`, task.dueTime ? `Due ${task.dueDate === toDateStr(now) ? 'today' : task.dueDate} at ${task.dueTime}` : 'Due today');
+      notify(`Reminder · ${task.title}`, task.dueTime ? `Due ${task.dueDate === toDateStr(now) ? 'today' : task.dueDate} at ${task.dueTime}` : 'Due today', '/tasks');
     }
   }
   for (const ev of s.events) {
@@ -42,7 +36,7 @@ export function checkReminders(now = new Date()) {
     const key = `event:${ev.id}:${ev.date}:${ev.startTime}:${ev.reminder}`;
     if (due(key, new Date(at.getTime() - ev.reminder * 60_000))) {
       s.markReminder(key);
-      notify(`Coming up · ${ev.title}`, `Starts at ${ev.startTime}`);
+      notify(`Coming up · ${ev.title}`, `Starts at ${ev.startTime}`, '/calendar');
     }
   }
   for (const p of s.projects) {
@@ -50,7 +44,7 @@ export function checkReminders(now = new Date()) {
     const key = `publish:${p.id}:${p.publishDate}:${p.publishTime}`;
     if (due(key, dateTime(p.publishDate, p.publishTime))) {
       s.markReminder(key);
-      notify(`Time to publish · ${p.title}`, 'Mark it as published once it’s live.');
+      notify(`Time to publish · ${p.title}`, 'Mark it as published once it’s live.', `/studio/${p.id}`);
     }
   }
   const today = toDateStr(now);
@@ -60,7 +54,7 @@ export function checkReminders(now = new Date()) {
     const key = `habit:${h.id}:${today}`;
     if (due(key, dateTime(today, h.reminderTime))) {
       s.markReminder(key);
-      notify(`Habit · ${h.name}`, 'Keep the streak alive.');
+      notify(`Habit · ${h.name}`, 'Keep the streak alive.', '/trackers');
     }
   }
 }

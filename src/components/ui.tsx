@@ -12,6 +12,7 @@ import {
   type TextareaHTMLAttributes,
 } from 'react';
 import { usePlatforms } from '@/lib/hooks';
+import { haptic } from '@/lib/pwa';
 import type { Priority } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -194,6 +195,7 @@ export function Checkbox({
       className={cn('check', round && 'check--round', sm && 'check--sm', checked && 'check--on')}
       onClick={(e) => {
         e.stopPropagation();
+        if (!checked) haptic();
         onChange(!checked);
       }}
     >
