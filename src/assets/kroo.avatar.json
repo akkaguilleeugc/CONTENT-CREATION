@@ -1,0 +1,28 @@
+{
+  "name": "Kroo",
+  "body": {
+    "primary": { "type": "sphere", "width": 240, "height": 228, "depth": 228, "roundness": 1 },
+    "nodes": [
+      {
+        "color": "#2f5bff",
+        "followsHead": true,
+        "surface": { "type": "sphere", "width": 54, "height": 54, "depth": 40, "roundness": 1 },
+        "position": [-52, -112, -6],
+        "rotation": [0, 0, -12]
+      },
+      {
+        "color": "#2f5bff",
+        "followsHead": true,
+        "surface": { "type": "sphere", "width": 54, "height": 54, "depth": 40, "roundness": 1 },
+        "position": [52, -112, -6],
+        "rotation": [0, 0, 12]
+      }
+    ]
+  },
+  "colors": { "body": "#d4f53c", "eyes": "#0b0f14" },
+  "style": { "outline": { "enabled": true, "color": "#0b0f14", "width": 7, "opacity": 1 } },
+  "face": {
+    "eyes": { "width": 1, "height": 1, "gap": 1, "shiftY": 0 },
+    "perspective": 1
+  }
+}

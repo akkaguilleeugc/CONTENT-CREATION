@@ -147,6 +147,35 @@
   flex-direction: column;
   gap: 18px;
 }
+.mascot {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+}
+.mascot:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 4px;
+}
+.mascot svg {
+  overflow: visible;
+}
+.mascot__fallback {
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lime) 22%, transparent);
+}
+.welcome__mascot {
+  position: absolute;
+  right: 22px;
+  bottom: 14px;
+}
 .welcome__hero {
   position: relative;
   display: flex;
@@ -318,6 +347,27 @@
   margin-left: 0.05em;
   background: var(--pink);
   border-radius: 1px;
+}
+.ov-head__text {
+  min-width: 0;
+  flex: 1 1 320px;
+}
+.ov-head__mascot {
+  flex: none;
+  align-self: center;
+  margin-right: -6px;
+}
+@media (max-width: 640px) {
+  .ov-head__mascot {
+    position: absolute;
+    top: -6px;
+    right: 0;
+    transform: scale(0.66);
+    transform-origin: top right;
+  }
+  .ov-head {
+    position: relative;
+  }
 }
 .ov-head__actions {
   display: flex;

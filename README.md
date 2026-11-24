@@ -118,6 +118,14 @@ Los recordatorios de tareas, eventos, hábitos y publicaciones programadas llega
 
 **Pruebas realizadas:** 35 comprobaciones de la API (alta, login, contraseña incorrecta, sincronización, borrados, paginación, 20 escrituras simultáneas desde dos dispositivos sin perder ninguna, archivo de 5 MB en partes, clave de recuperación, cierre de sesión en otros dispositivos, bloqueo por intentos, borrado de cuenta); 18 con tres navegadores (portátil, iPhone, tablet: tarea completada en el móvil → portátil en ~3,5 s, objetivo en ~1,7 s, cambios sin conexión, borrados, recuperación con la clave); 14 de notificaciones (activar en el móvil, prueba, recordatorio creado en el portátil entregado al móvil por el envío programado, cifrado aes128gcm + VAPID, sin duplicados, el service worker lo muestra, desactivar).
 
+## Kroo, la mascota (y cara de KROOPY AI)
+
+Personaje original (`src/assets/kroo.avatar.json`) dibujado con [`@bible-strong/avatar-react`](https://www.npmjs.com/package/@bible-strong/avatar-react) (MIT): `src/components/Mascot.tsx` (carga diferida del motor en `MascotRenderer.tsx`). Está en la bienvenida y en el Overview; sigue al puntero, rebota al tocarlo y se queda quieto con «reducir movimiento». Estados del catálogo listos para el chat: `thinking`, `streaming`, `writing`, `celebrate`, `failed`…
+
+## KROOPY AI — plan
+
+Auditoría, decisiones y etapas: [`docs/KROOPY_AI_PLAN.md`](docs/KROOPY_AI_PLAN.md).
+
 ## Idiomas
 
 Inglés, español y portugués de Brasil, con selector en Ajustes → Idioma, en la barra lateral (botón EN/ES/PT), en el menú *Más* del móvil y en la pantalla de bienvenida. Fechas en el idioma elegido (date-fns). Cómo añadir textos: `scripts/i18n/README.md`.

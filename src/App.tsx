@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { QUICK_ACTIONS } from '@/components/actions';
 import { BrandMark, Wordmark } from '@/components/brand';
+import { Mascot } from '@/components/Mascot';
 import { CommandPalette, QuickCreate } from '@/components/CommandPalette';
 import { NAV, titleFor } from '@/components/nav';
 import { ConfirmHost, Modal, Skeleton, Toaster } from '@/components/overlay';
@@ -172,6 +173,7 @@ function Welcome() {
           ))}
         </div>
         <div className="welcome__hero">
+          <Mascot className="welcome__mascot" size={112} state="excited" />
           <Wordmark height={34} plate="lime" />
           <span className="accent-script welcome__script">{$t("create · ship · grow")}</span>
         </div>

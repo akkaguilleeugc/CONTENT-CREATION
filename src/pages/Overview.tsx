@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { Mascot } from '@/components/Mascot';
 import {
   ArrowUpRight,
   CalendarClock,
@@ -94,7 +95,8 @@ export default function Overview() {
   return (
     <div className="page overview">
       <header className="ov-head">
-        <div style={{ minWidth: 0 }}>
+        <Mascot className="ov-head__mascot" size={84} followPointer settleAfterMs={9000} />
+        <div className="ov-head__text">
           <div className="eyebrow">{format(now, 'EEEE · d MMMM yyyy')}</div>
           <h1 className="ov-greet">
             {greeting(now)}
