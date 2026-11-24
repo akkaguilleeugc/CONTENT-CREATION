@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KROOPY on every screen — 45s launch (1080×1920 · 128 BPM)</title>
+<!--
+  Feature launch: KROOPY installs on your laptop and on your iPhone home screen.
+  Every style is computed from time inside window.seek(t) — no CSS animations, timers or carried state.
+  Built from src.html by build.cjs (inlines Coolvetica, 212 Baby Girl, Inter, the OO mark, the wordmark and the app's Lucide icons).
+-->
+<style>
+@font-face { font-family: 'Coolvetica'; src: url(data:font/otf;base64,__COOL_B64__) format('opentype'); }
+@font-face { font-family: 'Baby'; src: url(data:font/otf;base64,__BABY_B64__) format('opentype'); }
+@font-face { font-family: 'Inter'; font-weight: 100 900; src: url(data:font/woff2;base64,__INTER_B64__) format('woff2'); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1920px; background: #0B0F14; overflow: hidden; }
+body { font-family: 'Inter', sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+#frame { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; background: #0B0F14; }
+#world { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; }
+.dev { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; }
+.abs { position: absolute; }
+.row { display: flex; align-items: center; }
+.ico { display: inline-block; flex: none; }
+.ico svg { width: 100%; height: 100%; display: block; }
+.cool { font-family: 'Coolvetica', sans-serif; letter-spacing: -0.01em; }
+.baby { font-family: 'Baby', 'Coolvetica', sans-serif; }
+.t2 { color: rgba(229, 237, 248, 0.68); }
+.t3 { color: rgba(229, 237, 248, 0.45); }
+.t4 { color: rgba(229, 237, 248, 0.28); }
+.lime { color: #D4F53C; }
+.pink { color: #FF0055; }
+.royal { color: #2F5BFF; }
+.panel { background: #11171f; border: 1px solid rgba(255, 255, 255, 0.07); }
+.ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(229, 237, 248, 0.45); white-space: nowrap; font-family: ui-monospace, Menlo, monospace; }
+.stop { display: inline-block; width: 0.16em; height: 0.16em; background: #FF0055; margin-left: 0.04em; }
+.mask { display: inline-block; overflow: hidden; vertical-align: top; }
+.mask > span { display: inline-block; }
+.btn { position: absolute; display: flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; font-weight: 500; }
+.kbd { font-size: 10px; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 5px; padding: 1px 5px; color: rgba(229, 237, 248, 0.6); }
+/* overlay (screen space) */
+#overlay { position: absolute; inset: 0; pointer-events: none; }
+.wipe { position: absolute; inset: 0; visibility: hidden; }
+.cap { position: absolute; left: 0; top: 0; width: 1080px; visibility: hidden; white-space: nowrap; }
+.cap .ln { display: block; text-align: center; line-height: 0.92; }
+.cap .m { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.04em 0.05em 0.16em; margin-bottom: -0.16em; }
+.cap .w { display: inline-block; }
+#obj { position: absolute; left: 0; top: 0; transform-origin: 50% 50%; background: #D4F53C; display: flex; align-items: center; justify-content: center; }
+#obj img { display: block; width: 62%; height: auto; }
+#cursor { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.touch { position: absolute; left: 0; top: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.28); border: 3px solid rgba(255, 255, 255, 0.85); visibility: hidden; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="fObj" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur id="gObj" stdDeviation="0 0" /></filter>
+    <filter id="fCur" x="-80%" y="-80%" width="260%" height="260%" color-interpolation-filters="sRGB"><feGaussianBlur id="gCur" stdDeviation="0 0" /></filter>
+    <filter id="fDev" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feGaussianBlur id="gDev" stdDeviation="0 0" /></filter>
+    <filter id="fCap" x="-10%" y="-60%" width="120%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur id="gCap" stdDeviation="0 0" /></filter>
+  </defs>
+</svg>
+<div id="frame">
+  <div id="wipes"></div>
+  <div id="world">
+    <div id="devs">
+      <div id="laptop" class="dev"></div>
+      <div id="phone" class="dev"></div>
+    </div>
+    <div id="obj"><img alt=""><div id="badge" style="position:absolute;right:-9%;top:-9%;width:34%;height:34%;border-radius:50%;background:#FF0055;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff"><span>3</span></div></div>
+    <div id="touch" class="touch"></div>
+    <div id="cursor">
+      <svg width="28" height="40" viewBox="0 0 28 40" style="overflow:visible">
+        <path d="M2 2 L2 31 L9.5 24.5 L14.5 36 L19.5 33.8 L14.6 22.6 L24.5 22.6 Z" transform="translate(1.2 2.4)" fill="rgba(0,0,0,0.38)" />
+        <path d="M2 2 L2 31 L9.5 24.5 L14.5 36 L19.5 33.8 L14.6 22.6 L24.5 22.6 Z" fill="#fff" stroke="#0B0F14" stroke-width="1.8" stroke-linejoin="round" />
+      </svg>
+    </div>
+  </div>
+  <div id="overlay"><div id="caps"></div></div>
+</div>
+<script>
+'use strict';
+const ICONS = __ICONS_JSON__;
+const OO_SRC = 'data:image/png;base64,__OO_B64__';
+const WORDMARK_SRC = 'data:image/png;base64,__WM_B64__';
+
+/* ───────────── time & easing ───────────── */
+const W = 1080, H = 1920, BPM = 128, BEAT = 60 / BPM, DUR = 45;
+const LIME = '#D4F53C', INK = '#0B0F14', ROYAL = '#2F5BFF', PINK = '#FF0055', NAVY = '#0B1A5C';
+const tb = (b) => b * BEAT;
+const SCENES = [0, 8, 40, 72, 80, 96]; // hook · laptop · iPhone · both · drop/end
+const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+const lerp = (a, b, p) => a + (b - a) * p;
+const expoOut = (p) => (p <= 0 ? 0 : p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
+const expoIn = (p) => (p <= 0 ? 0 : p >= 1 ? 1 : Math.pow(2, 10 * p - 10));
+const expoInOut = (p) => (p <= 0 ? 0 : p >= 1 ? 1 : p < 0.5 ? Math.pow(2, 20 * p - 10) / 2 : (2 - Math.pow(2, -20 * p + 10)) / 2);
+function spring(dt, w = 16, z = 0.8) {
+  if (dt <= 0) return 0;
+  if (z >= 1) return 1 - Math.exp(-w * dt) * (1 + w * dt);
+  const wd = w * Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * dt) * (Math.cos(wd * dt) + ((z * w) / wd) * Math.sin(wd * dt));
+}
+const pulse = (dt, k = 0.06) => (dt < 0 ? 0 : (dt / k) * Math.exp(1 - dt / k));
+const EX = (t, t0, d = 0.45) => expoOut(clamp((t - t0) / d));
+const IO = (t, t0, d = 0.4) => expoInOut(clamp((t - t0) / d));
+const SPt = (t, t0, w = 16, z = 0.8) => spring(t - t0, w, z);
+const grow = (t, t0, w = 17, z = 0.78) => clamp(spring(t - t0, w, z), 0, 1.25);
+
+/* ───────────── helpers ───────────── */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+const I = (n, s = 16, st = '') => `<span class="ico" style="width:${s}px;height:${s}px;${st}">${ICONS[n] || ''}</span>`;
+const show = (el, on) => { el.style.visibility = on ? 'visible' : 'hidden'; };
+const vis = (el, on) => { el.style.visibility = on ? 'inherit' : 'hidden'; };
+/** clip an element so it appears to grow out of (p=0) a rect R (element-local px) into itself (p=1) */
+function clipGrow(el, R, p, rFull = 12) {
+  const E = el._r;
+  if (p >= 1) { el.style.clipPath = 'none'; return; }
+  if (p <= 0.002) { el.style.clipPath = 'inset(50% 50% 50% 50%)'; return; }
+  const q = 1 - p;
+  el.style.clipPath = `inset(${R.y * q}px ${(E.w - R.x - R.w) * q}px ${(E.h - R.y - R.h) * q}px ${R.x * q}px round ${lerp(R.r || 8, rFull, p)}px)`;
+}
+const wipeDown = (el, p) => { el.style.clipPath = p >= 1 ? 'none' : `inset(0 0 ${(1 - clamp(p)) * 100}% 0)`; };
+const wipeUp = (el, p) => { el.style.clipPath = p <= 0 ? 'none' : `inset(0 0 ${clamp(p) * 100}% 0)`; };
+
+/* ───────────── devices ───────────── */
+const KL = 932 / 1440, LX = 74, LY = 654;           // laptop display: native 1440×900 → world
+const KP = 430 / 390, PXo = 325, PYo = 515;         // phone screen: native 390×844 → world
+const CL = { x: 540, y: 960 }, CP = { x: 540, y: 980 };
+const icon = (sz, st = '') => `<div class="abs" style="width:${sz}px;height:${sz}px;border-radius:${sz * 0.25}px;background:${LIME};display:flex;align-items:center;justify-content:center;${st}"><img src="${OO_SRC}" style="width:62%"></div>`;
+const bars = (n) => `<span class="row" style="gap:1.5px;align-items:flex-end;height:10px">${[4, 7, 10, 13].map((h, i) => `<i style="display:block;width:2.5px;height:${h * 0.75}px;border-radius:1px;background:currentColor;opacity:${i < n ? 1 : 0.25}"></i>`).join('')}</span>`;
+
+function laptopHTML() {
+  const NAVI = [['LayoutDashboard', 'Overview', ''], ['Lightbulb', 'My Ideas', '2'], ['Clapperboard', 'Content Studio', '2'], ['CalendarDays', 'Calendar', ''], ['ListChecks', 'Tasks', '5']];
+  const nav = (items, y0) => items.map(([ic, l, n], i) => `<div id="ln_${l.replace(/ /g, '')}" class="abs row" style="left:12px;top:${y0 + i * 38}px;width:232px;height:34px;padding:0 12px;gap:12px;font-size:14px;color:rgba(229,237,248,.8)">${I(ic, 17)}<span>${l}</span><span style="flex:1"></span>${n ? `<span style="font-size:11px;min-width:20px;height:20px;border-radius:10px;text-align:center;line-height:20px;${l === 'Tasks' ? `background:${LIME};color:${INK}` : 'background:rgba(255,255,255,.07)'}">${n}</span>` : ''}</div>`).join('');
+  const kpis = [['3', 'Pending videos', 'idea → ready', 'Lightbulb'], ['2', 'In production', 'rec · edit · review', 'Film'], ['1', 'Scheduled', 'ready to go live', 'CalendarClock'], ['2', 'Published', 'November', 'Send', true], ['5', 'Open ideas', 'in your idea bank', 'Sparkles'], ['8', 'Tasks to do', 'across all lists', 'ListChecks']];
+  const today = [['Invoice for October', 'Overdue', '', 1], ['Shoot day — coffee spots', 'Event · until 13:00', '09:30'], ['Record content', 'Habit', '10:00'], ['Reply to brand email (Lisbon collab)', 'Task', '11:00'], ['Gym', 'Task', '19:00'], ['Export final cut — editing tricks video', 'Task · 1/3', ''], ['Plan next week’s content', 'Task', '']];
+  const ring = (v, l, s, x, frac) => `<div class="abs" style="left:${x}px;top:62px;width:90px;text-align:center">
+      <svg width="64" height="64" viewBox="0 0 64 64" style="display:block;margin:0 auto"><circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/><circle cx="32" cy="32" r="27" fill="none" stroke="${LIME}" stroke-width="5" stroke-linecap="round" transform="rotate(-90 32 32)" stroke-dasharray="${169.6 * frac} 999"/></svg>
+      <div class="abs cool" style="left:0;top:20px;width:90px;font-size:20px">${v}</div><div style="font-size:12px;margin-top:8px">${l}</div><div class="t3" style="font-size:11px">${s}</div></div>`;
+  const cols = [['Idea', 0, []], ['Planning', 1, [['Q&A — 10K followers special', '9%', 'No date', ['#FF0055', '#EFF8FF']]]], ['Script', 1, [['Why I stopped chasing trends', '18%', 'No date', ['#FF0055', '#8EA6FF']]]], ['Ready to Record', 1, [['Coffee spots you need to try', '26%', '3 Dec', ['#D4F53C']]]], ['Recording', 0, []]];
+  const card = (d, id) => `<div id="${id}" class="abs panel" style="left:10px;top:44px;width:180px;height:104px;border-radius:12px;background:#161d27;padding:12px">
+      <div class="cool" style="font-size:15px;line-height:1.15">${d[0]}</div>
+      <div class="row t3" style="gap:4px;font-size:11px;margin-top:6px">${d[3].map((c) => `<i style="display:block;width:6px;height:6px;border-radius:3px;background:${c}"></i>`).join('')}<span style="margin-left:3px">Vertical video</span></div>
+      <div class="row" style="gap:6px;margin-top:9px"><div style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08)"><div style="width:${d[1]};height:4px;border-radius:2px;background:${LIME}"></div></div><span class="t3" style="font-size:10px">${d[1]}</span></div>
+      <div class="row t3" style="font-size:10.5px;margin-top:7px"><span style="color:${ROYAL}">${bars(2)}</span><span style="flex:1"></span>${d[2]}</div></div>`;
+  // calendar chips (real sample items, desktop month view)
+  const CH = { '11-18': [['19:30', 'Camera settings I use for every reel', 'pub', 1]], '11-22': [['18:00', 'I tried the 5AM creator routine', 'pubp', 1]], '11-23': [['', 'Invoice for October', 'task']],
+    '11-24': [['09:30', 'Shoot day — coffee spots', 'rec'], ['11:00', 'Reply to brand email', 'task'], ['19:00', 'Gym', 'task']], '11-25': [['12:00', 'Call with Lisbon tourism board', 'meet'], ['18:00', 'Budget city guide — Lisbon', 'pubp']],
+    '11-26': [['15:00', 'Editing block', 'edit'], ['', 'Buy new SD cards', 'task']], '11-27': [['21:00', 'Dinner with friends', 'meet'], ['', 'Why I stopped chasing trends', 'rec']], '11-28': [['17:00', 'Desk setup tour 2026', 'pub']],
+    '11-29': [['', 'Finish colour grading course module 3', 'task']], '11-30': [['19:00', '3 editing tricks that doubled my retention', 'pubp']], '12-3': [['', 'Coffee spots you need to try', 'meet']] };
+  const chipCol = { task: ['rgba(255,255,255,.07)', 'rgba(229,237,248,.8)'], rec: ['rgba(255,0,85,.16)', '#ff7aa5'], pubp: ['rgba(255,0,85,.16)', '#ff7aa5'], pub: ['rgba(47,91,255,.2)', '#9db2ff'], meet: ['rgba(212,245,60,.14)', LIME], edit: ['rgba(47,91,255,.2)', '#9db2ff'] };
+  let cal = '';
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) {
+    const n = r * 7 + c; let d, m; if (n < 6) { d = 26 + n; m = 10; } else if (n < 36) { d = n - 5; m = 11; } else { d = n - 35; m = 12; }
+    const key = `${m}-${d}`, chips = CH[key] || [];
+    cal += `<div class="abs" style="left:${c * 160}px;top:${28 + r * 100}px;width:160px;height:100px;border-top:1px solid rgba(255,255,255,.06);border-left:${c ? '1px solid rgba(255,255,255,.04)' : '0'}">
+      ${key === '11-24' ? `<div class="abs" style="left:8px;top:7px;width:24px;height:24px;border-radius:7px;background:${ROYAL}"></div>` : ''}
+      <div class="abs" style="left:12px;top:11px;font-size:12px;${m !== 11 ? 'color:rgba(229,237,248,.3)' : ''}">${d}</div>
+      ${chips.map((ch, k) => `<div class="abs row cchip" data-day="${key}" style="left:6px;top:${36 + k * 20}px;width:148px;height:17px;border-radius:5px;padding:0 6px;gap:5px;font-size:10px;background:${chipCol[ch[2]][0]};color:${chipCol[ch[2]][1]}">${ch[0] ? `<span style="opacity:.8">${ch[0]}</span>` : ''}<span class="ell" style="${ch[3] ? 'text-decoration:line-through;' : ''}">${ch[1]}</span></div>`).join('')}
+    </div>`;
+  }
+  return `
+  <div id="lid" class="abs" style="left:60px;top:640px;width:960px;height:624px;border-radius:26px 26px 8px 8px;background:#1b2029;border:1.5px solid rgba(255,255,255,.14);transform-origin:50% 100%">
+    <div class="abs" style="left:477px;top:5px;width:6px;height:6px;border-radius:3px;background:#2c333e"></div>
+    <div id="ldisp" class="abs" style="left:13px;top:13px;width:932px;height:582px;border-radius:10px;overflow:hidden;background:${INK}">
+      <div id="lui" class="abs" style="left:0;top:0;width:1440px;height:900px;transform:scale(${KL});transform-origin:0 0">
+        <div id="lApp" class="abs" style="left:0;top:80px;width:1440px;height:900px;overflow:hidden">
+          <div id="lDesk" class="abs" style="left:0;top:0;width:1440px;height:900px">
+            <div class="abs" style="left:0;top:0;width:256px;height:900px;background:#090d12;border-right:1px solid rgba(255,255,255,.06)">
+              <div id="lSideBrand" class="abs" style="left:16px;top:16px;width:38px;height:38px"></div>
+              <div class="abs" style="left:64px;top:17px;width:86px;height:17px;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center"><img src="${WORDMARK_SRC}" style="height:11px"></div>
+              <div class="abs" style="left:64px;top:38px;font-size:13px;font-weight:600">Creator <span class="baby lime" style="font-size:14px">studio</span></div>
+              <div class="btn" style="left:12px;top:68px;width:232px;height:38px;border-radius:10px;background:${ROYAL};font-size:14px">${I('Plus', 16)}Create</div>
+              <div class="abs row t3" style="left:12px;top:116px;width:232px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.1);padding:0 10px;gap:8px;font-size:13px">${I('Search', 15)}Search or jump to…<span style="flex:1"></span><span class="kbd">Ctrl K</span></div>
+              <div class="abs eyebrow" style="left:22px;top:168px;font-size:10px">Workspace</div>
+              <div id="lNavHi" class="abs" style="left:12px;width:232px;height:34px;border-radius:9px;background:rgba(255,255,255,.07)"></div>
+              ${nav(NAVI, 186)}
+              <div class="abs eyebrow" style="left:22px;top:390px;font-size:10px">Growth</div>
+              ${nav([['Target', 'Trackers', ''], ['BarChart3', 'Analytics', '']], 408)}
+              <div class="abs eyebrow" style="left:22px;top:500px;font-size:10px">Brand</div>
+              ${nav([['Palette', 'Brand Kit', ''], ['FolderOpen', 'Asset Library', '']], 518)}
+              <div class="abs row" style="left:24px;top:772px;gap:12px;font-size:14px;color:rgba(229,237,248,.8)">${I('Settings', 17)}Settings</div>
+              <div class="abs" style="left:12px;top:812px;width:232px;height:1px;background:rgba(255,255,255,.06)"></div>
+              <div class="abs" style="left:20px;top:828px;width:32px;height:32px;border-radius:16px;background:${ROYAL};font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">C</div>
+              <div class="abs" style="left:62px;top:827px;font-size:13px;font-weight:600">Creator</div>
+              <div class="abs row t3" style="left:62px;top:845px;font-size:11px;gap:5px"><i style="display:block;width:6px;height:6px;border-radius:3px;background:${LIME}"></i>Saved locally</div>
+            </div>
+            <!-- Overview -->
+            <div id="lvOv" class="abs" style="left:256px;top:0;width:1184px;height:900px">
+              <div class="abs eyebrow" style="left:34px;top:26px">Tuesday · 24 November 2026</div>
+              <div class="abs cool" style="left:32px;top:44px;font-size:60px;line-height:1">Good afternoon<span class="stop"></span></div>
+              <div class="abs t2" style="left:34px;top:112px;font-size:14px">Today: 5 tasks, 1 recording. <span class="baby lime" style="font-size:16px">let’s create</span></div>
+              <div class="btn" style="left:926px;top:94px;width:140px;height:38px;border-radius:10px;background:${LIME};color:${INK};font-size:13px">${I('Plus', 15)}Quick create <span class="kbd" style="color:${INK};border-color:rgba(11,15,20,.3)">N</span></div>
+              <div class="abs" style="left:1078px;top:95px;width:36px;height:36px;border-radius:18px;background:${ROYAL};font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">C</div>
+              <div class="abs" style="left:880px;top:104px;color:rgba(229,237,248,.6)">${I('Bell', 17)}</div>
+              <div id="lKpi" class="abs panel" style="left:34px;top:156px;width:1116px;height:100px;border-radius:16px">
+                ${kpis.map(([v, l, s, ic, lime], i) => `<div class="abs" style="left:${i * 186}px;top:0;width:186px;height:100px;${i ? 'border-left:1px solid rgba(255,255,255,.05)' : ''}">
+                  <div class="abs cool" style="left:18px;top:14px;font-size:36px;line-height:1;${lime ? `color:${LIME}` : ''}">${v}</div>
+                  <div class="abs" style="left:18px;top:58px;font-size:13px;font-weight:600">${l}</div><div class="abs t3" style="left:18px;top:76px;font-size:11px">${s}</div>
+                  <div class="abs t2" style="right:16px;top:14px;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center">${I(ic, 15)}</div></div>`).join('')}
+              </div>
+              <div class="abs panel" style="left:34px;top:272px;width:600px;height:600px;border-radius:16px">
+                <div class="abs cool" style="left:18px;top:18px;font-size:20px">Today <span class="t3" style="font-family:Inter;font-size:12px">0/9</span></div>
+                <div class="abs t2 row" style="right:18px;top:20px;font-size:12px;gap:5px">${I('ArrowUpRight', 13)}All tasks</div>
+                <div class="abs row t4" style="left:16px;top:56px;width:568px;height:36px;border-radius:9px;border:1px solid rgba(255,255,255,.08);padding:0 12px;gap:8px;font-size:13px">${I('Plus', 14)}Add a task for today and press Enter</div>
+                ${today.map(([a, b, c, od], k) => `<div class="abs" style="left:16px;top:${104 + k * 42}px;width:568px;height:42px;border-bottom:1px solid rgba(255,255,255,.04)">
+                  <div class="abs" style="left:4px;top:12px;width:17px;height:17px;border-radius:9px;border:1.5px solid rgba(255,255,255,.22)"></div>
+                  <div class="abs" style="left:34px;top:5px;font-size:13.5px;font-weight:500">${a}</div><div class="abs" style="left:34px;top:23px;font-size:11px;color:${od ? PINK : 'rgba(229,237,248,.45)'}">${b}</div>
+                  <div class="abs t3" style="right:6px;top:13px;font-size:12px;font-family:ui-monospace,Menlo,monospace">${c}</div></div>`).join('')}
+              </div>
+              <div class="abs panel" style="left:650px;top:272px;width:500px;height:600px;border-radius:16px">
+                <div class="abs cool" style="left:18px;top:18px;font-size:20px">Weekly progress</div>
+                <div class="abs eyebrow" style="right:18px;top:24px;font-size:10px">23 Nov – 29 Nov</div>
+                ${ring(1, 'Tasks', 'of 7', 18, 1 / 7)}${ring(1, 'Produced', 'of 3', 136, 1 / 3)}${ring(0, 'Published', 'of 1', 254, 0)}${ring(0, 'Goals met', 'of 3', 372, 0)}
+                <div class="abs eyebrow" style="left:18px;top:214px;font-size:10px">Tasks completed per day</div>
+                ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => `<div class="abs" style="left:${18 + i * 66}px;top:244px;width:52px;height:100px;border-radius:10px;background:${i === 0 ? ROYAL : 'rgba(255,255,255,.05)'}"></div><div class="abs t3" style="left:${18 + i * 66}px;top:352px;width:52px;text-align:center;font-size:11px">${d}</div>`).join('')}
+                <div class="abs cool" style="left:18px;top:392px;font-size:30px">4h 5m</div><div class="abs t3" style="left:18px;top:428px;font-size:11px">creating</div>
+                <div class="abs cool" style="left:190px;top:400px;font-size:20px">4</div><div class="abs t3" style="left:190px;top:428px;font-size:11px">habit check-ins</div>
+                <div class="abs cool" style="left:340px;top:400px;font-size:20px">6</div><div class="abs t3" style="left:340px;top:428px;font-size:11px">ideas captured</div>
+              </div>
+            </div>
+            <!-- Content Studio -->
+            <div id="lvSt" class="abs" style="left:256px;top:0;width:1184px;height:900px;background:${INK}">
+              <div class="abs cool" style="left:32px;top:30px;font-size:60px;line-height:1">Content Studio<span class="stop"></span></div>
+              <div class="abs t2" style="left:34px;top:98px;font-size:14px">8 videos · 2 in production · 1 scheduled</div>
+              <div class="btn" style="left:946px;top:42px;width:124px;height:36px;border-radius:10px;background:${ROYAL};font-size:13px">${I('Plus', 15)}New video</div>
+              <div class="abs row" style="left:770px;top:42px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.1);font-size:13px;padding:3px;gap:2px"><span class="row" style="gap:5px;background:rgba(255,255,255,.08);border-radius:7px;padding:5px 10px">${I('Columns3', 14)}Board</span><span class="row t3" style="gap:5px;padding:5px 10px">${I('List', 14)}List</span></div>
+              ${cols.map(([name, n, cards], i) => `<div id="lcol${i}" class="abs panel" style="left:${34 + i * 216}px;top:142px;width:200px;height:300px;border-radius:14px">
+                <div class="abs row" style="left:14px;top:14px;gap:7px;font-size:13.5px;font-weight:600"><i style="display:block;width:7px;height:7px;border-radius:4px;background:${ROYAL}"></i>${name}</div>
+                <div class="abs t3" style="right:12px;top:12px;min-width:22px;height:20px;border-radius:10px;background:rgba(255,255,255,.06);font-size:11px;text-align:center;line-height:20px"><span id="lcnt${i}">${n}</span></div>
+                ${cards.length ? card(cards[0], `lcard${i}`) : `<div id="lph${i}" class="abs t4" style="left:10px;top:44px;width:180px;height:60px;border-radius:12px;border:1px dashed rgba(255,255,255,.12);font-size:12px;display:flex;align-items:center;justify-content:center">Drag a video here</div>`}
+              </div>`).join('')}
+            </div>
+            <!-- Calendar -->
+            <div id="lvCal" class="abs" style="left:256px;top:0;width:1184px;height:900px;background:${INK}">
+              <div class="abs cool" style="left:32px;top:30px;font-size:60px;line-height:1">Calendar<span class="stop"></span></div>
+              <div class="abs t2" style="left:34px;top:98px;font-size:14px">Publications, recording and editing days, tasks and personal events — drag to reschedule.</div>
+              <div class="abs row" style="left:34px;top:136px;gap:8px"><span class="row t2" style="width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.1);justify-content:center">${I('ChevronLeft', 15)}</span><span class="row t2" style="width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.1);justify-content:center">${I('ChevronRight', 15)}</span><span style="font-size:12px;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px">Today</span><span class="cool" style="font-size:26px;margin-left:8px">November 2026</span></div>
+              <div class="abs row" style="left:826px;top:136px;gap:2px;font-size:12px;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:3px"><span style="background:rgba(255,255,255,.1);border-radius:6px;padding:5px 10px">Month</span><span class="t3" style="padding:5px 10px">Week</span><span class="t3" style="padding:5px 10px">Day</span><span class="t3" style="padding:5px 10px">Agenda</span></div>
+              <div id="lcal" class="abs panel" style="left:34px;top:182px;width:1122px;height:630px;border-radius:14px;overflow:hidden">
+                ${['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((d, c) => `<div class="abs t3" style="left:${c * 160 + 12}px;top:8px;font-size:10px;letter-spacing:.1em">${d}</div>`).join('')}
+                ${cal}
+              </div>
+            </div>
+            <!-- Command palette -->
+            <div id="lPal" class="abs" style="left:430px;top:72px;width:580px;height:356px;border-radius:14px;background:#121821;border:1px solid rgba(255,255,255,.12)">
+              <div class="abs row" style="left:16px;top:14px;gap:10px;font-size:16px">${I('Search', 17, 'color:rgba(229,237,248,.5)')}<span id="lPalQ"></span><span id="lPalCaret" style="display:inline-block;width:1.5px;height:18px;background:#fff"></span></div>
+              <span class="abs kbd" style="right:14px;top:16px">Esc</span>
+              <div class="abs" style="left:0;top:50px;width:580px;height:1px;background:rgba(255,255,255,.07)"></div>
+              <div id="lPalHi" class="abs" style="left:8px;width:564px;height:30px;border-radius:8px;background:rgba(47,91,255,.22)"></div>
+              <div class="abs eyebrow" style="left:18px;top:62px;font-size:9.5px">Tasks</div>
+              <div class="abs row" style="left:18px;top:78px;width:544px;height:30px;gap:10px;font-size:13px">${I('SquareCheck', 15, 'color:rgba(229,237,248,.6)')}Buy new SD cards<span style="flex:1"></span><span class="t3" style="font-size:11px">26 Nov</span></div>
+              <div class="abs eyebrow" style="left:18px;top:118px;font-size:9.5px">Create</div>
+              ${[['Lightbulb', 'New idea', 'Capture it before it’s gone'], ['Clapperboard', 'New video', 'Start a production'], ['ListPlus', 'New task', 'Personal or professional'], ['CalendarPlus', 'New event', 'Recording, edit, meeting…'], ['Repeat', 'New habit', 'Build consistency'], ['Flag', 'New goal', 'Daily to yearly']].map(([ic, a, b], k) => `<div class="abs row" style="left:18px;top:${134 + k * 30}px;width:544px;height:30px;gap:10px;font-size:13px">${I(ic, 15, 'color:rgba(229,237,248,.6)')}${a}<span style="flex:1"></span><span class="t3" style="font-size:11px">${b}</span></div>`).join('')}
+              <div class="abs row t3" style="left:18px;top:326px;gap:10px;font-size:10.5px"><span class="kbd">↑</span><span class="kbd">↓</span>navigate <span class="kbd">↵</span>open <span class="kbd">Ctrl K</span>toggle</div>
+            </div>
+          </div>
+        </div>
+        <!-- browser chrome → app title bar -->
+        <div id="lChrome" class="abs" style="left:0;top:0;width:1440px;height:80px;overflow:hidden">
+          <div id="lTabs" class="abs" style="left:0;top:0;width:1440px;height:38px;background:#05080c">
+            <div class="abs row" style="left:18px;top:14px;gap:8px">${[0, 1, 2].map(() => '<i style="display:block;width:11px;height:11px;border-radius:6px;background:#2a313c"></i>').join('')}</div>
+            <div class="abs" style="left:84px;top:6px;width:250px;height:32px;border-radius:10px 10px 0 0;background:#0f141b">
+              <div id="lFav" class="abs" style="left:12px;top:8px;width:16px;height:16px"></div>
+              <div class="abs" style="left:38px;top:8px;font-size:13px">KROOPY</div>
+              <div class="abs t3" style="right:10px;top:8px">${I('X', 14)}</div>
+            </div>
+            <div class="abs t3" style="left:346px;top:12px">${I('Plus', 15)}</div>
+          </div>
+          <div id="lBar" class="abs" style="left:0;top:38px;width:1440px;height:42px;background:#0f141b;border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="abs row t2" style="left:16px;top:12px;gap:16px">${I('ArrowLeft', 17)}${I('ArrowRight', 17, 'opacity:.4')}${I('RotateCw', 16)}</div>
+            <div class="abs" style="left:124px;top:6px;width:1220px;height:30px;border-radius:15px;background:#1a212b">
+              <div class="abs" style="left:18px;top:7px;font-size:14px">kroopy.netlify.app</div>
+              <div class="abs t2" style="right:46px;top:6px">${I('Star', 17)}</div>
+              <div id="lInstall" class="abs" style="right:12px;top:4px;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff">${I('MonitorDown', 17)}</div>
+            </div>
+            <div class="abs" style="left:1366px;top:8px;width:26px;height:26px;border-radius:13px;background:${ROYAL};font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">C</div>
+          </div>
+          <div id="lTitle" class="abs" style="left:0;top:0;width:1440px;height:34px;background:#090d12;border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="abs row" style="left:18px;top:12px;gap:8px">${[0, 1, 2].map(() => '<i style="display:block;width:11px;height:11px;border-radius:6px;background:#2a313c"></i>').join('')}</div>
+            <div id="lTitleIcon" class="abs" style="left:666px;top:8px;width:18px;height:18px"></div>
+            <div class="abs" style="left:692px;top:9px;font-size:13px;font-weight:600">KROOPY</div>
+          </div>
+        </div>
+        <!-- Install popup -->
+        <div id="lPop" class="abs" style="left:1012px;top:86px;width:400px;height:156px;border-radius:14px;background:#1c2431;border:1px solid rgba(255,255,255,.12)">
+          <div class="abs" style="left:20px;top:18px;font-size:16px;font-weight:600">Install app</div>
+          <div id="lPopIcon" class="abs" style="left:20px;top:52px;width:42px;height:42px"></div>
+          <div class="abs" style="left:76px;top:54px;font-size:15px;font-weight:600">KROOPY</div>
+          <div class="abs t3" style="left:76px;top:74px;font-size:12px">kroopy.netlify.app</div>
+          <div class="btn" style="left:196px;top:108px;width:88px;height:34px;border-radius:17px;border:1px solid rgba(255,255,255,.18);font-size:13px">Cancel</div>
+          <div id="lPopInstall" class="btn" style="left:292px;top:108px;width:92px;height:34px;border-radius:17px;background:${ROYAL};font-size:13px">Install</div>
+        </div>
+        <!-- dock + shortcuts -->
+        <div id="lDock" class="abs" style="left:470px;top:832px;width:500px;height:60px;border-radius:18px;background:rgba(40,48,60,.92);border:1px solid rgba(255,255,255,.12)">
+          ${[0, 1, 2, 3, 5, 6].map((i) => `<div class="abs" style="left:${14 + i * 68}px;top:9px;width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.12)"></div>`).join('')}
+          <div id="lDockIcon" class="abs" style="left:${14 + 4 * 68}px;top:9px;width:42px;height:42px"></div>
+          <div class="abs" style="left:${14 + 4 * 68 + 18}px;top:54px;width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,.8)"></div>
+        </div>
+        <div id="lMenu" class="abs" style="left:640px;top:612px;width:250px;height:212px;border-radius:12px;background:#1c2431;border:1px solid rgba(255,255,255,.14)">
+          <div class="abs t3" style="left:14px;top:12px;font-size:11px;letter-spacing:.06em">KROOPY</div>
+          <div id="lMenuHi" class="abs" style="left:6px;width:238px;height:36px;border-radius:8px;background:${ROYAL}"></div>
+          ${[['Lightbulb', 'New idea'], ['Clapperboard', 'New video'], ['ListPlus', 'New task'], ['CalendarDays', 'Calendar']].map(([ic, l], k) => `<div class="abs row" style="left:12px;top:${36 + k * 40}px;height:36px;gap:10px;font-size:14px;font-weight:500"><span class="row" style="width:24px;height:24px;border-radius:7px;background:${LIME};color:${INK};justify-content:center">${I(ic, 14)}</span>${l}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="lbase" class="abs" style="left:24px;top:1262px;width:1032px;height:24px;border-radius:2px 2px 20px 20px;background:#272e39;border:1px solid rgba(255,255,255,.1)">
+    <div class="abs" style="left:440px;top:-1px;width:150px;height:8px;border-radius:0 0 8px 8px;background:#1b2029"></div>
+  </div>`;
+}
+
+function phoneHTML() {
+  const sb = (id) => `<div id="${id}" class="abs" style="left:0;top:0;width:390px;height:48px">
+      <div class="abs" style="left:32px;top:16px;font-size:15px;font-weight:600">16:20</div>
+      <div class="abs row" style="right:26px;top:16px;gap:6px">${I('Signal', 16)}<span class="psig" style="position:relative;width:17px;height:16px;display:inline-block"><span class="pwifi abs" style="left:0;top:0">${I('Wifi', 16)}</span><span class="pplane abs" style="left:0;top:0">${I('Plane', 16)}</span></span>${I('BatteryFull', 22)}</div></div>`;
+  const tabbar = (id) => `<div id="${id}" class="abs" style="left:12px;top:752px;width:366px;height:68px;border-radius:30px;background:#121821;border:1px solid rgba(255,255,255,.09)">
+      ${[[36.6, 'House', 'Home', 1], [109.8, 'Clapperboard', 'Studio'], [256.2, 'CalendarDays', 'Calendar'], [329.4, 'Menu', 'More']].map(([cx, ic, l, on]) => `<div class="abs" style="left:${cx - 30}px;top:13px;width:60px;text-align:center;color:${on ? '#fff' : 'rgba(229,237,248,.5)'}">${I(ic, 22)}<div style="font-size:10.5px;margin-top:3px">${l}</div></div>`).join('')}
+      <div class="abs" style="left:156px;top:7px;width:54px;height:54px;border-radius:22px;background:${LIME};color:${INK};display:flex;align-items:center;justify-content:center">${I('Plus', 26)}</div></div>`;
+  const topbar = (slot, title) => `<div class="abs" style="left:12px;top:54px;width:366px;height:58px;border-radius:22px;background:#121821;border:1px solid rgba(255,255,255,.08)">
+      <div id="${slot}" class="abs" style="left:9px;top:9px;width:40px;height:40px"></div>
+      <div class="abs cool" style="left:58px;top:16px;font-size:20px">${title}</div>
+      <div class="abs row t2" style="right:16px;top:18px;gap:16px">${I('Search', 19)}<span style="position:relative">${I('Bell', 19)}<i class="abs" style="right:-1px;top:-1px;width:7px;height:7px;border-radius:4px;background:${PINK}"></i></span>${I('Menu', 19)}</div></div>`;
+  const overview = (pre) => `
+      <div class="abs eyebrow" style="left:18px;top:130px;font-size:10px">Tuesday · 24 November 2026</div>
+      <div class="abs cool" style="left:16px;top:146px;font-size:34px;line-height:1.05;white-space:nowrap">Good afternoon<span class="stop"></span></div>
+      <div class="abs t2" style="left:18px;top:190px;font-size:13px">Today: 5 tasks, 1 recording. <span class="baby lime" style="font-size:15px">let’s create</span></div>
+      <div class="btn" style="left:18px;top:220px;width:142px;height:40px;border-radius:12px;background:${LIME};color:${INK};font-size:13px">${I('Plus', 15)}Quick create</div>
+      <div class="abs panel" style="left:16px;top:274px;width:358px;height:200px;border-radius:18px">
+        ${[['3', 'Pending videos'], ['2', 'In production'], ['1', 'Scheduled'], ['2', 'Published', 1], ['5', 'Open ideas'], ['8', 'Tasks to do']].map(([v, l, lm], i) => `<div class="abs" style="left:${(i % 3) * 119}px;top:${Math.floor(i / 3) * 100}px;width:119px;height:100px;${i % 3 ? 'border-left:1px solid rgba(255,255,255,.05);' : ''}${i > 2 ? 'border-top:1px solid rgba(255,255,255,.05)' : ''}">
+          <div class="abs cool" style="left:14px;top:14px;font-size:32px;line-height:1;${lm ? `color:${LIME}` : ''}">${v}</div><div class="abs" style="left:14px;top:56px;font-size:12px;font-weight:600">${l}</div></div>`).join('')}
+      </div>
+      <div class="abs panel" style="left:16px;top:488px;width:358px;height:250px;border-radius:18px">
+        <div class="abs cool" style="left:16px;top:14px;font-size:18px">Today <span class="t3" style="font-family:Inter;font-size:11px">0/9</span></div>
+        ${[['Invoice for October', 'Overdue', '', 1], ['Shoot day — coffee spots', 'Event · until 13:00', '09:30'], ['Reply to brand email (Lisbon collab)', 'Task', '11:00'], ['Gym', 'Task', '19:00'], ['Export final cut — editing tricks video', 'Task · 1/3', '']].map(([a, b, c, od], k) => `<div class="abs" style="left:0;top:${46 + k * 40}px;width:358px;height:40px">
+          <div id="${pre}cb${k}" class="abs" style="left:16px;top:11px;width:18px;height:18px;border-radius:9px;border:1.5px solid rgba(255,255,255,.26)"><span class="abs ck" style="inset:-1.5px;border-radius:9px;background:${LIME};color:${INK};display:flex;align-items:center;justify-content:center">${I('Check', 12)}</span></div>
+          <div id="${pre}tt${k}" class="abs ell" style="left:44px;top:4px;font-size:13px;font-weight:500;width:240px">${a}</div><div id="${pre}ts${k}" class="abs" style="left:44px;top:12px;height:1.5px;background:rgba(229,237,248,.5);transform-origin:0 50%;width:0"></div>
+          <div class="abs" style="left:44px;top:22px;font-size:10.5px;color:${od ? PINK : 'rgba(229,237,248,.45)'}">${b}</div><div class="abs t3" style="right:14px;top:12px;font-size:11px">${c}</div></div>`).join('')}
+      </div>`;
+  const CREATE = [['Lightbulb', 'New idea', 'Capture it before it’s gone', 1], ['Clapperboard', 'New video', 'Start a production'], ['ListPlus', 'New task', 'Personal or professional'], ['CalendarPlus', 'New event', 'Recording, edit, meeting…'], ['Repeat', 'New habit', 'Build consistency'], ['Flag', 'New goal', 'Daily to yearly'], ['ChartColumn', 'Log statistics', 'Record a post’s numbers'], ['Upload', 'Upload asset', 'Images, video, audio, docs']];
+  const DOTS = { '11-18': 1, '11-22': 1, '11-23': 1, '11-24': 4, '11-25': 2, '11-26': 2, '11-27': 2, '11-28': 1, '11-29': 1, '11-30': 1, '12-3': 1 };
+  let month = '';
+  for (let r = 0; r < 6; r++) { month += `<div id="pmr${r}" class="abs" style="left:0;top:${34 + r * 52}px;width:358px;height:52px;border-top:1px solid rgba(255,255,255,.05)">`;
+    for (let c = 0; c < 7; c++) { const n = r * 7 + c; let d, m; if (n < 6) { d = 26 + n; m = 10; } else if (n < 36) { d = n - 5; m = 11; } else { d = n - 35; m = 12; } const key = `${m}-${d}`;
+      month += `<div class="abs" style="left:${c * 51.14}px;top:0;width:51.14px;height:52px">${key === '11-24' ? `<div class="abs" style="left:13.5px;top:4px;width:24px;height:24px;border-radius:12px;background:${ROYAL}"></div>` : ''}
+        <div class="abs" style="left:0;top:9px;width:51.14px;text-align:center;font-size:13px;${m !== 11 ? 'color:rgba(229,237,248,.3)' : ''}">${d}</div>
+        ${DOTS[key] ? `<div class="abs row" style="left:0;top:36px;width:51.14px;justify-content:center;gap:3px">${Array.from({ length: DOTS[key] }, (_, k) => `<i class="pdot" style="display:block;width:5px;height:5px;border-radius:3px;background:${[PINK, ROYAL, LIME, 'rgba(229,237,248,.6)'][(d + k) % 4]}"></i>`).join('')}</div>` : ''}</div>`; }
+    month += '</div>'; }
+  return `
+  <div id="pbody" class="abs" style="left:313px;top:503px;width:454px;height:954px;border-radius:74px;background:#1b2029;border:2px solid rgba(255,255,255,.16)"></div>
+  <div id="pbtn" class="abs" style="left:766px;top:760px;width:7px;height:96px;border-radius:3px;background:#2a313c"></div>
+  <div class="abs" style="left:307px;top:720px;width:7px;height:60px;border-radius:3px;background:#2a313c"></div>
+  <div id="pdisp" class="abs" style="left:325px;top:515px;width:430px;height:930px;border-radius:62px;overflow:hidden;background:#000">
+    <div id="pscr" class="abs" style="left:0;top:0;width:430px;height:930px;background:${INK}">
+    <div id="pui" class="abs" style="left:0;top:0;width:390px;height:844px;transform:scale(${KP});transform-origin:0 0">
+      <!-- Safari-style page -->
+      <div id="pBrowser" class="abs" style="left:0;top:0;width:390px;height:844px;background:${INK}">
+        ${topbar('pBrandB', 'Overview')}${overview('b')}
+        <div class="abs" style="left:0;top:716px;width:390px;height:128px;background:#0f141b;border-top:1px solid rgba(255,255,255,.08)">
+          <div class="abs row" style="left:16px;top:10px;width:358px;height:40px;border-radius:12px;background:#1c2431;justify-content:center;font-size:15px;gap:6px">${I('Lock', 12, 'color:rgba(229,237,248,.6)')}kroopy.netlify.app</div>
+          <div class="abs row t2" style="left:0;top:66px;width:390px;justify-content:space-around;color:${ROYAL}">${I('ChevronLeft', 24)}${I('ChevronRight', 24, 'opacity:.35')}<span id="pShareBtn" class="row" style="width:40px;height:40px;justify-content:center;margin-top:-8px">${I('Share', 22)}</span>${I('BookOpen', 22)}${I('Copy', 21)}</div>
+        </div>
+      </div>
+      <!-- share sheet -->
+      <div id="pShare" class="abs" style="left:0;top:356px;width:390px;height:488px;border-radius:16px 16px 0 0;background:#1a212b;border-top:1px solid rgba(255,255,255,.1)">
+        <div id="pShIcon" class="abs" style="left:18px;top:18px;width:46px;height:46px"></div>
+        <div class="abs" style="left:76px;top:22px;font-size:15px;font-weight:600">KROOPY</div>
+        <div class="abs t3" style="left:76px;top:42px;font-size:12px">kroopy.netlify.app</div>
+        <div class="abs t3" style="right:18px;top:22px;width:28px;height:28px;border-radius:14px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center">${I('X', 14)}</div>
+        <div class="abs" style="left:16px;top:84px;width:358px;height:220px;border-radius:14px;background:#232b37">
+          ${[['Copy', 'Copy'], ['Add to Reading List', 'BookOpen'], ['Add to Home Screen', 'SquarePlus'], ['Find on Page', 'Search']].map(([l, ic], k) => `<div ${k === 2 ? 'id="pShAdd"' : ''} class="abs row" style="left:0;top:${k * 55}px;width:358px;height:55px;padding:0 18px;font-size:15.5px;${k ? 'border-top:1px solid rgba(255,255,255,.07)' : ''}">${l}<span style="flex:1"></span>${I(ic, 20)}</div>`).join('')}
+        </div>
+      </div>
+      <!-- add to home screen -->
+      <div id="pAdd" class="abs" style="left:0;top:54px;width:390px;height:790px;border-radius:16px 16px 0 0;background:#151b24;border-top:1px solid rgba(255,255,255,.1)">
+        <div class="abs" style="left:18px;top:18px;font-size:16px;color:${ROYAL}">Cancel</div>
+        <div class="abs" style="left:0;top:18px;width:390px;text-align:center;font-size:16px;font-weight:600">Add to Home Screen</div>
+        <div id="pAddBtn" class="abs" style="right:18px;top:14px;font-size:16px;font-weight:700;color:${ROYAL};padding:4px 6px">Add</div>
+        <div class="abs" style="left:16px;top:70px;width:358px;height:96px;border-radius:14px;background:#1f2732">
+          <div id="pAddIcon" class="abs" style="left:16px;top:18px;width:60px;height:60px"></div>
+          <div class="abs" style="left:92px;top:22px;width:250px;font-size:16px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.1)">KROOPY</div>
+          <div class="abs t3" style="left:92px;top:58px;font-size:13px">kroopy.netlify.app</div>
+        </div>
+      </div>
+      <!-- home screen -->
+      <div id="pHome" class="abs" style="left:0;top:0;width:390px;height:844px;background:${NAVY}">
+        ${Array.from({ length: 24 }, (_, i) => { const c = i % 4, r = Math.floor(i / 4); if (c === 1 && r === 2) return ''; return `<div class="abs" style="left:${27 + c * 88}px;top:${70 + r * 100}px;width:62px;height:62px;border-radius:15px;background:rgba(255,255,255,.1)"></div><div class="abs" style="left:${41 + c * 88}px;top:${140 + r * 100}px;width:34px;height:5px;border-radius:3px;background:rgba(255,255,255,.16)"></div>`; }).join('')}
+        <div id="pHomeIcon" class="abs" style="left:115px;top:270px;width:62px;height:62px"></div>
+        <div class="abs" style="left:96px;top:337px;width:100px;text-align:center;font-size:11.5px;font-weight:500">KROOPY</div>
+        <div class="abs" style="left:16px;top:738px;width:358px;height:88px;border-radius:32px;background:rgba(255,255,255,.12)">${[0, 1, 2, 3].map((c) => `<div class="abs" style="left:${14 + c * 88}px;top:13px;width:62px;height:62px;border-radius:15px;background:rgba(255,255,255,.12)"></div>`).join('')}</div>
+        <div class="abs" style="left:130px;top:828px;width:130px;height:5px;border-radius:3px;background:rgba(255,255,255,.6)"></div>
+      </div>
+      <!-- splash -->
+      <div id="pSplash" class="abs" style="left:0;top:0;width:390px;height:844px;background:${INK}"><div id="pSplashIcon" class="abs" style="left:159px;top:386px;width:72px;height:72px"></div></div>
+      <!-- the installed app, full screen -->
+      <div id="pApp" class="abs" style="left:0;top:0;width:390px;height:844px;background:${INK}">
+        ${topbar('pBrandA', 'Overview')}${overview('a')}${tabbar('pTab')}
+        <div id="pFab" class="abs" style="left:168px;top:759px;width:54px;height:54px"></div>
+        <div id="pCalTab" class="abs" style="left:238px;top:762px;width:60px;height:50px"></div>
+        <div id="pHomeTab" class="abs" style="left:18px;top:762px;width:60px;height:50px"></div>
+        <div id="pCreate" class="abs" style="left:8px;top:250px;width:374px;height:594px;border-radius:28px 28px 0 0;background:#10161e;border:1px solid rgba(255,255,255,.08)">
+          <div class="abs" style="left:168px;top:9px;width:38px;height:4px;border-radius:2px;background:rgba(255,255,255,.16)"></div>
+          <div class="abs cool" style="left:18px;top:28px;font-size:26px;line-height:1">Create</div>
+          <div class="abs t3" style="left:18px;top:60px;font-size:13px">Add anything, from anywhere.</div>
+          ${CREATE.map(([ic, a, b, lm], i) => `<div class="abs" style="left:${12 + (i % 2) * 180}px;top:${94 + Math.floor(i / 2) * 78}px;width:170px;height:68px;border-radius:16px;background:#161d27;border:1px solid rgba(255,255,255,.06)">
+            <div class="abs" style="left:12px;top:15px;width:36px;height:36px;border-radius:11px;background:${lm ? LIME : '#1f2835'};color:${lm ? INK : 'rgba(229,237,248,.7)'};display:flex;align-items:center;justify-content:center">${I(ic, 17)}</div>
+            <div class="abs" style="left:58px;top:16px;font-size:13.5px;font-weight:600">${a}</div><div class="abs t3 ell" style="left:58px;top:36px;font-size:11.5px;width:104px">${b}</div></div>`).join('')}
+        </div>
+        <div id="pCal" class="abs" style="left:0;top:118px;width:390px;height:620px;background:${INK}">
+          <div class="abs cool" style="left:16px;top:6px;font-size:34px;line-height:1">Calendar<span class="stop"></span></div>
+          <div class="abs cool" style="left:16px;top:58px;font-size:20px">November 2026</div>
+          <div id="pmp" class="abs panel" style="left:16px;top:96px;width:358px;height:352px;border-radius:18px;overflow:hidden">
+            ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, c) => `<div class="abs t3" style="left:${c * 51.14}px;top:12px;width:51.14px;text-align:center;font-size:11px">${d}</div>`).join('')}${month}
+          </div>
+        </div>
+      </div>
+      ${sb('pStatus')}
+    </div>
+    </div>
+    <div class="abs" style="left:155px;top:14px;width:120px;height:34px;border-radius:17px;background:#000"></div>
+    <div id="pOff" class="abs" style="left:0;top:0;width:430px;height:930px;background:#000"></div>
+  </div>`;
+}
+$('#laptop').innerHTML = laptopHTML();
+$('#phone').innerHTML = phoneHTML();
+$('#obj img').src = OO_SRC;
+
+/* ───────────── measurement ───────────── */
+function nativeRect(el, root) {
+  let x = 0, y = 0, e = el;
+  while (e && e !== root) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
+  return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+}
+const lui = $('#lui'), pui = $('#pui');
+/** base world rect (centre-based) of an element inside the laptop or phone UI */
+function baseRect(sel) {
+  const el = $(sel);
+  if (lui.contains(el)) { const n = nativeRect(el, lui); return { dev: 'L', x: LX + 60 + 13 - 73 + KL * (n.x + n.w / 2), y: LY + KL * (n.y + n.h / 2), w: KL * n.w, h: KL * n.h }; }
+  const n = nativeRect(el, pui);
+  return { dev: 'P', x: PXo + KP * (n.x + n.w / 2), y: PYo + KP * (n.y + n.h / 2), w: KP * n.w, h: KP * n.h };
+}
+/* device poses (functions of time): world = C + s·(p − C) + (dx, dy) */
+function laptopPose(t) {
+  const b = t / BEAT;
+  if (b < 72) {
+    const inP = spring(t - tb(8), 9, 0.82), outP = expoIn(clamp((t - tb(39)) / 0.42));
+    return { dx: 0, dy: 1500 * (1 - inP) + 1600 * outP, s: 1, on: b >= 7.9 && b < 40.2 };
+  }
+  const inP = spring(t - tb(71.6), 10, 0.8), outP = expoIn(clamp((t - tb(80)) / 0.32));
+  return { dx: 0, dy: -300 - 1400 * (1 - inP) - 1500 * outP, s: 0.74, on: b < 80.8 };
+}
+function phonePose(t) {
+  const b = t / BEAT;
+  if (b < 71.6) {
+    const inP = spring(t - tb(40), 9, 0.82), outP = expoIn(clamp((t - tb(70.2)) / 0.42));
+    return { dx: 0, dy: 1500 * (1 - inP) + 1600 * outP, s: 1, on: b >= 39.9 && b < 71.4 };
+  }
+  const inP = spring(t - tb(72), 10, 0.8), outP = expoIn(clamp((t - tb(80)) / 0.32));
+  return { dx: 0, dy: 420 + 1400 * (1 - inP) + 1500 * outP, s: 0.56, on: b < 80.8 };
+}
+function mapRect(R, t) {
+  const P = R.dev === 'L' ? laptopPose(t) : phonePose(t), C = R.dev === 'L' ? CL : CP;
+  return { x: C.x + P.s * (R.x - C.x) + P.dx, y: C.y + P.s * (R.y - C.y) + P.dy, w: R.w * P.s, h: R.h * P.s };
+}
+const A = {};
+const at = (key, extra = {}) => (t) => ({ ...mapRect(A[key], t), ...extra });
+
+/* ───────────── timelines ───────────── */
+const CAM = [], OBJ = [], CUR = [], CLICKS = [], TAPS = [];
+const cam = (b, T, d = 0.5, ease = expoOut) => CAM.push({ t0: tb(b), d, T, ease });
+const obj = (b, T, o = {}) => OBJ.push({ t0: tb(b) + (o.dt || 0), T, w: o.w || 15, z: o.z ?? 0.78 });
+const cur = (b, T, o = {}) => CUR.push({ t0: tb(b) + (o.dt || 0), T, w: o.w || 15, z: o.z ?? 0.86 });
+const click = (b, dt = 0) => CLICKS.push(tb(b) + dt);
+const tap = (b, key, dt = 0) => TAPS.push({ t: tb(b) + dt, key });
+const sceneS = (t) => { const b = t / BEAT; for (let i = 0; i < SCENES.length - 1; i++) if (b < SCENES[i + 1]) return i + (b - SCENES[i]) / (SCENES[i + 1] - SCENES[i]); return SCENES.length - 1; };
+const PUSH = (t) => Math.pow(1.04, sceneS(t));
+const KICK = (t) => { const b = t / BEAT, k = b < 8 || (b >= 72 && b < 84) ? 0.022 : 0.011; return 1 + k * pulse(t - tb(Math.floor(b)), 0.05); };
+function camAt(t, kick = true) {
+  let cx = 540, cy = 960, lz = 0;
+  for (const m of CAM) {
+    if (t < m.t0) break;
+    const p = m.ease(clamp((t - m.t0) / m.d));
+    const T = typeof m.T === 'function' ? m.T(Math.min(t, m.t0 + m.d)) : m.T;
+    cx += (T.cx - cx) * p; cy += (T.cy - cy) * p; lz += (Math.log(T.z / PUSH(m.t0 + m.d)) - lz) * p;
+  }
+  return { cx, cy, z: Math.exp(lz) * PUSH(t) * (kick ? KICK(t) : 1) };
+}
+const toScreen = (c, x, y) => ({ x: (x - c.cx) * c.z + 540, y: (y - c.cy) * c.z + 960 });
+const F = (r, fill = 0.9, o = {}) => ({ cx: r.x + (o.dx || 0), cy: r.y + (o.dy || 0), z: Math.min((W * fill) / r.w, (H * fill) / r.h, o.max || 9) });
+const Fat = (key, fill, o) => (t) => F(mapRect(A[key], t), fill, o);
+let P0 = { x: 540, y: 1000, w: 0, h: 0, rot: 0 };
+function objAt(t) {
+  const P = { ...P0 };
+  for (const m of OBJ) {
+    if (t < m.t0) break;
+    const s = spring(t - m.t0, m.w, m.z);
+    const T = typeof m.T === 'function' ? m.T(t) : m.T;
+    for (const k of ['x', 'y', 'w', 'h', 'rot']) if (T[k] != null) P[k] += (T[k] - P[k]) * s;
+  }
+  return P;
+}
+let C0 = { x: 1500, y: 1500 };
+function curAt(t) {
+  const P = { ...C0 };
+  for (const m of CUR) {
+    if (t < m.t0) break;
+    const s = spring(t - m.t0, m.w, m.z);
+    const T = typeof m.T === 'function' ? m.T(t) : m.T;
+    P.x += (T.x - P.x) * s; P.y += (T.y - P.y) * s;
+  }
+  return P;
+}
+const pressAt = (t) => CLICKS.reduce((a, tc) => Math.max(a, pulse(t - tc + 0.02)), 0);
+const sq = (R) => ({ x: R.x, y: R.y, w: R.w, h: R.w });
+
+/* ───────────── captions (screen space) ───────────── */
+const CAPS = [];
+function caption(id, lines, o) {
+  const el = document.createElement('div'); el.className = 'cap'; el.id = 'cap_' + id;
+  el.innerHTML = lines.map((ln) => `<div class="ln">${ln.map(([w, cls]) => `<span class="m"><span class="w ${cls || ''}">${w}</span></span>`).join(o.join ?? ' ')}</div>`).join('');
+  el.style.fontSize = (o.size || 150) + 'px';
+  el.style.fontFamily = 'Coolvetica';
+  $('#caps').appendChild(el);
+  const c = { el, words: [...el.querySelectorAll('.w')], beats: o.beats, exit: o.exit, y: o.y, exitDt: o.exitDt ?? -0.16 };
+  CAPS.push(c);
+  return c;
+}
+
+/* ───────────── colour wipes (iris from a point, past all four corners) ───────────── */
+const WIPES = [];
+function wipe(color, bIn, bOut, from, o = {}) {
+  const el = document.createElement('div'); el.className = 'wipe'; el.style.background = color;
+  $('#wipes').appendChild(el);
+  WIPES.push({ el, tIn: tb(bIn) + (o.dt || 0), tOut: bOut == null ? 1e9 : tb(bOut) + (o.dtOut || 0), from, to: o.to || from, din: o.din || 0.42, dout: o.dout || 0.36, keep: o.keep });
+}
+
+/* ───────────── the film ───────────── */
+function build() {
+  // anchors
+  $('#lApp').style.top = '34px'; // after install the app fills the window under a slim title bar
+  ['#lFav', '#lInstall', '#lPopIcon', '#lPopInstall', '#lTitleIcon', '#lDockIcon', '#lPal', '#lcard1', '#lcol1', '#lcol2', '#lcal', '#lDock', '#lMenu', '#ln_ContentStudio', '#ln_Calendar', '#lKpi',
+    '#pBrandB', '#pShareBtn', '#pShIcon', '#pShAdd', '#pAddIcon', '#pAddBtn', '#pHomeIcon', '#pSplashIcon', '#pBrandA', '#pFab', '#pCalTab', '#pHomeTab', '#pStatus', '#acb2', '#acb3', '#pmp', '#pCreate'].forEach((s) => (A[s.slice(1)] = baseRect(s)));
+  $('#lApp').style.top = '80px';
+  ['#lPop', '#lChrome'].forEach((s) => (A[s.slice(1)] = baseRect(s)));
+  // the laptop display rect (whole UI)
+  A.lscreen = { dev: 'L', x: 540, y: 654 + 291, w: 932, h: 582 };
+  A.pscreen = { dev: 'P', x: 540, y: 515 + 465, w: 430, h: 930 };
+  A.ldisp = A.lscreen; A.pdisp = A.pscreen;
+  A.menuItems = [0, 1, 2, 3].map((k) => ({ dev: 'L', x: A.lMenu.x - A.lMenu.w / 2 + KL * 125, y: A.lMenu.y - A.lMenu.h / 2 + KL * (54 + k * 40), w: KL * 238, h: KL * 36 }));
+  A.lcard2slot = { ...A.lcard1, x: A.lcard1.x + KL * 216 };
+
+  const icn = (key, ratio = 1) => (t) => { const R = mapRect(A[key], t); const s = R.w * ratio; return { x: R.x, y: R.y, w: s, h: s }; };
+
+  /* ══ HOOK b0–b7 ══ */
+  obj(0, { x: 540, y: 1010, w: 300, h: 300 }, { w: 12, z: 0.6 });
+  caption('h1', [[['Now on']], [['your laptop']], [['&', 'baby lime'], ['iPhone.', 'lime']]], { beats: [1, 2, 3], exit: 4, y: 450, size: 138 });
+  wipe(ROYAL, 4, 8, () => ({ x: 540, y: 1010 }), { to: () => { const c = camAt(tb(8) + 0.3, false); return toScreen(c, mapRect(A.lFav, tb(8) + 0.3).x, mapRect(A.lFav, tb(8) + 0.3).y); }, dout: 0.4 });
+  obj(4, { rot: 360, w: 340, h: 340 }, { w: 11, z: 0.7 });
+  caption('h2', [[['Install']], [['in two']], [['taps.', 'lime']]], { beats: [5, 6, 7], exit: 8, y: 1500, size: 150 });
+
+  /* ══ LAPTOP b8–b39 ══ */
+  obj(8, (t) => ({ ...icn('lFav')(t), rot: 360 }), { dt: 0.04, w: 12, z: 0.82 });
+  cam(8, { cx: 540, cy: 980, z: 1.0 }, 0.5);
+  cam(9, (t) => { const R = mapRect(A.lInstall, t); return { cx: R.x - 130, cy: R.y + 110, z: 3.1 }; }, 0.55);
+  cur(9.6, (t) => { const R = mapRect(A.lInstall, t); return { x: R.x - 2, y: R.y + 2 }; }, { w: 13 }); click(11);
+  obj(11, icn('lPopIcon'), { dt: 0.08, w: 13 });
+  cam(11, Fat('lPop', 0.82, { dy: 10 }), 0.5);
+  cur(12, (t) => { const R = mapRect(A.lPopInstall, t); return { x: R.x, y: R.y + 2 }; }, { dt: 0.05, w: 14 }); click(13);
+  obj(13, icn('lTitleIcon'), { dt: 0.1, w: 13 });
+  cam(13, { cx: 540, cy: 930, z: 1.04 }, 0.55);
+  cur(13.4, (t) => { const R = mapRect(A.ldisp, t); return { x: R.x + 300, y: R.y + 190 }; }, { w: 10 });
+  caption('l1', [[['Its own']], [['window.', 'lime']]], { beats: [14, 15], exit: 16, y: 380, size: 140 });
+  // ⌘K palette
+  cam(16, Fat('lPal', 0.86), 0.5);
+  // board drag
+  cur(19.3, (t) => { const R = mapRect(A.ln_ContentStudio, t); return { x: R.x - 20, y: R.y + 2 }; }, { w: 14 }); click(20);
+  cam(20, (t) => { const c1 = mapRect(A.lcol1, t); return { cx: c1.x, cy: c1.y - KL * 70, z: 2.3 }; }, 0.5);
+  const cardPos = (t) => { const p = clamp(spring(t - tb(22), 12, 0.86), 0, 1.05); const a = mapRect(A.lcard1, t), b2 = mapRect(A.lcard2slot, t); return { x: lerp(a.x, b2.x, p), y: lerp(a.y, b2.y + KL * 0, p) }; };
+  A.cardPos = cardPos;
+  cur(20.4, (t) => { const c = cardPos(t); return { x: c.x - 20, y: c.y + 6 }; }, { w: 14 }); click(21);
+  cur(22, (t) => { const c = cardPos(t); return { x: c.x - 20, y: c.y + 6 }; }, { w: 40, z: 1 });
+  cur(23.4, (t) => { const R = mapRect(A.ln_Calendar, t); return { x: R.x - 30, y: R.y + 2 }; }, { w: 14 }); click(24);
+  cam(24, (t) => { const R = mapRect(A.lcal, t); return { cx: R.x, cy: R.y - KL * 60, z: 1.32 }; }, 0.5);
+  cam(25, (t) => { const R = mapRect(A.lcal, t); return { cx: R.x - KL * 230, cy: R.y + KL * 150, z: 2.05 }; }, 0.6);
+  cam(28, { cx: 540, cy: 960, z: 1.02 }, 0.5);
+  [['Ideas.', ''], ['Studio.', 'lime'], ['Calendar.', 'royal'], ['Tasks.', 'pink']].forEach(([w, cls], k) => caption('lw' + k, [[[w, cls]]], { beats: [28 + k], exit: 29 + k, exitDt: -0.1, y: 400, size: 190 }));
+  // dock + shortcuts
+  obj(32, icn('lDockIcon'), { dt: 0.05, w: 12 });
+  cam(32, (t) => { const D = mapRect(A.lDock, t), M = mapRect(A.lMenu, t); return { cx: D.x + 20, cy: (D.y + M.y) / 2 - 10, z: 2.3 }; }, 0.55);
+  cur(32.4, (t) => { const R = mapRect(A.lDockIcon, t); return { x: R.x + 4, y: R.y + 4 }; }, { w: 14 }); click(33);
+  for (let k = 0; k < 4; k++) cur(33.6 + k, (t) => { const R = mapRect(A.menuItems[k], t); return { x: R.x + 10, y: R.y + 4 }; }, { w: 16 });
+  cur(37.6, { x: 1500, y: 1500 }, { w: 7 });
+  cam(37.6, { cx: 540, cy: 960, z: 1.0 }, 0.45);
+  caption('l3', [[['Shortcuts,']], [['built in.', 'lime']]], { beats: [34, 35], exit: 37, y: 1640, size: 120 });
+  // close the laptop; the icon jumps out
+  obj(38, { x: 540, y: 820, w: 220, h: 220, rot: 0 }, { dt: 0.18, w: 11, z: 0.7 });
+  caption('l4', [[['Close'], ['the laptop.', 'lime']]], { beats: [38, 38.5], exit: 39.1, exitDt: -0.05, y: 360, size: 104 });
+
+  /* ══ iPHONE b40–b71 ══ */
+  wipe(LIME, 39.55, 40.15, () => ({ x: 540, y: 820 }), { din: 0.28, dout: 0.34, to: () => ({ x: 540, y: 980 }) });
+  obj(40, icn('pBrandB'), { dt: 0.06, w: 12, z: 0.82 });
+  cam(40, { cx: 540, cy: 985, z: 1.0 }, 0.5);
+  cam(41, (t) => { const R = mapRect(A.pShareBtn, t); return { cx: 540, cy: R.y - 150, z: 2.2 }; }, 0.5); tap(41, 'pShareBtn');
+  cam(42, (t) => F(mapRect(A.pdisp, t), 0.9, { dy: 140 }), 0.55);
+  obj(42, icn('pShIcon'), { dt: 0.12, w: 13 });
+  tap(43, 'pShAdd');
+  obj(44, icn('pAddIcon'), { dt: 0.08, w: 13 });
+  cam(44, (t) => { const R = mapRect(A.pAddIcon, t); return { cx: 540, cy: R.y + 150, z: 1.7 }; }, 0.5);
+  tap(45, 'pAddBtn');
+  obj(46, icn('pHomeIcon'), { dt: 0.06, w: 12, z: 0.68 });
+  cam(46, { cx: 540, cy: 985, z: 1.0 }, 0.5);
+  caption('p1', [[['Two'], ['taps.', 'lime']]], { beats: [46, 47], exit: 48, y: 1660, size: 150 });
+  tap(48, 'pHomeIcon');
+  obj(48, icn('pSplashIcon'), { dt: 0.06, w: 11 });
+  obj(49.4, icn('pBrandA'), { w: 12 });
+  caption('p2', [[['Full'], ['screen.', 'lime']]], { beats: [50, 51], exit: 52, y: 330, size: 140 });
+  tap(52, 'pFab');
+  cam(52, (t) => F(mapRect(A.pCreate, t), 0.9, { dy: -40 }), 0.5);
+  tap(53, 'pCalTab');
+  cam(53, (t) => F(mapRect(A.pmp, t), 0.92), 0.5);
+  cam(55, { cx: 540, cy: 985, z: 1.0 }, 0.45);
+  // offline
+  caption('p3a', [[['No'], ['signal?', 'pink']]], { beats: [56, 56.5], exit: 58, y: 330, size: 130 });
+  cam(56, (t) => { const R = mapRect(A.pStatus, t); return { cx: R.x + 100, cy: R.y + 77, z: 2.6 }; }, 0.4);
+  cam(57, { cx: 540, cy: 985, z: 1.0 }, 0.45);
+  tap(57, 'pHomeTab');
+  tap(58, 'acb2'); tap(59, 'acb3');
+  caption('p3b', [[['Still'], ['works.', 'lime']]], { beats: [58, 59], exit: 60, y: 1660, size: 140 });
+  cam(58, (t) => { const R = mapRect(A.acb2, t); return { cx: 540, cy: R.y - 60, z: 1.15 }; }, 0.5);
+  cam(60, { cx: 540, cy: 985, z: 1.0 }, 0.5);
+  caption('p4', [[['Your data stays']], [['on this'], ['device.', 'lime']]], { beats: [60, 61, 62], exit: 64, y: 300, size: 104 });
+  // back home: the badge
+  obj(64, icn('pHomeIcon'), { dt: 0.06, w: 12 });
+  cam(65, (t) => { const R = mapRect(A.pHomeIcon, t); return { cx: R.x + 60, cy: R.y + 40, z: 2.2 }; }, 0.5);
+  cam(66.5, { cx: 540, cy: 985, z: 1.0 }, 0.5);
+  caption('p5', [[['Its own'], ['icon.', 'lime']]], { beats: [66, 67], exit: 68, y: 1660, size: 140 });
+  caption('p6', [[['Close'], ['the iPhone.', 'lime']]], { beats: [68, 68.5], exit: 70, y: 360, size: 104 });
+  obj(69, { x: 540, y: 820, w: 240, h: 240 }, { dt: 0.06, w: 11, z: 0.7 });
+
+  /* ══ BOTH b72–b79 ══ */
+  wipe(ROYAL, 71.55, 72.0, () => ({ x: 540, y: 820 }), { din: 0.24, dout: 0.22, to: () => ({ x: 540, y: 820 }) });
+  cam(72, { cx: 540, cy: 960, z: 1.0 }, 0.4);
+  const centerOf = (key, size) => (t) => { const R = mapRect(A[key], t); return { x: R.x, y: R.y, w: size, h: size }; };
+  for (let k = 0; k < 6; k++) obj(72 + k, centerOf(k % 2 ? 'pscreen' : 'lscreen', k % 2 ? 120 : 150), { dt: 0.02, w: 17, z: 0.66 });
+  obj(78, { x: 540, y: 960, w: 300, h: 300 }, { w: 13, z: 0.62 });
+  caption('b1', [[['Your'], ['laptop.', 'lime']]], { beats: [73, 73.5], exit: 75, y: 190, size: 120 });
+  caption('b2', [[['Your'], ['iPhone.', 'lime']]], { beats: [75, 75.5], exit: 77, y: 1800, size: 120 });
+  caption('b3', [[['Your'], ['studio.', 'baby lime']]], { beats: [77, 78], exit: 80, y: 190, size: 130 });
+
+  /* ══ DROP b80–b83 · END b84–b95 ══ */
+  wipe(LIME, 80, 84, () => ({ x: 540, y: 960 }), { din: 0.4, keep: true });
+  caption('d1', [[['K'], ['R'], ['O'], ['O'], ['P'], ['Y']]], { beats: [80.25, 80.5, 80.75, 81, 81.25, 81.5], exit: 82, y: 960, size: 260, join: '' });
+  CAPS[CAPS.length - 1].words.forEach((w) => (w.style.color = INK));
+  wipe(ROYAL, 82, 84, () => ({ x: 540, y: 960 }), { din: 0.36, keep: true });
+  wipe(PINK, 82.5, 84, () => ({ x: 540, y: 960 }), { din: 0.32, keep: true });
+  wipe(INK, 83, 84, () => ({ x: 540, y: 960 }), { din: 0.36, keep: true });
+  obj(82, { x: 540, y: 760, w: 300, h: 300, rot: 360 }, { w: 14, z: 0.8 });
+  caption('e1', [[['K'], ['R'], ['O'], ['O'], ['P'], ['Y']]], { beats: [84, 84.25, 84.5, 84.75, 85, 85.25], exit: 999, y: 1085, size: 215, join: '' });
+  caption('e2', [[['Install it on'], ['your laptop']], [['&', 'baby lime'], ['iPhone.']]], { beats: [86, 87, 88, 88.5], exit: 999, y: 1290, size: 66 });
+  caption('e3', [[['kroopy.netlify.app', 'lime']]], { beats: [89], exit: 999, y: 1440, size: 54 });
+  CAPS.slice(-2).forEach((c) => c.words.forEach((w) => { if (!w.classList.contains('lime')) w.style.color = 'rgba(229,237,248,.78)'; }));
+  cam(84, { cx: 540, cy: 960, z: 1.0 }, 0.3);
+}
+
+/* ───────────── per-frame ───────────── */
+const worldEl = $('#world'), objEl = $('#obj'), curEl = $('#cursor'), touchEl = $('#touch');
+const gObj = $('#gObj'), gCur = $('#gCur'), gDev = $('#gDev'), gCap = $('#gCap');
+function setDev(el, P, C) { el.style.transform = `translate(${P.dx}px,${P.dy}px) translate(${C.x}px,${C.y}px) scale(${P.s}) translate(${-C.x}px,${-C.y}px)`; show(el, P.on); }
+
+function renderLaptop(t) {
+  const b = t / BEAT;
+  const P = laptopPose(t);
+  setDev($('#laptop'), P, CL);
+  if (!P.on) return;
+  // lid: opens on b8 (and b72), closes on b38
+  const open = b < 72 ? clamp(spring(t - tb(8) - 0.06, 10, 0.78), 0, 1.04) * (1 - IO(t, tb(38), 0.34)) : clamp(spring(t - tb(72), 10, 0.78), 0, 1.04);
+  $('#lid').style.transform = `scaleY(${Math.max(0.015, open)})`;
+  // browser chrome → title bar (b13)
+  const inst = IO(t, tb(13) + 0.08, 0.4);
+  $('#lTabs').style.transform = `translateY(${-38 * inst}px)`;
+  $('#lBar').style.transform = `translateY(${-80 * inst}px)`;
+  $('#lTitle').style.transform = `translateY(${-34 * (1 - inst)}px)`;
+  vis($('#lTitle'), inst > 0);
+  $('#lApp').style.top = lerp(80, 34, inst) + 'px';
+  $('#lInstall').style.background = b > 10.5 && b < 13 ? 'rgba(255,255,255,.14)' : 'transparent';
+  // install popup
+  const pop = $('#lPop'); pop._r = pop._r || { w: 400, h: 156 };
+  const pin = EX(t, tb(11) + 0.03, 0.42), pout = IO(t, tb(13), 0.28);
+  vis(pop, t > tb(11) && pout < 1);
+  if (t > tb(11)) clipGrow(pop, { x: 298, y: -38, w: 22, h: 22, r: 6 }, pin * (1 - pout), 14);
+  $('#lPopInstall').style.transform = `scale(${1 - 0.08 * pulse(t - tb(13))})`;
+  // views
+  const view = b < 20 ? 0 : b < 24 ? 1 : 2;
+  const vs = ['#lvOv', '#lvSt', '#lvCal'];
+  vs.forEach((s, i) => {
+    const el = $(s);
+    const tIn = i === 1 ? tb(20) + 0.04 : i === 2 ? tb(24) + 0.04 : -9;
+    vis(el, b < 72 ? i <= view : i === 0);
+    if (i > 0 && b < 72) wipeDown(el, EX(t, tIn, 0.42)); else el.style.clipPath = 'none';
+  });
+  // sidebar highlight
+  const navY = b < 72 ? lerp(lerp(186, 186 + 2 * 38, clamp(spring(t - tb(20), 18, 0.8), 0, 1.1)), 186 + 3 * 38, clamp(spring(t - tb(24), 18, 0.8), 0, 1.1)) - (b >= 24 ? 0 : 0) : 186;
+  const nv = b < 20 ? 186 : b < 24 ? lerp(186, 262, clamp(spring(t - tb(20), 18, 0.8), 0, 1.1)) : b < 72 ? lerp(262, 300, clamp(spring(t - tb(24), 18, 0.8), 0, 1.1)) : 186;
+  void navY;
+  $('#lNavHi').style.top = nv + 'px';
+  // KPI numbers pop on entry
+  // palette
+  const pal = $('#lPal'); pal._r = pal._r || { w: 580, h: 356 };
+  const ppin = EX(t, tb(16) + 0.02, 0.36), ppout = IO(t, tb(19) + 0.05, 0.26);
+  vis(pal, b >= 16 && ppout < 1 && b < 72);
+  if (b >= 16) clipGrow(pal, { x: 240, y: 0, w: 100, h: 50, r: 12 }, ppin * (1 - ppout), 14);
+  const q = 'new', nq = clamp(Math.floor((t - tb(16) - 0.18) / 0.09) + 1, 0, 3);
+  $('#lPalQ').textContent = q.slice(0, b >= 16 ? nq : 0);
+  const hiY = t < tb(18) ? 78 : lerp(78, 134, clamp(spring(t - tb(18), 20, 0.8), 0, 1.08));
+  $('#lPalHi').style.top = hiY + 'px';
+  $('#lPalHi').style.transform = `scale(${1 - 0.04 * pulse(t - tb(19))})`;
+  // board drag
+  const card = $('#lcard1');
+  $('#lcol1').style.zIndex = b >= 21 && b < 24.5 ? 3 : 'auto';
+  if (b >= 20 && b < 72) {
+    const p = clamp(spring(t - tb(22), 12, 0.86), 0, 1.05);
+    const lift = clamp(spring(t - tb(21), 22, 0.8)) * (1 - clamp(spring(t - tb(23), 18, 0.8)));
+    card.style.transform = `translate(${216 * p}px, ${-6 * lift}px) rotate(${-2.5 * lift}deg) scale(${1 + 0.04 * lift})`;
+    card.style.boxShadow = lift > 0.05 ? `0 ${14 * lift}px ${30 * lift}px rgba(0,0,0,${0.45 * lift})` : 'none';
+    $('#lcnt1').textContent = t >= tb(22) + 0.2 ? 0 : 1;
+    $('#lcnt2').textContent = t >= tb(22) + 0.2 ? 2 : 1;
+    const sc = $('#lcol2').querySelector('.panel');
+    if (sc) sc.style.transform = `translateY(${116 * clamp(spring(t - tb(22) - 0.12, 16, 0.8), 0, 1.05)}px)`;
+  }
+  // calendar chips pop in by week
+  $$('#lcal .cchip').forEach((el) => {
+    const d = el.dataset.day; const day = +d.split('-')[1], mon = +d.split('-')[0];
+    const grp = mon === 12 ? 2 : day < 24 ? 0 : day < 27 ? 1 : 2;
+    const g = b >= 72 ? 1 : grow(t, tb(25 + grp) + (day % 3) * 0.05, 18);
+    el.style.transform = `scale(${g})`; el.style.transformOrigin = '0 50%';
+  });
+  // dock & shortcuts menu
+  const dock = $('#lDock');
+  const din = b < 72 ? clamp(spring(t - tb(32), 14, 0.8), 0, 1.05) * (1 - IO(t, tb(37.6), 0.3)) : 0;
+  vis(dock, din > 0.002);
+  dock.style.transform = `translateY(${(1 - din) * 90}px)`;
+  const menu = $('#lMenu'); menu._r = menu._r || { w: 250, h: 212 };
+  const min = EX(t, tb(33) + 0.04, 0.36), mout = IO(t, tb(37.4), 0.26);
+  vis(menu, b >= 33 && mout < 1 && b < 72);
+  if (b >= 33) clipGrow(menu, { x: 115, y: 212, w: 40, h: 30, r: 10 }, min * (1 - mout), 12);
+  const k = clamp(Math.floor(b - 33.6), 0, 3);
+  const hk = b < 33.6 ? 0 : k + clamp(spring(t - tb(33.6 + k), 22, 0.85) - 1, -1, 0.05);
+  $('#lMenuHi').style.top = 36 + 40 * Math.max(0, hk) + 'px';
+  vis($('#lMenuHi'), b >= 33.6);
+  // device blur on whip moves
+  const P2 = laptopPose(t - 1 / 240);
+  const vy = Math.abs(P.dy - P2.dy) * 240;
+  if (vy > 400) { gDev.setAttribute('stdDeviation', `0 ${Math.min(14, vy / 420).toFixed(2)}`); $('#laptop').style.filter = 'url(#fDev)'; } else $('#laptop').style.filter = 'none';
+}
+
+function renderPhone(t) {
+  const b = t / BEAT;
+  const P = phonePose(t);
+  setDev($('#phone'), P, CP);
+  if (!P.on) return;
+  const payoff = b >= 71.6;
+  // screen power: on from b40; off b68; on again b72
+  const offP = payoff ? 1 - EX(t, tb(72) + 0.05, 0.4) : IO(t, tb(68) + 0.05, 0.3);
+  const off = $('#pOff');
+  vis(off, offP > 0.001);
+  off.style.clipPath = `inset(${(1 - offP) * 50}% 0 ${(1 - offP) * 50}% 0)`;
+  $('#pbtn').style.transform = `translateX(${-3 * pulse(t - tb(68), 0.05)}px)`;
+  // which screen
+  const L = (id) => $(id);
+  const browserOn = !payoff && b < 46.4;
+  vis(L('#pBrowser'), browserOn);
+  const sh = L('#pShare'); sh._r = sh._r || { w: 390, h: 488 };
+  const shIn = clamp(spring(t - tb(42), 14, 0.84), 0, 1.03), shOut = IO(t, tb(44), 0.3);
+  vis(sh, !payoff && b >= 42 && shOut < 1);
+  sh.style.transform = `translateY(${(1 - shIn) * 488 + shOut * 488}px)`;
+  L('#pShAdd').style.background = t > tb(43) - 0.02 && t < tb(44) + 0.1 ? 'rgba(255,255,255,.08)' : 'transparent';
+  const ad = L('#pAdd');
+  const adIn = clamp(spring(t - tb(44), 14, 0.84), 0, 1.03), adOut = IO(t, tb(46), 0.28);
+  vis(ad, !payoff && b >= 44 && adOut < 1);
+  ad.style.transform = `translateY(${(1 - adIn) * 790 + adOut * 790}px)`;
+  L('#pAddBtn').style.transform = `scale(${1 - 0.12 * pulse(t - tb(45))})`;
+  // home screen: b46–b48.5 and b64–b68
+  const home = L('#pHome'); home._r = home._r || { w: 390, h: 844 };
+  const homeOn = !payoff && ((b >= 46 && b < 49) || b >= 64);
+  vis(home, homeOn);
+  if (b >= 46 && b < 49) { const p = EX(t, tb(46) + 0.02, 0.45); home.style.clipPath = `circle(${p * 980}px at 146px 301px)`; }
+  else if (b >= 64) { const p = EX(t, tb(64) + 0.02, 0.45); home.style.clipPath = `circle(${p * 980}px at 195px 844px)`; }
+  // splash grows out of the icon; then the app
+  const spl = L('#pSplash');
+  const spOn = !payoff && b >= 48 && b < 50;
+  vis(spl, spOn);
+  if (spOn) { const p = EX(t, tb(48) + 0.04, 0.42); spl.style.clipPath = `inset(${270 * (1 - p)}px ${213 * (1 - p)}px ${512 * (1 - p)}px ${115 * (1 - p)}px round ${lerp(15, 0, p)}px)`; }
+  const app = L('#pApp');
+  const appOn = payoff || (b >= 49.2 && b < 65);
+  vis(app, appOn);
+  if (!payoff && b < 51) wipeDown(app, EX(t, tb(49.2), 0.5)); else app.style.clipPath = 'none';
+  // FAB press → create sheet (b52), calendar (b53–b57)
+  const cr = L('#pCreate');
+  const crIn = clamp(spring(t - tb(52) - 0.04, 14, 0.84), 0, 1.03), crOut = IO(t, tb(53), 0.26);
+  vis(cr, !payoff && b >= 52 && crOut < 1);
+  cr.style.transform = `translateY(${(1 - crIn) * 600 + crOut * 600}px)`;
+  const cal = L('#pCal');
+  vis(cal, !payoff && b >= 53 && b < 57.3);
+  if (b >= 53 && b < 57.3) {
+    wipeDown(cal, EX(t, tb(53) + 0.12, 0.4));
+    if (b >= 57) wipeUp(cal, IO(t, tb(57) + 0.02, 0.26));
+    for (let r = 0; r < 6; r++) { const g = EX(t, tb(53) + 0.15 + r * 0.05, 0.35); $('#pmr' + r).style.clipPath = `inset(0 0 ${(1 - g) * 100}% 0)`; }
+    $$('#pmp .pdot').forEach((d, i) => { d.style.transform = `scale(${grow(t, tb(54) + (i % 8) * 0.04, 18)})`; });
+  }
+  // offline ticks (b58, b59)
+  [2, 3].forEach((k, i) => {
+    const tc = tb(58 + i);
+    const g = payoff ? 0 : grow(t, tc + 0.03, 20);
+    $('#acb' + k).querySelector('.ck').style.transform = `scale(${g})`;
+    const st = $('#ats' + k); st.style.width = $('#att' + k).scrollWidth + 'px';
+    st.style.transform = `scaleX(${payoff ? 0 : EX(t, tc + 0.06, 0.3)})`;
+  });
+  ['#acb0', '#acb1', '#acb4', '#bcb0', '#bcb1', '#bcb2', '#bcb3', '#bcb4'].forEach((s) => ($(s).querySelector('.ck').style.transform = 'scale(0)'));
+  // status bar: airplane mode from b56
+  const plane = !payoff && b >= 56 && b < 68;
+  $$('#pStatus .pwifi').forEach((e) => (e.style.transform = `scale(${plane ? 1 - grow(t, tb(56), 20) : 1})`));
+  $$('#pStatus .pplane').forEach((e) => (e.style.transform = `scale(${plane ? grow(t, tb(56) + 0.08, 18) : 0})`));
+  vis($('#pStatus'), true);
+  $('#pStatus').style.color = '#fff';
+  const P2 = phonePose(t - 1 / 240);
+  const vy = Math.abs(P.dy - P2.dy) * 240;
+  if (vy > 400) { gDev.setAttribute('stdDeviation', `0 ${Math.min(14, vy / 420).toFixed(2)}`); $('#phone').style.filter = 'url(#fDev)'; } else $('#phone').style.filter = 'none';
+}
+
+function renderCaptions(t) {
+  let vmax = 0;
+  for (const c of CAPS) {
+    const t0 = tb(c.beats[0]) - 0.06, te = tb(c.exit) + c.exitDt, t1 = te + 0.5;
+    const on = t >= t0 && t < t1;
+    show(c.el, on);
+    if (!on) continue;
+    c.el.style.transform = `translateY(${c.y - c.el.offsetHeight / 2}px)`;
+    c.words.forEach((w, i) => {
+      const tw = tb(c.beats[Math.min(i, c.beats.length - 1)]);
+      const yIn = (tt) => 118 * (1 - spring(tt - tw, 18, 0.7));
+      let y = yIn(t);
+      const pe = clamp((t - te - i * 0.025) / 0.26);
+      if (pe > 0) y -= 125 * Math.pow(pe, 2.2);
+      const punch = 1 + 0.08 * pulse(t - tw, 0.05);
+      w.style.transform = `translateY(${y}%) scale(${punch})`;
+      const v = Math.abs(yIn(t) - yIn(t - 1 / 240)) * 240 * (parseFloat(c.el.style.fontSize) / 100);
+      const fast = v > 700 || (pe > 0.3 && pe < 1);
+      w.style.filter = fast ? 'url(#fCap)' : 'none';
+      if (fast) vmax = Math.max(vmax, v, pe > 0 ? 2500 : 0);
+    });
+  }
+  gCap.setAttribute('stdDeviation', `0 ${Math.min(10, vmax / 420).toFixed(2)}`);
+}
+
+function renderWipes(t) {
+  for (const w of WIPES) {
+    const pin = expoOut(clamp((t - w.tIn) / w.din));
+    const pout = w.keep ? 0 : expoInOut(clamp((t - w.tOut) / w.dout));
+    const on = t >= w.tIn && (w.keep ? t < w.tOut : pout < 1);
+    show(w.el, on);
+    if (!on) continue;
+    const a = w.from(), z = pout > 0 ? w.to() : a;
+    const R = 2300;
+    if (pout > 0) w.el.style.clipPath = `circle(${R * (1 - pout)}px at ${z.x}px ${z.y}px)`;
+    else w.el.style.clipPath = `circle(${R * pin}px at ${a.x}px ${a.y}px)`;
+  }
+}
+
+function seek(t) {
+  t = clamp(t, 0, DUR - 1e-6);
+  const b = t / BEAT;
+  const c = camAt(t);
+  worldEl.style.transform = `translate(540px,960px) scale(${c.z}) translate(${-c.cx}px,${-c.cy}px)`;
+  renderLaptop(t);
+  renderPhone(t);
+  // the icon
+  const P = objAt(t);
+  let sc = 1 - 0.07 * CLICKS.concat(TAPS.map((x) => x.t)).reduce((a, tc) => a + (OBJ_HITS.has(tc) ? pulse(t - tc) : 0), 0);
+  if (b >= 84) sc *= 1 + 0.03 * pulse(t - tb(Math.floor(b)), 0.06);
+  const w = Math.max(0, P.w);
+  objEl.style.width = w + 'px'; objEl.style.height = w + 'px';
+  objEl.style.borderRadius = w * 0.25 + 'px';
+  objEl.style.transform = `translate(${P.x - w / 2}px,${P.y - w / 2}px) rotate(${P.rot}deg) scale(${sc})`;
+  show(objEl, w > 0.5 && !(b >= 80.2 && b < 83.9));
+  const bd = $('#badge'); const bg = b >= 64 && b < 68.3 ? grow(t, tb(65) + 0.05, 20) * (1 - IO(t, tb(68), 0.25)) : 0;
+  bd.style.transform = `scale(${bg})`; bd.style.fontSize = w * 0.2 + 'px'; vis(bd, bg > 0.002);
+  const P2 = objAt(t - 1 / 240), c2 = camAt(t - 1 / 240);
+  const s1 = toScreen(c, P.x, P.y), s2 = toScreen(c2, P2.x, P2.y);
+  const ox = Math.min(16, Math.abs(s1.x - s2.x) * 240 / 300), oy = Math.min(16, Math.abs(s1.y - s2.y) * 240 / 300);
+  if (ox > 0.6 || oy > 0.6) { gObj.setAttribute('stdDeviation', `${(ox / c.z).toFixed(2)} ${(oy / c.z).toFixed(2)}`); objEl.style.filter = 'url(#fObj)'; } else objEl.style.filter = 'none';
+  // cursor (laptop only)
+  const Q = curAt(t);
+  const s = (1.3 / Math.sqrt(c.z)) * (1 - 0.16 * pressAt(t));
+  curEl.style.transform = `translate(${Q.x - 2 * s}px,${Q.y - 2 * s}px) scale(${s})`;
+  show(curEl, b > 9 && b < 39);
+  const Q2 = curAt(t - 1 / 240);
+  const a1 = toScreen(c, Q.x, Q.y), a2 = toScreen(c2, Q2.x, Q2.y);
+  const cx = Math.min(12, Math.abs(a1.x - a2.x) * 240 / 260), cy = Math.min(12, Math.abs(a1.y - a2.y) * 240 / 260);
+  if (cx > 0.6 || cy > 0.6) { gCur.setAttribute('stdDeviation', `${(cx / c.z / s).toFixed(2)} ${(cy / c.z / s).toFixed(2)}`); curEl.style.filter = 'url(#fCur)'; } else curEl.style.filter = 'none';
+  // touches (phone)
+  let tch = null;
+  for (const x of TAPS) if (t > x.t - 0.12 && t < x.t + 0.3) tch = x;
+  show(touchEl, !!tch);
+  if (tch) {
+    const R = mapRect(A[tch.key], t), d = t - tch.t;
+    const g = d < 0 ? clamp(spring(d + 0.12, 26, 0.8), 0, 1.1) : 1 - expoIn(clamp(d / 0.3));
+    const size = 64 * (1 - 0.15 * pulse(d + 0.02, 0.05));
+    touchEl.style.width = touchEl.style.height = size + 'px';
+    touchEl.style.transform = `translate(${R.x - size / 2}px,${R.y - size / 2}px) scale(${g})`;
+  }
+  renderWipes(t);
+  renderCaptions(t);
+}
+
+/* ───────────── soundtrack (Web Audio, offline) · A minor, 128 BPM ───────────── */
+const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const CHORDS = [[57, 60, 64, 69], [57, 60, 65, 69], [55, 60, 64, 67], [55, 59, 62, 67]]; // Am · F · C · G
+const ROOTS = [45, 41, 48, 43];
+async function renderAudio() {
+  const SR = 48000, ctx = new OfflineAudioContext(2, DUR * SR, SR);
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296) * 2 - 1;
+  const nbuf = ctx.createBuffer(1, SR * 3, SR); { const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = rnd(); }
+  const ir = ctx.createBuffer(2, SR * 1.8, SR); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < d.length; i++) d[i] = rnd() * Math.pow(1 - i / d.length, 3) * 0.6; }
+  const master = ctx.createGain(); master.gain.value = 0.7;
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -15; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.12;
+  master.connect(comp); comp.connect(ctx.destination);
+  const verb = ctx.createConvolver(); verb.buffer = ir; const vo = ctx.createGain(); vo.gain.value = 0.25; verb.connect(vo); vo.connect(master);
+  const drums = ctx.createGain(); drums.connect(master);
+  const musicF = ctx.createBiquadFilter(); musicF.type = 'lowpass'; musicF.frequency.value = 18000; musicF.Q.value = 0.9; musicF.connect(master);
+  const music = ctx.createGain(); music.connect(musicF);
+  for (let b = 0; b < 96; b++) { const t = tb(b); music.gain.setValueAtTime(0.28, t); music.gain.setTargetAtTime(1, t + 0.02, 0.08); }
+  // offline moment: the music dips under water, then comes back on "Still works."
+  musicF.frequency.setValueAtTime(18000, tb(56)); musicF.frequency.exponentialRampToValueAtTime(500, tb(56) + 0.25); musicF.frequency.setValueAtTime(500, tb(58) - 0.05); musicF.frequency.exponentialRampToValueAtTime(18000, tb(58) + 0.08);
+  const env = (g, t, a, pk, d) => { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(pk, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); };
+  function noise(t, d, o = {}) {
+    const src = ctx.createBufferSource(); src.buffer = nbuf; const f = ctx.createBiquadFilter(); f.type = o.type || 'highpass'; f.frequency.value = o.f || 6000; f.Q.value = o.q || 0.7;
+    if (o.f1) { f.frequency.setValueAtTime(o.f, t); f.frequency.exponentialRampToValueAtTime(o.f1, t + d); }
+    const g = ctx.createGain(); const pan = ctx.createStereoPanner(); pan.pan.value = o.pan || 0;
+    src.connect(f); f.connect(g); g.connect(pan); pan.connect(o.dest || drums);
+    if (o.send) { const s = ctx.createGain(); s.gain.value = o.send; pan.connect(s); s.connect(verb); }
+    if (o.rise) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(o.gain, t + d - 0.01); g.gain.linearRampToValueAtTime(0, t + d); } else env(g, t, o.a || 0.001, o.gain || 0.3, d);
+    src.start(t, Math.abs(rnd()) * 2); src.stop(t + d + 0.05);
+  }
+  function tone(t, f0, d, o = {}) {
+    const osc = ctx.createOscillator(); osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f0, t);
+    if (o.f1) osc.frequency.exponentialRampToValueAtTime(o.f1, t + (o.fd || d));
+    if (o.detune) osc.detune.value = o.detune;
+    let node = osc;
+    if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(o.lp, t); if (o.lp1) f.frequency.exponentialRampToValueAtTime(o.lp1, t + (o.lpd || d)); f.Q.value = o.q || 1; node.connect(f); node = f; }
+    const g = ctx.createGain(); node.connect(g); const pan = ctx.createStereoPanner(); pan.pan.value = o.pan || 0; g.connect(pan); pan.connect(o.dest || music);
+    if (o.send) { const s = ctx.createGain(); s.gain.value = o.send; pan.connect(s); s.connect(verb); }
+    if (o.sustain) { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(o.gain, t + (o.a || 0.005)); g.gain.setValueAtTime(o.gain, t + d - (o.r || 0.04)); g.gain.linearRampToValueAtTime(0, t + d); } else env(g, t, o.a || 0.002, o.gain || 0.3, d);
+    osc.start(t); osc.stop(t + d + 0.05);
+  }
+  const kick = (t, v = 1) => { tone(t, 165, 0.38, { f1: 46, fd: 0.1, gain: 1.0 * v, dest: drums }); noise(t, 0.01, { f: 4000, gain: 0.25 * v }); };
+  const clap = (t, v = 1) => [0, 0.01, 0.021].forEach((o, i) => noise(t + o, i === 2 ? 0.16 : 0.011, { type: 'bandpass', f: 1400, q: 1.1, gain: 0.36 * v, send: i === 2 ? 0.3 : 0 }));
+  const hat = (t, v = 1, open = false, pan = 0.15) => noise(t, open ? 0.18 : 0.04, { f: 8200, gain: 0.13 * v, pan });
+  const bass = (t, m, d, v = 1) => { tone(t, mtof(m), d, { type: 'sawtooth', lp: 1100, lp1: 240, lpd: 0.14, gain: 0.2 * v, sustain: true }); tone(t, mtof(m - 12), d, { gain: 0.34 * v, sustain: true }); };
+  const pluck = (t, m, v = 1, pan = 0) => tone(t, mtof(m), 0.2, { type: 'square', lp: 5200, lp1: 700, lpd: 0.16, gain: 0.05 * v, pan, send: 0.35 });
+  const pad = (t, ch, d, v = 1, lp = 1600) => ch.forEach((m, i) => [-8, 8].forEach((dt) => tone(t, mtof(m), d, { type: 'sawtooth', detune: dt, lp, gain: 0.024 * v, sustain: true, a: 0.18, r: 0.3, pan: (i - 1.5) * 0.25, send: 0.45 })));
+  const stab = (t, ch, v = 1) => ch.forEach((m, i) => tone(t, mtof(m + 12), 0.42, { type: 'sawtooth', lp: 5000, lp1: 600, lpd: 0.3, gain: 0.07 * v, pan: (i - 1.5) * 0.3, send: 0.4, dest: master }));
+  const boom = (t, v = 1) => tone(t, 72, 1.1, { f1: 34, fd: 0.55, gain: 0.85 * v, dest: master });
+  const crash = (t, v = 1, d = 2.2) => { noise(t, d, { f: 4500, gain: 0.28 * v, send: 0.35, pan: -0.15 }); noise(t, d * 0.8, { f: 8500, gain: 0.16 * v, pan: 0.2 }); };
+  const whoosh = (t, d = 0.4, v = 1) => noise(t - d, d, { type: 'bandpass', f: 500, f1: 6000, q: 1.2, gain: 0.22 * v, rise: true, dest: master });
+  const tick = (t, f = 2400, v = 1) => tone(t, f, 0.03, { f1: f * 0.62, fd: 0.02, gain: 0.08 * v, type: 'triangle', dest: master });
+  const chordAt = (b) => CHORDS[Math.floor(b / 4) % 4], rootAt = (b) => ROOTS[Math.floor(b / 4) % 4];
+  for (let b = 0; b < 96; b++) {
+    const t = tb(b), dense = b >= 8 && b < 80, end = b >= 84, drop = b >= 80 && b < 84;
+    kick(t, end ? 0.85 : 1);
+    if ((b >= 4 && b % 2 === 1) || (drop && b % 2 === 1)) clap(t, 0.95);
+    for (let s = 1; s < 4; s++) if (b >= 4) hat(t + s * BEAT / 4, s === 2 ? 1 : dense ? 0.5 : 0.35, s === 2 && dense && b % 2 === 1, s === 2 ? 0.15 : -0.2);
+    if (b >= 8) { const m = rootAt(b); bass(t + BEAT / 2, b % 4 === 2 ? m + 12 : m, BEAT * 0.42, end ? 0.7 : 1); bass(t + BEAT * 0.75, m, BEAT * 0.2, 0.55); }
+    if (b % 4 === 0) pad(t, chordAt(b), 4 * BEAT, b < 8 ? 0.9 : 1, b < 8 ? 900 : 1700);
+    // dopamine arp: 16th-note chord tones from the laptop onward (brighter in the finale)
+    if ((b >= 16 && b < 56) || (b >= 58 && b < 96)) { const ch = chordAt(b); for (let s = 0; s < 4; s++) pluck(t + s * BEAT / 4, ch[(b * 4 + s) % 4] + 12 + (b >= 72 && s % 2 ? 12 : 0), b >= 72 ? 1.2 : 0.9, s % 2 ? 0.3 : -0.3); }
+  }
+  // hook: sub notes under the words
+  [0, 4].forEach((b) => bass(tb(b), ROOTS[0], 4 * BEAT * 0.95, 0.8));
+  // hits, whooshes, risers
+  [[4, 1], [8, 1], [40, 1], [56, 0.7], [72, 1.1], [80, 1.3], [84, 0.9]].forEach(([b, v]) => { boom(tb(b), v); stab(tb(b), chordAt(b), v); noise(tb(b), 0.28, { type: 'bandpass', f: 1800, q: 0.8, gain: 0.22 * v, send: 0.5 }); });
+  crash(tb(80), 1.2, 3); crash(tb(72), 0.7, 2); crash(tb(40), 0.6, 1.8); crash(tb(8), 0.5, 1.6);
+  [[4, 0.35], [8, 0.4], [39.6, 0.3], [71.6, 0.3], [80, 0.4], [82, 0.3], [82.5, 0.25], [83, 0.3]].forEach(([b, d]) => whoosh(tb(b), d, 0.9));
+  [[36, 40], [68, 72], [76, 80]].forEach(([a, z]) => noise(tb(a), tb(z) - tb(a), { type: 'bandpass', f: 400, f1: 7000, q: 1.3, gain: 0.3, rise: true, dest: master, send: 0.3 }));
+  { const segs = [[76, 78, 0.5], [78, 79, 0.25], [79, 80, 0.125]]; for (const [a0, a1, st] of segs) for (let x = a0; x < a1 - 1e-6; x += st) noise(tb(x), 0.08, { type: 'bandpass', f: 1600, q: 0.9, gain: 0.08 + 0.2 * ((x - 76) / 4), send: 0.2 }); }
+  // UI: clicks, taps, typing, lid, lock, ping-pong blips, the badge
+  CLICKS.forEach((t) => tick(t, 2400, 1));
+  TAPS.forEach((x) => tick(x.t, 1900, 0.9));
+  [0, 1, 2].forEach((i) => tick(tb(16) + 0.18 + i * 0.09, 3200, 0.6));
+  tone(tb(38) + 0.3, 90, 0.25, { f1: 50, gain: 0.5, dest: master }); noise(tb(38) + 0.3, 0.06, { type: 'bandpass', f: 900, gain: 0.2, dest: master });
+  tone(tb(68) + 0.05, 1200, 0.05, { f1: 700, gain: 0.12, dest: master, type: 'triangle' });
+  for (let k = 0; k < 6; k++) tone(tb(72 + k) + 0.02, mtof(76 + [0, 3, 7, 12, 7, 15][k]), 0.16, { type: 'triangle', gain: 0.09, dest: master, send: 0.3 });
+  tone(tb(65) + 0.1, 1568, 0.18, { type: 'triangle', gain: 0.08, dest: master, send: 0.4 });
+  // last hit
+  boom(tb(95), 0.9); stab(tb(95), CHORDS[0], 1.1); crash(tb(95), 0.5, 0.45);
+  const buf = await ctx.startRendering();
+  const L = buf.getChannelData(0), R = buf.getChannelData(1);
+  let peak = 0; for (let i = 0; i < L.length; i++) peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
+  const g = 0.891 / (peak || 1), fadeN = Math.round(0.03 * SR), n = L.length;
+  const out = new DataView(new ArrayBuffer(44 + n * 4));
+  const w4 = (o, s) => [...s].forEach((ch, i) => out.setUint8(o + i, ch.charCodeAt(0)));
+  w4(0, 'RIFF'); out.setUint32(4, 36 + n * 4, true); w4(8, 'WAVE'); w4(12, 'fmt '); out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 2, true);
+  out.setUint32(24, SR, true); out.setUint32(28, SR * 4, true); out.setUint16(32, 4, true); out.setUint16(34, 16, true); w4(36, 'data'); out.setUint32(40, n * 4, true);
+  for (let i = 0; i < n; i++) { const f = i > n - fadeN ? (n - i) / fadeN : 1; out.setInt16(44 + i * 4, Math.max(-1, Math.min(1, L[i] * g * f)) * 32767, true); out.setInt16(46 + i * 4, Math.max(-1, Math.min(1, R[i] * g * f)) * 32767, true); }
+  const bytes = new Uint8Array(out.buffer); let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+
+/* ───────────── boot ───────────── */
+let OBJ_HITS = new Set();
+window.ready = Promise.all([document.fonts.load('100px Coolvetica'), document.fonts.load('100px Baby'), document.fonts.load('500 14px Inter')]).then(() => document.fonts.ready).then(() => {
+  build();
+  CAM.sort((a, b) => a.t0 - b.t0); OBJ.sort((a, b) => a.t0 - b.t0); CUR.sort((a, b) => a.t0 - b.t0); CLICKS.sort((a, b) => a - b);
+  OBJ_HITS = new Set(TAPS.filter((x) => ['pHomeIcon'].includes(x.key)).map((x) => x.t));
+  seek(0);
+  return true;
+});
+window.seek = seek;
+window.renderAudio = renderAudio;
+window.DUR = DUR;
+const q = new URLSearchParams(location.search);
+window.ready.then(() => {
+  if (q.has('t')) seek(parseFloat(q.get('t')));
+  if (q.has('play')) { const t0 = performance.now(); const loop = () => { seek(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); }; loop(); }
+});
+</script>
+</body>
+</html>

@@ -10,3 +10,5 @@ motion/out/*.wav
 motion/out/*.silent.mp4
 motion/out/kroopy-part*.mp4
 motion/out/kroopy-parts.txt
+motion/out/kroopy-devices-part*.mp4
+motion/out/kroopy-devices-parts.txt

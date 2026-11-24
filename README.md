@@ -141,6 +141,20 @@ node render.cjs beats       # un fotograma por tiempo, para revisar
 node render.cjs video 4     # 4 procesos en paralelo → ../out/kroopy-launch-80s.mp4
 ```
 
+## Lanzamiento «KROOPY en tu portátil y tu iPhone» (45 s) — `motion/kroopy-devices/`
+
+1080×1920 · 60 fps · 128 BPM (96 tiempos). Anuncia la app instalable: en el portátil (icono de instalar en la barra de direcciones → ventana propia, paleta `Ctrl K`, tablero, calendario, accesos directos del manifiesto en el dock) y en el iPhone (Compartir → Añadir a pantalla de inicio → icono propio, *splash*, pantalla completa, funciona sin conexión, insignia con las tareas pendientes). El objeto conductor es el propio icono lima de KROOPY. Paleta completa de marca (Ink, Lime, Royal, Hot Pink, Navy) y las tres fuentes de la app: Coolvetica, 212 Baby Girl e Inter. No se muestra sincronización entre dispositivos porque la app todavía no la tiene.
+
+| Archivo | Qué es |
+|---|---|
+| `motion/out/kroopy-devices-45s.mp4` | Render final (H.264 + AAC, −14 LUFS) |
+| `motion/kroopy-devices/src.html` | Composición `window.seek(t)` + banda sonora con Web Audio |
+| `motion/kroopy-devices/render.cjs` | Audio, fotogramas por tiempo y render a 60 fps con 3 subfotogramas (`tmix`) |
+
+```bash
+cd motion/kroopy-devices && node build.cjs && node render.cjs audio && node render.cjs video 4
+```
+
 ## Atajos
 
 `⌘/Ctrl K` paleta · `N` crear · `/` buscar · `I` idea · `V` vídeo · `T` tarea · `E` evento · `U` subir · `G` + `O/I/S/C/T/R/A/B/L` navegar · `Esc` cerrar.
