@@ -3,7 +3,9 @@
    reply can inject markup or scripts. */
 import { Fragment, type ReactNode } from 'react';
 
-function inline(text: string, key = 0): ReactNode[] {
+function inline(raw: string, key = 0): ReactNode[] {
+  // a quote marker left in the middle of a line ("Voice-over: > «…»") is noise, not formatting
+  const text = raw.replace(/(^|[:—–-]\s*)>\s+(?=\S)/g, '$1');
   const out: ReactNode[] = [];
   // order matters: code first (its content is literal), then links, bold, italic
   const re = /(`[^`]+`)|(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|(\*\*([^*]+)\*\*)|(\*([^*\s][^*]*)\*)|(_([^_\s][^_]*)_)/g;

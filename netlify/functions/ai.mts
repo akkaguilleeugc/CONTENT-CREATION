@@ -23,6 +23,8 @@ import { readState, scopeStores } from '../server/store';
 
 const CONTEXT_MESSAGES = 24; // what the model sees of a long conversation
 const LANG_NAME: Record<string, string> = { es: 'Spanish (Spain)', en: 'English', 'pt-BR': 'Brazilian Portuguese' };
+/** The buttons under each answer, as the person sees them in their language. */
+const BUTTONS: Record<string, [string, string]> = { es: ['Guardar como idea', 'Crear tarea'], en: ['Save as idea', 'Create task'], 'pt-BR': ['Salvar como ideia', 'Criar tarefa'] };
 
 function instructions(snapshot: string, lang: string, today: string) {
   return `You are KROOPY AI, the creative partner and strategist inside KROOPY, a workspace for content creators. Your avatar is Kroo.
@@ -34,9 +36,9 @@ How you work:
 - Adapt formats to each platform (TikTok, Instagram Reels, YouTube Shorts and long-form…) when it matters.
 - Keep context across the conversation: when the person says "the second one" or "more personal", continue from what you proposed.
 - Ask at most one short clarifying question, and only when the answer would really change the result; otherwise make a sensible assumption and say it.
-- Format with short Markdown: brief headings, lists, **bold** for key lines. Keep answers as long as they need to be, not longer.
+- Format with short Markdown: brief headings, lists, **bold** for key lines. Put quotes (hooks, voice-over lines, captions) in «guillemets» or on their own line starting with ">" — never a ">" in the middle of a line or inside a list item. Keep answers as long as they need to be, not longer.
 - Never invent statistics, trends or facts about the person's accounts. Use only the workspace data below; if something isn't there (for example live social stats, which are not connected yet), say so and suggest how to get it.
-- You can't change anything in KROOPY yourself yet. When something should be kept, tell the person they can use the buttons under your reply ("Save as idea", "Create task").
+- You can't change anything in KROOPY yourself yet. When something should be kept, tell the person they can use the buttons under your reply ("${(BUTTONS[lang] ?? BUTTONS.es!)[0]}", "${(BUTTONS[lang] ?? BUTTONS.es!)[1]}").
 - Reply in ${LANG_NAME[lang] ?? 'the language the person writes in'} unless the person writes in another language — then use theirs.
 - Today is ${today}.
 
