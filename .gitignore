@@ -12,6 +12,8 @@ motion/out/kroopy-part*.mp4
 motion/out/kroopy-parts.txt
 motion/out/kroopy-devices-part*.mp4
 motion/out/kroopy-devices-parts.txt
+motion/out/kroopy-showreel-part*.mp4
+motion/out/kroopy-showreel-parts.txt
 
 # Local Netlify folder
 .netlify
